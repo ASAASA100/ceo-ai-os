@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOOM — Deliverable Intelligence System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Lato:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #1A1A2E;
+            --bg-surface: #16213E;
+            --bg-surface-2: #0F3460;
+            --accent-primary: #C9A84C;
+            --accent-secondary: #E8D5A3;
+            --text-primary: #F8F4E8;
+            --text-secondary: #B8A98A;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border: rgba(201,168,76,0.2);
+        }
+
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        /* TOP BAR */
+        .top-bar {
+            background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-2) 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .boom-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-primary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .boom-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .engagement-selector {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .engagement-selector:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        .live-date {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--bg-primary);
+            box-shadow: 0 2px 8px rgba(201, 168, 76, 0.3);
+        }
+
+        /* MAIN FLEX CONTAINER */
+        .main-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 28px;
+        }
+
+        .sidebar-title {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all 0.25s ease;
+            border-left: 2px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(201, 168, 76, 0.1);
+            color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+        }
+
+        .nav-item.active {
+            background: rgba(201, 168, 76, 0.15);
+            color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .nav-count {
+            margin-left: auto;
+            background: rgba(201, 168, 76, 0.2);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .nav-item.active .nav-count {
+            background: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .nav-item.success .nav-count {
+            background: var(--success);
+            color: white;
+        }
+
+        .nav-item.warning .nav-count {
+            background: var(--warning);
+            color: white;
+        }
+
+        .engagement-accordion {
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.25s ease;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .accordion-header:hover {
+            background: rgba(201, 168, 76, 0.1);
+            color: var(--accent-primary);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-content.open {
+            max-height: 200px;
+        }
+
+        .accordion-item {
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-left: 2px solid transparent;
+        }
+
+        .accordion-item:hover {
+            color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+            background: rgba(201, 168, 76, 0.05);
+        }
+
+        .accordion-item.active {
+            color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+            background: rgba(201, 168, 76, 0.1);
+        }
+
+        /* CONTENT AREA */
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* MAIN PANEL */
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .search-sort-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .search-input {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            width: 220px;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(201, 168, 76, 0.2);
+        }
+
+        .sort-dropdown {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* DELIVERABLE GRID */
+        .deliverable-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .deliverable-card {
+            background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-surface-2) 100%);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .deliverable-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201, 168, 76, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .deliverable-card:hover::before {
+            left: 100%;
+        }
+
+        .deliverable-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(201, 168, 76, 0.15);
+        }
+
+        .deliverable-card.client-ready:hover::before {
+            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), transparent);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+            margin-right: 12px;
+            line-height: 1.3;
+        }
+
+        .card-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-type {
+            background: rgba(201, 168, 76, 0.2);
+            color: var(--accent-primary);
+            border: 1px solid rgba(201, 168, 76, 0.4);
+        }
+
+        .badge-version {
+            background: rgba(184, 169, 138, 0.15);
+            color: var(--text-secondary);
+            border: 1px solid rgba(184, 169, 138, 0.3);
+            cursor: pointer;
+        }
+
+        .badge-version:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .badge-status {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            font-weight: 700;
+        }
+
+        .badge-status.in-production {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .badge-status.draft {
+            background: rgba(107, 114, 128, 0.2);
+            color: #9CA3AF;
+            border: 1px solid rgba(107, 114, 128, 0.4);
+        }
+
+        .badge-qa {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            font-weight: 600;
+        }
+
+        .badge-qa.review {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .badge-qa.failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .card-date {
+            font-size: 11px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        .card-action-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            width: 28px;
+            height: 28px;
+            border-radius: 3px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+            font-size: 12px;
+        }
+
+        .card-action-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(201, 168, 76, 0.1);
+        }
+
+        .card-owner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .owner-avatar {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--bg-primary);
+        }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            width: 300px;
+            background: var(--bg-surface);
+            border-left: 1px solid var(--border);
+            padding: 24px 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .panel-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-section-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .selector-input {
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 8px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .selector-input:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(201, 168, 76, 0.25);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(201, 168, 76, 0.35);
+        }
+
+        .activity-item {
+            padding: 10px;
+            background: var(--bg-surface-2);
+            border-left: 2px solid var(--accent-primary);
+            border-radius: 2px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 10px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .metric-box {
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            font-family: 'Playfair Display', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--accent-primary);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 8px rgba(201, 168, 76, 0.2);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .form-submit-btn {
+            flex: 1;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: var(--bg-primary);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .form-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(201, 168, 76, 0.3);
+        }
+
+        .form-cancel-btn {
+            flex: 1;
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .form-cancel-btn:hover {
+            color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-surface-2);
+            border: 1px solid var(--accent-primary);
+            color: var(--accent-primary);
+            padding: 14px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* STATUS BAR */
+        .status-bar {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            padding: 8px 24px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            height: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-shrink: 0;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-indicator {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(201, 168, 76, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(201, 168, 76, 0.5);
+        }
+
+        /* DETAIL OVERLAY */
+        .detail-modal {
+            width: 600px;
+            max-height: 85vh;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-section:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .detail-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .version-list {
+            list-style: none;
+        }
+
+        .version-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .version-list li:last-child {
+            border-bottom: none;
+        }
+
+        .version-badge {
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        /* TABS */
+        .tab-buttons {
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 16px;
+        }
+
+        .tab-button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 10px 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            border-bottom: 2px solid transparent;
+            transition: all 0.25s ease;
+        }
+
+        .tab-button.active {
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* CANVAS CHART */
+        .analytics-container {
+            margin-top: 16px;
+        }
+
+        #analyticsChart {
+            max-width: 100%;
+            margin-top: 12px;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1400px) {
+            .right-panel {
+                width: 260px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .deliverable-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .right-panel {
+                display: none;
+            }
+            .deliverable-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div>
+                    <div class="boom-logo">BOOM</div>
+                    <div class="boom-subtitle">Deliverable Intelligence System</div>
+                </div>
+            </div>
+            <div class="top-bar-right">
+                <select class="engagement-selector" id="engagementSelector">
+                    <option value="">All Engagements</option>
+                    <option value="AAP Internal">AAP Internal</option>
+                    <option value="Musgrave">Musgrave</option>
+                    <option value="Financial Services Client">Financial Services Client</option>
+                </select>
+                <div class="live-date" id="liveDate"></div>
+                <div class="user-avatar">AJ</div>
+            </div>
+        </div>
+
+        <div class="main-wrapper">
+            <!-- SIDEBAR -->
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Navigation</div>
+                    <div class="nav-item active" data-filter="all">
+                        <span>📁</span>
+                        <span>All Deliverables</span>
+                        <span class="nav-count">15</span>
+                    </div>
+                    <div class="nav-item success" data-filter="client-ready">
+                        <span>🏆</span>
+                        <span>Client-Ready</span>
+                        <span class="nav-count">8</span>
+                    </div>
+                    <div class="nav-item warning" data-filter="in-production">
+                        <span>🔄</span>
+                        <span>In Production</span>
+                        <span class="nav-count">4</span>
+                    </div>
+                    <div class="nav-item" data-filter="draft">
+                        <span>📝</span>
+                        <span>Draft</span>
+                        <span class="nav-count">3</span>
+                    </div>
+                    <div class="nav-item" data-filter="analytics">
+                        <span>📊</span>
+                        <span>Analytics</span>
+                    </div>
+                    <div class="nav-item" data-filter="quality-gate">
+                        <span>⚙️</span>
+                        <span>Quality Gate</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-title">Engagement</div>
+                    <div class="engagement-accordion">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>AAP Internal</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="accordion-content open">
+                            <div class="accordion-item" data-engagement="AAP Internal">AAP Internal</div>
+                        </div>
+                    </div>
+                    <div class="engagement-accordion" style="margin-top: 8px;">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Musgrave</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="accordion-item" data-engagement="Musgrave">Musgrave</div>
+                        </div>
+                    </div>
+                    <div class="engagement-accordion" style="margin-top: 8px;">
+                        <div class="accordion-header" onclick="toggleAccordion(this)">
+                            <span>Financial Services Client</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="accordion-item" data-engagement="Financial Services Client">Financial Services Client</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT AREA -->
+            <div class="content-area">
+                <!-- MAIN PANEL -->
+                <div class="main-panel">
+                    <div class="panel-header">
+                        <div class="panel-title" id="panelTitle">All Deliverables</div>
+                        <div class="search-sort-bar">
+                            <input type="text" class="search-input" id="searchInput" placeholder="Ctrl+K to search...">
+                            <select class="sort-dropdown" id="sortDropdown">
+                                <option value="recent">Most Recent</option>
+                                <option value="name">Name (A-Z)</option>
+                                <option value="status">Status</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="deliverable-grid" id="deliverableGrid">
+                        <!-- Cards rendered here -->
+                    </div>
+
+                    <!-- ANALYTICS TAB CONTENT -->
+                    <div id="analyticsContent" style="display:none; flex:1; padding: 24px; overflow-y: auto;">
+                        <div class="analytics-container">
+                            <h3 style="color: var(--text-primary); margin-bottom: 16px;">Quality & Delivery Metrics</h3>
+                            <canvas id="analyticsChart" width="400" height="250"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- QUALITY GATE TAB CONTENT -->
+                    <div id="qualityGateContent" style="display:none; flex:1; padding: 24px; overflow-y: auto;">
+                        <h3 style="color: var(--text-primary); margin-bottom: 16px;">Quality Gate Checklist</h3>
+                        <div id="qualityChecklist"></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL -->
+                <div class="right-panel">
+                    <div class="panel-section">
+                        <div class="panel-section-title">Deliverable Factory</div>
+                        <div class="form-group">
+                            <label class="form-label">Asset Type</label>
+                            <select class="selector-input" id="assetTypeSelector">
+                                <option>Strategy</option>
+                                <option>Report</option>
+                                <option>Framework</option>
+                                <option>Playbook</option>
+                                <option>Governance</option>
+                                <option>PMO</option>
+                                <option>Technical</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Template</label>
+                            <select class="selector-input" id="templateSelector">
+                                <option>Executive Brief</option>
+                                <option>Detailed Report</option>
+                                <option>Roadmap</option>
+                                <option>Risk Register</option>
+                                <option>Governance Charter</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Engagement</label>
+                            <select class="selector-input" id="engagementFactory">
+                                <option value="">Select Engagement</option>
+                                <option value="AAP Internal">AAP Internal</option>
+                                <option value="Musgrave">Musgrave</option>
+                                <option value="Financial Services Client">Financial Services Client</option>
+                            </select>
+                        </div>
+                        <button class="generate-btn" onclick="openGenerateModal()">Generate Deliverable</button>
+                    </div>
+
+                    <div class="panel-section">
+                        <div class="panel-section-title">Recent Agent Activity</div>
+                        <div class="activity-item">
+                            <div><strong>✓ QA PASSED</strong> — SteerCo Pack v1.0</div>
+                            <div class="activity-time">2 hours ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div><strong>📝 GENERATED</strong> — Transformation Playbook v0.4</div>
+                            <div class="activity-time">4 hours ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div><strong>⚠️ REVIEW</strong> — RAID Log v3.4 flagged</div>
+                            <div class="activity-time">6 hours ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div><strong>✓ QA PASSED</strong> — Brand Standards v1.0</div>
+                            <div class="activity-time">1 day ago</div>
+                        </div>
+                        <div class="activity-item">
+                            <div><strong>📝 GENERATED</strong> — AI Governance Framework v1.0</div>
+                            <div class="activity-time">2 days ago</div>
+                        </div>
+                    </div>
+
+                    <div class="panel-section">
+                        <div class="panel-section-title">Quality Metrics</div>
+                        <div class="metrics-grid">
+                            <div class="metric-box">
+                                <div class="metric-value">15</div>
+                                <div class="metric-label">Total</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-value">53%</div>
+                                <div class="metric-label">Client-Ready</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-value">87%</div>
+                                <div class="metric-label">Avg Score</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-value">4</div>
+                                <div class="metric-label">In Progress</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span>BOOM v1.0</span>
+            </div>
+            <div class="status-item">
+                <span>15 Deliverables</span>
+            </div>
+            <div class="status-item">
+                <span>8 Client-Ready</span>
+            </div>
+            <div class="status-item">
+                <span>Quality Score: 87%</span>
+            </div>
+            <div class="status-item">
+                <span>Intelligence Layer</span>
+                <div class="status-indicator"></div>
+            </div>
+            <div class="status-item">
+                <span>CEO OS</span>
+                <div class="status-indicator"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal-content detail-modal">
+            <div class="modal-header">
+                <span id="detailTitle">Deliverable Details</span>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            <div id="detailBody"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="generateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Generate New Deliverable</span>
+                <button class="modal-close" onclick="closeGenerateModal()">×</button>
+            </div>
+            <form onsubmit="submitGenerateForm(event)">
+                <div class="form-group">
+                    <label class="form-label">Deliverable Name</label>
+                    <input type="text" class="form-input" id="newDeliverablesName" placeholder="E.g. Digital Transformation Roadmap" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select class="form-input" id="newDeliverableType" required>
+                        <option>Strategy</option>
+                        <option>Report</option>
+                        <option>Framework</option>
+                        <option>Playbook</option>
+                        <option>Governance</option>
+                        <option>PMO</option>
+                        <option>Technical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Engagement</label>
+                    <select class="form-input" id="newDeliverableEngagement" required>
+                        <option value="">Select Engagement</option>
+                        <option value="AAP Internal">AAP Internal</option>
+                        <option value="Musgrave">Musgrave</option>
+                        <option value="Financial Services Client">Financial Services Client</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-input form-textarea" id="newDeliverableDesc" placeholder="Brief description..."></textarea>
+                </div>
+                <div class="form-buttons">
+                    <button type="button" class="form-cancel-btn" onclick="closeGenerateModal()">Cancel</button>
+                    <button type="submit" class="form-submit-btn">Create Deliverable</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // DATA
+        const deliverables = [
+            { id: 1, name: "AAP Brand Standards Guide", type: "Strategy", version: "1.0", status: "client-ready", qa: "passed", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-18" },
+            { id: 2, name: "Musgrave AI Automation Roadmap", type: "Roadmap", version: "2.1", status: "client-ready", qa: "passed", engagement: "Musgrave", owner: "AJ", updated: "2026-03-17" },
+            { id: 3, name: "AI Transformation OS Executive Brief", type: "Report", version: "0.3", status: "in-production", qa: "review", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-16" },
+            { id: 4, name: "CEO AI OS Architecture Blueprint", type: "Framework", version: "1.2", status: "client-ready", qa: "passed", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-15" },
+            { id: 5, name: "SteerCo Pack — March 2026", type: "Governance", version: "1.0", status: "client-ready", qa: "passed", engagement: "Musgrave", owner: "AJ", updated: "2026-03-14" },
+            { id: 6, name: "RAID Log — Digital Transformation Programme", type: "PMO", version: "3.4", status: "in-production", qa: "review", engagement: "Musgrave", owner: "AJ", updated: "2026-03-13" },
+            { id: 7, name: "BD CRM Intelligence Platform Proposal", type: "Proposal", version: "0.2", status: "draft", qa: "failed", engagement: "Financial Services Client", owner: "AJ", updated: "2026-03-12" },
+            { id: 8, name: "AI Governance Framework", type: "Framework", version: "1.0", status: "client-ready", qa: "passed", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-11" },
+            { id: 9, name: "North Star Design System Guide", type: "Standards", version: "1.0", status: "client-ready", qa: "passed", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-10" },
+            { id: 10, name: "Transformation Playbook 2026", type: "Playbook", version: "0.4", status: "in-production", qa: "review", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-09" },
+            { id: 11, name: "HRIS Implementation Guide", type: "Report", version: "1.1", status: "client-ready", qa: "passed", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-08" },
+            { id: 12, name: "Financial Services AI Readiness Assessment", type: "Report", version: "0.1", status: "draft", qa: "failed", engagement: "Financial Services Client", owner: "AJ", updated: "2026-03-07" },
+            { id: 13, name: "PMO Governance Charter", type: "Governance", version: "2.0", status: "client-ready", qa: "passed", engagement: "Musgrave", owner: "AJ", updated: "2026-03-06" },
+            { id: 14, name: "Intelligence Layer Technical Specification", type: "Technical", version: "0.2", status: "in-production", qa: "review", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-05" },
+            { id: 15, name: "Agent Orchestration Playbook", type: "Playbook", version: "1.0", status: "client-ready", qa: "passed", engagement: "AAP Internal", owner: "AJ", updated: "2026-03-04" }
+        ];
+
+        let currentFilter = "all";
+        let currentEngagement = "";
+        let currentSort = "recent";
+        let allDeliverables = [...deliverables];
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDate();
+            renderDeliverables();
+            attachEventListeners();
+        });
+
+        // DATE
+        function updateDate() {
+            const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('liveDate').textContent = new Date().toLocaleDateString('en-US', options);
+        }
+
+        // SIDEBAR NAVIGATION
+        function attachEventListeners() {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    if (this.dataset.filter === 'analytics') {
+                        currentFilter = 'analytics';
+                        showAnalytics();
+                        return;
+                    }
+                    if (this.dataset.filter === 'quality-gate') {
+                        currentFilter = 'quality-gate';
+                        showQualityGate();
+                        return;
+                    }
+                    currentFilter = this.dataset.filter;
+                    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('analyticsContent').style.display = 'none';
+                    document.getElementById('qualityGateContent').style.display = 'none';
+                    document.getElementById('deliverableGrid').style.display = 'grid';
+                    const titles = { 'all': 'All Deliverables', 'client-ready': 'Client-Ready', 'in-production': 'In Production', 'draft': 'Draft' };
+                    document.getElementById('panelTitle').textContent = titles[this.dataset.filter];
+                    renderDeliverables();
+                });
+            });
+
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    currentEngagement = this.dataset.engagement;
+                    document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    renderDeliverables();
+                });
+            });
+
+            document.getElementById('engagementSelector').addEventListener('change', function() {
+                currentEngagement = this.value;
+                renderDeliverables();
+            });
+
+            document.getElementById('searchInput').addEventListener('keyup', function(e) {
+                allDeliverables = deliverables.filter(d => d.name.toLowerCase().includes(this.value.toLowerCase()));
+                renderDeliverables();
+            });
+
+            document.getElementById('sortDropdown').addEventListener('change', function() {
+                currentSort = this.value;
+                renderDeliverables();
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'k') {
+                    e.preventDefault();
+                    document.getElementById('searchInput').focus();
+                }
+                if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    exportToCSV();
+                }
+            });
+        }
+
+        // RENDER DELIVERABLES
+        function renderDeliverables() {
+            let filtered = allDeliverables;
+
+            if (currentFilter !== 'all' && currentFilter !== 'analytics' && currentFilter !== 'quality-gate') {
+                filtered = filtered.filter(d => d.status === currentFilter);
+            }
+
+            if (currentEngagement) {
+                filtered = filtered.filter(d => d.engagement === currentEngagement);
+            }
+
+            if (currentSort === 'name') {
+                filtered.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (currentSort === 'status') {
+                const statusOrder = { 'client-ready': 0, 'in-production': 1, 'draft': 2 };
+                filtered.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+            } else {
+                filtered.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+            }
+
+            const grid = document.getElementById('deliverableGrid');
+            grid.innerHTML = '';
+
+            filtered.forEach(d => {
+                const card = document.createElement('div');
+                card.className = `deliverable-card ${d.status === 'client-ready' ? 'client-ready' : ''}`;
+                
+                const statusBadgeClass = d.status === 'client-ready' ? '' : d.status === 'in-production' ? 'in-production' : 'draft';
+                const qaBadgeClass = d.qa === 'passed' ? '' : d.qa === 'review' ? 'review' : 'failed';
+                
+                const statusText = d.status === 'client-ready' ? 'CLIENT-READY' : d.status === 'in-production' ? 'IN PRODUCTION' : 'DRAFT';
+                const qaIcon = d.qa === 'passed' ? '✅' : d.qa === 'review' ? '⚠️' : '❌';
+                const qaText = d.qa === 'passed' ? 'QA PASSED' : d.qa === 'review' ? 'REVIEW' : 'FAILED';
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${d.name}</div>
+                    </div>
+                    <div class="card-badges">
+                        <span class="badge badge-type">${d.type}</span>
+                        <span class="badge badge-version" onclick="showVersionHistory(${d.id}, event)">${d.version}</span>
+                        <span class="badge badge-status ${statusBadgeClass}">${statusText}</span>
+                        <span class="badge badge-qa ${qaBadgeClass}">${qaIcon} ${qaText}</span>
+                    </div>
+                    <div class="card-meta">
+                        <div class="card-date">${formatDate(d.updated)}</div>
+                        <div class="card-owner">
+                            <div class="owner-avatar">${d.owner}</div>
+                        </div>
+                        <div class="card-actions">
+                            <button class="card-action-btn" onclick="openDetailModal(${d.id}, event)" title="View">👁️</button>
+                            <button class="card-action-btn" onclick="downloadDeliverable(${d.id}, event)" title="Download">⬇️</button>
+                            <button class="card-action-btn" onclick="showVersionHistory(${d.id}, event)" title="History">📜</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // DETAIL MODAL
+        function openDetailModal(id, e) {
+            if (e) e.stopPropagation();
+            const d = deliverables.find(x => x.id === id);
+            document.getElementById('detailTitle').textContent = d.name;
+            
+            const qaStatus = d.qa === 'passed' ? '✅ QA PASSED' : d.qa === 'review' ? '⚠️ REVIEW PENDING' : '❌ QA FAILED';
+            
+            document.getElementById('detailBody').innerHTML = `
+                <div class="detail-section">
+                    <div class="detail-label">Type</div>
+                    <div class="detail-value">${d.type}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Current Version</div>
+                    <div class="detail-value">${d.version}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">${d.status === 'client-ready' ? 'CLIENT-READY' : d.status === 'in-production' ? 'IN PRODUCTION' : 'DRAFT'}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Quality Gate</div>
+                    <div class="detail-value">${qaStatus}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Engagement</div>
+                    <div class="detail-value">${d.engagement}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Owner</div>
+                    <div class="detail-value">${d.owner}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Last Updated</div>
+                    <div class="detail-value">${d.updated}</div>
+                </div>
+                <div class="detail-section">
+                    <div class="detail-label">Version History</div>
+                    <ul class="version-list">
+                        <li><span class="version-badge">${d.version}</span> Current version</li>
+                        <li><span class="version-badge">v${(parseFloat(d.version) - 0.1).toFixed(1)}</span> Previous iteration</li>
+                        <li><span class="version-badge">v${(parseFloat(d.version) - 0.2).toFixed(1)}</span> Initial draft</li>
+                    </ul>
+                </div>
+            `;
+            document.getElementById('detailModal').classList.add('open');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
+
+        // GENERATE MODAL
+        function openGenerateModal() {
+            document.getElementById('generateModal').classList.add('open');
+        }
+
+        function closeGenerateModal() {
+            document.getElementById('generateModal').classList.remove('open');
+        }
+
+        function submitGenerateForm(e) {
+            e.preventDefault();
+            const name = document.getElementById('newDeliverablesName').value;
+            const type = document.getElementById('newDeliverableType').value;
+            const engagement = document.getElementById('newDeliverableEngagement').value;
+            
+            const newDeliverable = {
+                id: deliverables.length + 1,
+                name: name,
+                type: type,
+                version: "0.1",
+                status: "draft",
+                qa: "review",
+                engagement: engagement,
+                owner: "AJ",
+                updated: new Date().toISOString().split('T')[0]
+            };
+            
+            deliverables.unshift(newDeliverable);
+            allDeliverables = [...deliverables];
+            
+            document.getElementById('generateModal').classList.remove('open');
+            document.getElementById('newDeliverablesName').value = '';
+            
+            showToast(`✓ Deliverable "${name}" created successfully`);
+            renderDeliverables();
+        }
+
+        // VERSION HISTORY
+        function showVersionHistory(id, e) {
+            if (e) e.stopPropagation();
+            const d = deliverables.find(x => x.id === id);
+            alert(`Version History for: ${d.name}\n\nv${d.version} — Current\nv${(parseFloat(d.version) - 0.1).toFixed(1)} — Previous\nv${(parseFloat(d.version) - 0.2).toFixed(1)} — Initial`);
+        }
+
+        // DOWNLOAD
+        function downloadDeliverable(id, e) {
+            if (e) e.stopPropagation();
+            const d = deliverables.find(x => x.id === id);
+            showToast(`📥 Downloading: ${d.name} v${d.version}`);
+        }
+
+        // ANALYTICS
+        function showAnalytics() {
+            document.getElementById('deliverableGrid').style.display = 'none';
+            document.getElementById('analyticsContent').style.display = 'block';
+            document.getElementById('panelTitle').textContent = 'Analytics';
+            
+            setTimeout(() => {
+                const canvas = document.getElementById('analyticsChart');
+                const ctx = canvas.getContext('2d');
+                drawChart(ctx);
+            }, 100);
+        }
+
+        function drawChart(ctx) {
+            const data = {
+                labels: ['Client-Ready', 'In Production', 'Draft', 'Archived'],
+                values: [8, 4, 3, 0],
+                colors: ['#10B981', '#F59E0B', '#6B7280', '#4B5563']
+            };
+
+            const barWidth = 40;
+            const barGap = 20;
+            const startX = 50;
+            const maxValue = 10;
+            const chartHeight = 200;
+            const bottomPadding = 40;
+
+            data.labels.forEach((label, i) => {
+                const x = startX + (i * (barWidth + barGap));
+                const value = data.values[i];
+                const barHeight = (value / maxValue) * chartHeight;
+                const y = 220 - barHeight;
+
+                ctx.fillStyle = data.colors[i];
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                ctx.fillStyle = '#F8F4E8';
+                ctx.font = '12px Lato';
+                ctx.textAlign = 'center';
+                ctx.fillText(value, x + barWidth / 2, y - 10);
+
+                ctx.fillStyle = '#B8A98A';
+                ctx.font = '11px Lato';
+                ctx.fillText(label, x + barWidth / 2, 240);
+            });
+        }
+
+        // QUALITY GATE
+        function showQualityGate() {
+            document.getElementById('deliverableGrid').style.display = 'none';
+            document.getElementById('analyticsContent').style.display = 'none';
+            document.getElementById('qualityGateContent').style.display = 'block';
+            document.getElementById('panelTitle').textContent = 'Quality Gate';
+            
+            const checklist = document.getElementById('qualityChecklist');
+            checklist.innerHTML = '';
+            
+            deliverables.forEach(d => {
+                const qaClass = d.qa === 'passed' ? 'passed' : d.qa === 'review' ? 'review' : 'failed';
+                const qaText = d.qa === 'passed' ? '✅ PASSED' : d.qa === 'review' ? '⚠️ REVIEW' : '❌ FAILED';
+                
+                const item = document.createElement('div');
+                item.style.cssText = 'padding: 12px; background: var(--bg-surface-2); border-left: 3px solid var(--accent-primary); margin-bottom: 8px; border-radius: 2px;';
+                item.innerHTML = `
+                    <div style="font-size: 13px; color: var(--text-primary); font-weight: 600;">${d.name}</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">QA Status: ${qaText}</div>
+                `;
+                checklist.appendChild(item);
+            });
+        }
+
+        // EXPORT CSV
+        function exportToCSV() {
+            let csv = 'Name,Type,Version,Status,QA Status,Engagement,Owner,Updated\n';
+            deliverables.forEach(d => {
+                csv += `"${d.name}","${d.type}","${d.version}","${d.status}","${d.qa}","${d.engagement}","${d.owner}","${d.updated}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BOOM_Register_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            
+            showToast('✓ Register exported as CSV (Ctrl+E)');
+        }
+
+        // UTILITY
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            document.querySelectorAll('.accordion-content').forEach(c => {
+                if (c !== content) c.classList.remove('open');
+            });
+            content.classList.toggle('open');
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // CLICK OUTSIDE TO CLOSE MODALS
+        document.addEventListener('click', function(e) {
+            const detailModal = document.getElementById('detailModal');
+            if (e.target === detailModal) closeDetailModal();
+            const generateModal = document.getElementById('generateModal');
+            if (e.target === generateModal) closeGenerateModal();
+        });
+    </script>
+</body>
+</html>

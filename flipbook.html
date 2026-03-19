@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Advanced PDF Flipbook Viewer — Realistic</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/turn.js/3/turn.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #222; color: #eee; font-family: system-ui, -apple-system, sans-serif; height: 100vh; overflow: hidden; }
+    header { background: #111; padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #333; font-size: 13px; z-index: 50; position: relative; }
+    header input[type="file"] { color: #ccc; }
+    header button { background: #333; border: 1px solid #444; color: #eee; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+    header button:hover { background: #555; }
+    header input[type="text"] { background: #222; border: 1px solid #444; color: #eee; padding: 6px 8px; border-radius: 4px; font-size: 13px; min-width: 180px; }
+    #status { margin-left: auto; font-size: 12px; color: #aaa; white-space: nowrap; }
+    
+    #main { display: flex; height: calc(100vh - 52px); position: relative; overflow: hidden; }
+    
+    /* Drawers */
+    #thumbDrawer { width: 280px; background: #1a1a1a; border-right: 1px solid #333; overflow-y: auto; position: absolute; top: 0; bottom: 0; left: -280px; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 8px; z-index: 12; }
+    #thumbDrawer.open { left: 0; }
+    .thumb { width: 100%; margin-bottom: 8px; cursor: pointer; border: 1px solid #444; display: block; opacity: 0.8; transition: opacity 0.2s; }
+    .thumb:hover { opacity: 1; border-color: #888; }
+    
+    #infoDrawer { width: 260px; background: #1a1a1a; border-left: 1px solid #333; overflow-y: auto; position: absolute; top: 0; bottom: 0; right: -260px; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 8px; z-index: 12; font-size: 12px; }
+    #infoDrawer.open { right: 0; }
+    #infoTitle { font-weight: 600; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid #444; color: #fff; }
+    .info-item { padding: 8px; border-bottom: 1px solid #333; cursor: pointer; transition: background 0.2s; }
+    .info-item:hover { background: #2a2a2a; }
+    .info-meta { font-size: 11px; color: #aaa; margin-top: 4px; }
+    
+    /* Flipbook Container & Realism CSS */
+    #flipContainer { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; perspective: 2000px; }
+    
+    #flipbook { 
+      box-shadow: 0 15px 40px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5); /* Deep shadow below the book */
+      border-radius: 4px;
+      transition: transform 0.3s ease;
+    }
+    
+    #flipbook .page { 
+      background: #fff; 
+      overflow: hidden; 
+      display: block; 
+      /* Adds a subtle paper texture/color */
+      background-color: #fdfdfc; 
+    }
+    
+    /* Spine shadows to simulate the book binding */
+    #flipbook .odd {
+      background: linear-gradient(to right, #e8e8e8 0%, #fdfdfc 5%, #fdfdfc 100%);
+      box-shadow: inset 4px 0 10px rgba(0,0,0,0.1);
+    }
+    #flipbook .even {
+      background: linear-gradient(to left, #e8e8e8 0%, #fdfdfc 5%, #fdfdfc 100%);
+      box-shadow: inset -4px 0 10px rgba(0,0,0,0.1);
+    }
+
+    /* Hardcover styling */
+    #flipbook .hard {
+      background: #333 !important; /* Dark cover background in case image doesn't fill */
+      border: 2px solid #222;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    #flipbook img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    
+    /* Loading Spinner */
+    #spinner { position: fixed; top: 50%; left: 50%; width: 56px; height: 56px; margin-left: -28px; margin-top: -28px; border: 6px solid #444; border-top-color: #09f; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; z-index: 200; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    #placeholder { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #aaa; font-size: 15px; pointer-events: none; background: rgba(0,0,0,0.5); padding: 20px 40px; border-radius: 8px; border: 1px dashed #555; }
+    
+    @media (max-width: 900px) { header { flex-wrap: wrap; gap: 6px; } #main { height: calc(100vh - 80px); } }
+  
+        <style>
+        :root { --bg: #1A1A2E !important; --accent: #C9A84C !important; }
+        body, html { background: #1A1A2E !important; color: #F5F0E8 !important; }
+        h1, h2, h3, h4, h5, h6 { color: #F5F0E8 !important; }
+        a { color: #C9A84C !important; }
+        button, .btn { background: #C9A84C !important; }
+        </style>
+        </style>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display,Lato&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <input id="fileInput" type="file" accept="application/pdf" />
+  <button id="flipbookBtn">Render Book</button>
+  <button id="zoomInBtn">Zoom In</button>
+  <button id="zoomOutBtn">Zoom Out</button>
+
+  <input id="searchInput" type="text" placeholder="Search text..." />
+  <button id="searchBtn">Search</button>
+
+  <button id="bookmarksBtn">Bookmarks</button>
+  <button id="tocBtn">TOC</button>
+  <button id="thumbsBtn">Thumbnails</button>
+
+  <div id="status">No file loaded</div>
+</header>
+
+<div id="spinner" aria-hidden="true"></div>
+
+<div id="main">
+  <div id="thumbDrawer" aria-hidden="true"></div>
+
+  <div id="flipContainer">
+    <div id="flipbook" aria-live="polite"></div>
+
+    <div id="placeholder">
+      <div style="font-weight: bold; color: #fff; margin-bottom: 8px;">Waiting for PDF...</div>
+      <div>Select a PDF file, then click "Render Book".</div>
+    </div>
+  </div>
+
+  <div id="infoDrawer" aria-hidden="true">
+    <div id="infoTitle"></div>
+    <div id="infoContent"></div>
+  </div>
+</div>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  const fileInput = document.getElementById("fileInput");
+  const flipbookBtn = document.getElementById("flipbookBtn");
+  const zoomInBtn = document.getElementById("zoomInBtn");
+  const zoomOutBtn = document.getElementById("zoomOutBtn");
+  const searchInput = document.getElementById("searchInput");
+  const searchBtn = document.getElementById("searchBtn");
+  const bookmarksBtn = document.getElementById("bookmarksBtn");
+  const tocBtn = document.getElementById("tocBtn");
+  const thumbsBtn = document.getElementById("thumbsBtn");
+
+  const statusEl = document.getElementById("status");
+  const spinner = document.getElementById("spinner");
+  const thumbDrawer = document.getElementById("thumbDrawer");
+  const flipbookEl = document.getElementById("flipbook");
+  const placeholder = document.getElementById("placeholder");
+  const infoDrawer = document.getElementById("infoDrawer");
+  const infoTitle = document.getElementById("infoTitle");
+  const infoContent = document.getElementById("infoContent");
+
+  let pdfDoc = null;
+  let totalPages = 0;
+  let pageImages = [];
+  let basePageWidth = 800;
+  let basePageHeight = 1000;
+  let zoomLevel = 1.0;
+  let isTurnInitialized = false;
+  let textCache = {};
+  let bookmarks = [];
+  let outlineItems = [];
+
+  function showSpinner(show) { spinner.style.display = show ? "block" : "none"; }
+  function setStatus(text) { statusEl.textContent = text; }
+  function toggleThumbDrawer() { thumbDrawer.classList.toggle("open"); closeInfoDrawer(); }
+  function openInfoDrawer(title) { infoTitle.textContent = title; infoDrawer.classList.add("open"); thumbDrawer.classList.remove("open"); }
+  function closeInfoDrawer() { infoDrawer.classList.remove("open"); }
+
+  function getBookWidth() {
+    const maxW = Math.min(window.innerWidth * 0.9, 1100);
+    return Math.round(maxW * zoomLevel);
+  }
+  function getBookHeight() {
+    const maxH = Math.min(window.innerHeight * 0.82, 820);
+    return Math.round(maxH * zoomLevel);
+  }
+
+  function applyTransform() {
+    if(isTurnInitialized) {
+      // Center the book slightly differently based on zoom
+      const transformString = zoomLevel !== 1.0 ? `scale(${zoomLevel})` : `scale(1)`;
+      flipbookEl.style.transform = transformString;
+    }
+  }
+
+  function resetAll() {
+    const fb = $("#flipbook");
+    if (isTurnInitialized && fb.data("turn")) {
+      try { fb.turn("destroy"); } catch (e) {}
+    }
+    isTurnInitialized = false;
+    flipbookEl.innerHTML = "";
+    flipbookEl.style.transform = "scale(1)";
+    thumbDrawer.innerHTML = "";
+    infoContent.innerHTML = "";
+    infoTitle.textContent = "";
+    pdfDoc = null;
+    totalPages = 0;
+    pageImages = [];
+    textCache = {};
+    bookmarks = [];
+    outlineItems = [];
+    zoomLevel = 1.0;
+    placeholder.style.display = "block";
+    setStatus("No file loaded");
+  }
+
+  fileInput.addEventListener("change", async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (file.type !== "application/pdf") {
+      alert("Please select a PDF file.");
+      return;
+    }
+
+    resetAll();
+    showSpinner(true);
+    setStatus("Parsing PDF data...");
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const typedarray = new Uint8Array(arrayBuffer); 
+      
+      pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
+      totalPages = pdfDoc.numPages;
+      setStatus(`PDF loaded: ${file.name} (${totalPages} pages). Ready to render.`);
+      placeholder.style.display = "none";
+    } catch (err) {
+      console.error("PDF load error:", err);
+      alert("Failed to load PDF.");
+      resetAll();
+    } finally {
+      showSpinner(false);
+    }
+  });
+
+  flipbookBtn.addEventListener("click", async () => {
+    if (!pdfDoc) {
+      alert("Please upload a PDF first.");
+      return;
+    }
+
+    const fb = $("#flipbook");
+    if (isTurnInitialized && fb.data("turn")) {
+      try { fb.turn("destroy"); } catch (e) {}
+    }
+    isTurnInitialized = false;
+    flipbookEl.innerHTML = "";
+    pageImages = [];
+    showSpinner(true);
+    setStatus("Generating realistic pages...");
+
+    try {
+      for (let p = 1; p <= totalPages; p++) {
+        const page = await pdfDoc.getPage(p);
+        const scale = 1.5; // High res for zooming
+        const viewport = page.getViewport({ scale });
+
+        if (p === 1) {
+          basePageWidth = Math.round(viewport.width);
+          basePageHeight = Math.round(viewport.height);
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(viewport.width);
+        canvas.height = Math.round(viewport.height);
+        const ctx = canvas.getContext("2d");
+
+        const renderTask = page.render({ canvasContext: ctx, viewport });
+        await renderTask.promise;
+
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.9); // JPEG is slightly faster for large books
+        pageImages.push({ page: p, dataUrl, width: canvas.width, height: canvas.height });
+      }
+
+      // Add a blank back cover if pages are odd
+      if (pageImages.length % 2 !== 0) {
+        pageImages.push({ page: null, dataUrl: null, width: basePageWidth, height: basePageHeight });
+      }
+
+      const bookW = getBookWidth();
+      const bookH = getBookHeight();
+      const pageW = Math.floor(bookW / 2);
+      const pageH = bookH;
+
+      for (let i = 0; i < pageImages.length; i++) {
+        const info = pageImages[i];
+        const div = document.createElement("div");
+        
+        // Add "hard" class to the very first and very last pages for the hardcover effect
+        if (i === 0 || i === pageImages.length - 1) {
+            div.className = "hard";
+        } else {
+            div.className = "page";
+        }
+
+        div.style.width = pageW + "px";
+        div.style.height = pageH + "px";
+        div.style.boxSizing = "border-box";
+        
+        if (info.dataUrl) {
+          const img = new Image();
+          img.src = info.dataUrl;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          img.style.objectFit = "fill"; // Ensure the image completely fills the page bounds
+          div.appendChild(img);
+        } else {
+          div.style.background = "#fff";
+        }
+        flipbookEl.appendChild(div);
+      }
+
+      await waitForImagesToLoad(flipbookEl);
+
+      // Initialize Turn.js with realistic physics
+      fb.turn({
+        width: bookW,
+        height: bookH,
+        autoCenter: true,
+        elevation: 100,      // Higher elevation creates a longer, more dramatic drop shadow
+        gradients: true,     // Enables dynamic shading while turning
+        duration: 1200,      // Slower, more deliberate page turn (milliseconds)
+        acceleration: true,  // Hardware acceleration for smoother animations
+        pages: pageImages.length
+      });
+      isTurnInitialized = true;
+
+      window.addEventListener("resize", () => {
+        if (isTurnInitialized && fb.data("turn")) {
+          // Re-calculate size based on window
+          zoomLevel = 1.0; 
+          applyTransform();
+          fb.turn("size", getBookWidth(), getBookHeight());
+        }
+      });
+
+      buildThumbnails().catch(err => console.warn("Thumbnail build failed:", err));
+
+      setStatus("Flipbook ready! Try dragging a page corner.");
+    } catch (err) {
+      console.error("Error building flipbook:", err);
+      alert("Failed to build flipbook.");
+      resetAll();
+    } finally {
+      showSpinner(false);
+    }
+  });
+
+  function waitForImagesToLoad(container) {
+    const imgs = Array.from(container.querySelectorAll("img"));
+    if (imgs.length === 0) return Promise.resolve();
+    return Promise.all(imgs.map(img => {
+      if (img.complete && img.naturalWidth !== 0) return Promise.resolve();
+      return new Promise(resolve => {
+        img.onload = () => resolve();
+        img.onerror = () => resolve(); 
+      });
+    }));
+  }
+
+  async function buildThumbnails() {
+    thumbDrawer.innerHTML = "";
+    for (let i = 0; i < pageImages.length; i++) {
+      const info = pageImages[i];
+      if (!info || !info.dataUrl) continue;
+      
+      const img = new Image();
+      img.src = info.dataUrl;
+      img.className = "thumb";
+      img.title = "Page " + (info.page || (i + 1));
+      img.onclick = () => {
+        $("#flipbook").turn("page", info.page || (i + 1));
+        thumbDrawer.classList.remove("open");
+      };
+      thumbDrawer.appendChild(img);
+      await new Promise(r => setTimeout(r, 10)); 
+    }
+  }
+
+  // Changed zooming logic to use CSS transforms so it doesn't break the shadow rendering
+  zoomInBtn.addEventListener("click", () => {
+    if (!isTurnInitialized) return;
+    zoomLevel = Math.min(zoomLevel + 0.2, 2.5);
+    applyTransform();
+  });
+
+  zoomOutBtn.addEventListener("click", () => {
+    if (!isTurnInitialized) return;
+    zoomLevel = Math.max(zoomLevel - 0.2, 0.6);
+    applyTransform();
+  });
+
+  thumbsBtn.addEventListener("click", () => {
+    if (!pdfDoc) return;
+    toggleThumbDrawer();
+  });
+
+  searchBtn.addEventListener("click", async () => {
+    if (!pdfDoc) return;
+    const q = (searchInput.value || "").trim();
+    if (!q) return;
+    showSpinner(true);
+    setStatus("Searching...");
+    try {
+      await loadAllText();
+      const results = [];
+      const ql = q.toLowerCase();
+      for (let p = 1; p <= totalPages; p++) {
+        const txt = textCache[p] || "";
+        const idx = txt.toLowerCase().indexOf(ql);
+        if (idx !== -1) {
+          const snippet = txt.substring(Math.max(0, idx - 40), Math.min(txt.length, idx + q.length + 40)).replace(/\s+/g, " ");
+          results.push({ page: p, snippet });
+        }
+      }
+      infoContent.innerHTML = "";
+      if (results.length === 0) {
+        openInfoDrawer("Search: no matches");
+        infoContent.innerHTML = "<div style='padding:10px;'>No results found.</div>";
+      } else {
+        openInfoDrawer(`Search results (${results.length})`);
+        results.forEach(r => {
+          const div = document.createElement("div");
+          div.className = "info-item";
+          div.innerHTML = `<div><strong style="color:#09f">Page ${r.page}</strong></div><div class="info-meta">...${escapeHtml(r.snippet)}...</div>`;
+          div.onclick = () => { $("#flipbook").turn("page", r.page); };
+          infoContent.appendChild(div);
+        });
+        $("#flipbook").turn("page", results[0].page);
+      }
+    } catch (err) {
+      console.error("Search error:", err);
+      alert("Search failed.");
+    } finally {
+      showSpinner(false);
+      setStatus("Flipbook ready");
+    }
+  });
+
+  bookmarksBtn.addEventListener("click", () => {
+    if (!pdfDoc) return;
+    const fb = $("#flipbook");
+    if (!isTurnInitialized || !fb.data("turn")) { alert("Render the book first."); return; }
+    const current = fb.turn("page");
+    const label = prompt("Bookmark label (optional):", "Page " + current);
+    if (label === null) { showBookmarks(); return; }
+    bookmarks.push({ page: current, label: label || ("Page " + current) });
+    showBookmarks();
+  });
+
+  function showBookmarks() {
+    infoContent.innerHTML = "";
+    if (bookmarks.length === 0) {
+      openInfoDrawer("Bookmarks");
+      infoContent.innerHTML = "<div style='padding:10px;'>No bookmarks yet. Click 'Bookmarks' to add the current page.</div>";
+      return;
+    }
+    openInfoDrawer("Bookmarks");
+    bookmarks.forEach(b => {
+      const div = document.createElement("div");
+      div.className = "info-item";
+      div.innerHTML = `<div><strong style="color:#09f">${escapeHtml(b.label)}</strong></div><div class="info-meta">Page ${b.page}</div>`;
+      div.onclick = () => { $("#flipbook").turn("page", b.page); };
+      infoContent.appendChild(div);
+    });
+  }
+
+  tocBtn.addEventListener("click", async () => {
+    if (!pdfDoc) return;
+    infoContent.innerHTML = "";
+    try {
+      if (!outlineItems || outlineItems.length === 0) {
+        const outline = await pdfDoc.getOutline();
+        if (!outline || outline.length === 0) {
+          openInfoDrawer("Table of Contents");
+          infoContent.innerHTML = "<div style='padding:10px;'>No table of contents found in this PDF.</div>";
+          return;
+        }
+        const items = [];
+        for (const it of outline) await flattenOutline(it, items);
+        outlineItems = items;
+      }
+      openInfoDrawer("Table of Contents");
+      outlineItems.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "info-item";
+        div.style.paddingLeft = (item.level * 12 + 8) + "px";
+        const pageText = item.page ? ("Page " + item.page) : "No page";
+        div.innerHTML = `<div><strong style="color:#ddd">${escapeHtml(item.title)}</strong></div><div class="info-meta">${pageText}</div>`;
+        if (item.page) div.onclick = () => { $("#flipbook").turn("page", item.page); };
+        infoContent.appendChild(div);
+      });
+    } catch (err) {
+      openInfoDrawer("Table of Contents");
+      infoContent.innerHTML = "<div style='padding:10px;'>Failed to load TOC.</div>";
+    }
+  });
+
+  async function flattenOutline(item, outArr, level = 0) {
+    if (!item) return;
+    let pageNum = null;
+    if (item.dest) {
+      try {
+        const dest = await pdfDoc.getDestination(item.dest);
+        if (dest) {
+          const ref = dest[0];
+          const pageIndex = await pdfDoc.getPageIndex(ref);
+          pageNum = pageIndex + 1;
+        }
+      } catch (e) {}
+    }
+    outArr.push({ title: item.title || "Untitled", page: pageNum, level });
+    if (item.items && item.items.length) {
+      for (const child of item.items) await flattenOutline(child, outArr, level + 1);
+    }
+  }
+
+  async function loadAllText() {
+    if (!pdfDoc) return;
+    for (let p = 1; p <= totalPages; p++) {
+      if (!textCache[p]) {
+        try {
+          const page = await pdfDoc.getPage(p);
+          const content = await page.getTextContent();
+          const strings = content.items.map(it => it.str);
+          textCache[p] = strings.join(" ");
+        } catch (e) {
+          textCache[p] = "";
+        }
+      }
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+  }
+</script>
+
+</body>
+</html>

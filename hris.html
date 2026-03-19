@@ -1,0 +1,3518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AAP HRIS — North Star — Human Resources Intelligence System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+/* ==========================================
+   AAP HRIS — NORTH STAR DESIGN SYSTEM
+   ========================================== */
+
+/* === DESIGN TOKENS === */
+:root {
+  /* North Star #10 Core */
+  --bg:          #0A0F1E;
+  --surface:     #0F1629;
+  --card:        rgba(255,255,255,0.04);
+  --border:      rgba(255,255,255,0.08);
+
+  /* Legacy aliases (keep existing HTML working) */
+  --navy:        #0F1629;
+  --navy-mid:    #141D35;
+  --navy-light:  #1A2545;
+  --gold:        #6366F1;
+  --gold-light:  #818CF8;
+  --gold-pale:   rgba(99,102,241,0.12);
+  --ivory:       #E2E8F0;
+  --ivory-dark:  #141D35;
+  --slate:       #94A3B8;
+  --slate-light: #64748B;
+  --white:       #0F1629;
+
+  /* Status Colors */
+  --success:     #10B981;
+  --warning:     #F59E0B;
+  --danger:      #EF4444;
+  --info:        #06B6D4;
+
+  /* Brand accents */
+  --indigo:      #6366F1;
+  --indigo-dim:  rgba(99,102,241,0.15);
+  --green:       #10B981;
+  --green-dim:   rgba(16,185,129,0.15);
+  --amber:       #F59E0B;
+  --amber-dim:   rgba(245,158,11,0.15);
+  --red:         #EF4444;
+  --red-dim:     rgba(239,68,68,0.15);
+  --purple:      #8B5CF6;
+  --cyan:        #06B6D4;
+  --pink:        #EC4899;
+
+  /* Gradients */
+  --gradient-brand: linear-gradient(135deg, #6366F1, #8B5CF6, #EC4899);
+  --gradient-card:  linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.05));
+
+  /* Typography */
+  --font-serif:  'Space Grotesk', system-ui, sans-serif;
+  --font-sans:   'Inter', system-ui, sans-serif;
+
+  /* Elevation */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
+  --radius: 6px;
+  --radius-lg: 12px;
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* === RESET & BASE === */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px;
+  scroll-behavior: smooth;
+  height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--ivory);
+  color: var(--navy);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* === LAYER 1: SWISS GRID BACKGROUND === */
+.swiss-grid {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-size: 60px 60px;
+  background-image:
+    linear-gradient(to right, rgba(201,168,76,0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(201,168,76,0.03) 1px, transparent 1px);
+  mask-image: linear-gradient(to bottom, black 50%, transparent 100%);
+}
+
+/* === LAYER 2: SCROLL REVEAL === */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.4,0,0.2,1),
+              transform 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* === LAYER 4: TYPOGRAPHIC HIERARCHY === */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--navy);
+}
+
+h1 { font-size: 2.8rem; letter-spacing: -0.02em; margin-bottom: 1.5rem; }
+h2 { font-size: 2rem; letter-spacing: -0.01em; margin-bottom: 1rem; }
+h3 { font-size: 1.5rem; margin-bottom: 0.75rem; }
+h4 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+
+p { margin-bottom: 1rem; color: var(--slate); }
+
+/* === TOP NAVIGATION === */
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+  height: 70px;
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  gap: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 240px;
+  border-right: 1px solid rgba(201,168,76,0.2);
+  padding-right: 24px;
+}
+
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  background: var(--gold);
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  flex-shrink: 0;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-text .main {
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ivory);
+  letter-spacing: 0.02em;
+}
+
+.brand-text .sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.nav-tabs {
+  display: flex;
+  gap: 0;
+  flex: 1;
+  overflow-x: auto;
+}
+
+.nav-tab {
+  padding: 0 20px;
+  height: 70px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--slate-light);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.nav-tab:hover {
+  color: var(--gold-light);
+  background: rgba(201,168,76,0.05);
+}
+
+.nav-tab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  background: rgba(201,168,76,0.08);
+}
+
+/* === MAIN CONTENT === */
+.main-content {
+  margin-top: 70px;
+  min-height: calc(100vh - 70px);
+  position: relative;
+  z-index: 1;
+}
+
+.page {
+  display: none;
+  padding: 48px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease;
+}
+
+.page.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === PAGE HEADER === */
+.page-header {
+  margin-bottom: 48px;
+}
+
+.page-title {
+  font-size: 3rem;
+  font-family: var(--font-serif);
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: var(--slate);
+  font-weight: 400;
+}
+
+/* === GRID SYSTEM === */
+.grid {
+  display: grid;
+  gap: 24px;
+}
+
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 1200px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* === CARD COMPONENT === */
+.card {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
+  transition: var(--transition);
+  border: 1px solid rgba(201,168,76,0.1);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--gold-pale);
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin: 0;
+}
+
+.card-badge {
+  background: var(--gold-pale);
+  color: var(--navy);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* === METRIC CARDS === */
+.metric-card {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  color: var(--ivory);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(201,168,76,0.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.metric-value {
+  font-family: var(--font-serif);
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.metric-label {
+  font-size: 0.9rem;
+  color: var(--ivory-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  position: relative;
+}
+
+/* === BUTTONS === */
+.btn {
+  padding: 12px 24px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--navy);
+}
+
+.btn-primary:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: var(--ivory-dark);
+  color: var(--navy);
+}
+
+.btn-secondary:hover {
+  background: var(--gold-pale);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--navy);
+  border: 2px solid var(--navy);
+}
+
+.btn-outline:hover {
+  background: var(--navy);
+  color: var(--ivory);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: var(--white);
+}
+
+.btn-danger:hover {
+  background: #a02a1f;
+}
+
+/* === FORMS === */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  border: 2px solid var(--ivory-dark);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--navy);
+  transition: var(--transition);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+}
+
+.form-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* === EMPLOYEE CARD === */
+.employee-card {
+  display: flex;
+  gap: 20px;
+  padding: 24px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--ivory-dark);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.employee-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.employee-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-pale) 0%, var(--gold-light) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  color: var(--navy);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.employee-info {
+  flex: 1;
+}
+
+.employee-name {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+
+.employee-title {
+  color: var(--slate);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+}
+
+.employee-stats {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.stat-icon {
+  font-size: 1.2rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: var(--navy);
+}
+
+/* === INTERACTION LOG === */
+.interaction-item {
+  padding: 20px;
+  background: var(--white);
+  border-left: 4px solid var(--gold);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.interaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.interaction-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.category-win { background: rgba(39,174,96,0.15); color: var(--success); }
+.category-concern { background: rgba(212,131,26,0.15); color: var(--warning); }
+.category-feedback { background: rgba(52,152,219,0.15); color: var(--info); }
+
+.interaction-date {
+  font-size: 0.85rem;
+  color: var(--slate-light);
+}
+
+.interaction-content {
+  color: var(--slate);
+  line-height: 1.7;
+}
+
+/* === GOAL CARD === */
+.goal-card {
+  padding: 24px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--ivory-dark);
+  margin-bottom: 16px;
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.goal-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  color: var(--navy);
+  flex: 1;
+}
+
+.goal-status {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-on-track { background: rgba(39,174,96,0.15); color: var(--success); }
+.status-at-risk { background: rgba(212,131,26,0.15); color: var(--warning); }
+.status-blocked { background: rgba(192,57,43,0.15); color: var(--danger); }
+.status-completed { background: var(--gold-pale); color: var(--navy); }
+
+.goal-progress {
+  margin-top: 16px;
+}
+
+.progress-bar-container {
+  height: 8px;
+  background: var(--ivory-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold) 0%, var(--gold-light) 100%);
+  transition: width 0.6s ease;
+}
+
+.progress-label {
+  font-size: 0.85rem;
+  color: var(--slate);
+  text-align: right;
+}
+
+/* === CHART CONTAINERS === */
+.chart-container {
+  position: relative;
+  height: 320px;
+  padding: 20px;
+}
+
+/* === TABLE === */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.data-table thead {
+  background: var(--navy);
+  color: var(--ivory);
+}
+
+.data-table th {
+  padding: 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.data-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--ivory-dark);
+  color: var(--slate);
+}
+
+.data-table tbody tr:hover {
+  background: var(--gold-pale);
+}
+
+/* === MODAL === */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(13,27,42,0.8);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: var(--slate);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.modal-close:hover {
+  background: var(--ivory-dark);
+  color: var(--navy);
+}
+
+/* === ACTION BAR === */
+.action-bar {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  display: flex;
+  gap: 12px;
+  z-index: 90;
+}
+
+.action-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  background: var(--gold-light);
+}
+
+/* === TOAST NOTIFICATIONS === */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120px);
+  background: var(--navy);
+  color: var(--ivory);
+  padding: 16px 32px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+  transition: transform 0.4s ease;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* === UTILITIES === */
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+.mb-4 { margin-bottom: 32px; }
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mt-4 { margin-top: 32px; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-2 { gap: 16px; }
+.gap-3 { gap: 24px; }
+
+/* === RESPONSIVE === */
+@media (max-width: 1080px) {
+  .page { padding: 32px 24px; }
+  .topbar { padding: 0 24px; }
+  .page-title { font-size: 2.5rem; }
+  h1 { font-size: 2.4rem; }
+}
+
+@media (max-width: 768px) {
+  .topbar { padding: 0 16px; height: 60px; }
+  .brand { min-width: auto; padding-right: 16px; }
+  .nav-tabs { overflow-x: scroll; }
+  .nav-tab { font-size: 11px; padding: 0 12px; height: 60px; }
+  .page { padding: 24px 16px; }
+  .page-title { font-size: 2rem; }
+  .action-bar { bottom: 16px; right: 16px; }
+}
+
+/* === LOADING STATE === */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--ivory-dark);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* === EMPTY STATE === */
+.empty-state {
+  text-align: center;
+  padding: 64px 32px;
+  color: var(--slate-light);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-state-text {
+  font-size: 1.1rem;
+  margin-bottom: 24px;
+}
+
+
+/* ===== NORTH STAR #10 OVERRIDES ===== */
+body { background: #0A0F1E; color: #E2E8F0; }
+.topbar { background: rgba(10,15,30,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(99,102,241,0.2); }
+.nav-tab:hover { color: #818CF8; background: rgba(99,102,241,0.06); }
+.nav-tab.active { color: #6366F1; border-bottom-color: #6366F1; background: rgba(99,102,241,0.08); }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+.card:hover { border-color: rgba(99,102,241,0.35); }
+.card-header { border-bottom-color: rgba(99,102,241,0.15); }
+.card-title { color: #E2E8F0; font-family: 'Space Grotesk', sans-serif; }
+.card-badge { background: rgba(99,102,241,0.15); color: #818CF8; }
+.metric-card { background: linear-gradient(135deg, #0F1629 0%, #141D35 100%); }
+.metric-value { color: #6366F1; font-family: 'Space Grotesk', sans-serif; }
+.page-title { color: #E2E8F0; font-family: 'Space Grotesk', sans-serif; }
+.page-subtitle { color: #94A3B8; }
+h1, h2, h3, h4, h5, h6 { font-family: 'Space Grotesk', sans-serif; color: #E2E8F0; }
+.employee-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); }
+.employee-card:hover { border-color: rgba(99,102,241,0.4); }
+.employee-photo { background: linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(139,92,246,0.3) 100%); color: #E2E8F0; }
+.employee-name { color: #E2E8F0; font-family: 'Space Grotesk', sans-serif; }
+.employee-title { color: #94A3B8; }
+.interaction-item { background: rgba(255,255,255,0.04); border-left-color: #6366F1; }
+.interaction-content { color: #94A3B8; }
+.goal-card { background: rgba(255,255,255,0.04); border-color: rgba(99,102,241,0.15); }
+.goal-title { color: #E2E8F0; font-family: 'Space Grotesk', sans-serif; }
+.progress-bar-container { background: rgba(255,255,255,0.08); }
+.progress-bar-fill { background: linear-gradient(90deg, #6366F1 0%, #8B5CF6 100%); }
+.data-table { background: rgba(255,255,255,0.04); }
+.data-table thead { background: rgba(15,22,41,0.9); }
+.data-table th { color: #6366F1; }
+.data-table td { color: #94A3B8; border-bottom-color: rgba(255,255,255,0.06); }
+.data-table tbody tr:hover { background: rgba(99,102,241,0.06); }
+.modal-content { background: #0F1629; border: 1px solid rgba(99,102,241,0.2); }
+.form-input, .form-select, .form-textarea { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #E2E8F0; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+.form-label { color: #E2E8F0; }
+.btn-primary { background: #6366F1; color: #ffffff; }
+.btn-primary:hover { background: #4F46E5; }
+.btn-secondary { background: rgba(255,255,255,0.08); color: #E2E8F0; }
+.btn-secondary:hover { background: rgba(99,102,241,0.15); color: #6366F1; }
+.btn-outline { border-color: rgba(99,102,241,0.4); color: #6366F1; }
+.btn-outline:hover { background: rgba(99,102,241,0.1); color: #818CF8; }
+.swiss-grid { background-image: linear-gradient(to right, rgba(99,102,241,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(99,102,241,0.03) 1px, transparent 1px); }
+::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3); }
+.status-on-track { background: rgba(16,185,129,0.15); color: #10B981; }
+.status-at-risk { background: rgba(245,158,11,0.15); color: #F59E0B; }
+.status-blocked { background: rgba(239,68,68,0.15); color: #EF4444; }
+.status-completed { background: rgba(99,102,241,0.15); color: #818CF8; }
+.category-win { background: rgba(16,185,129,0.15); color: #10B981; }
+.category-concern { background: rgba(245,158,11,0.15); color: #F59E0B; }
+.category-feedback { background: rgba(6,182,212,0.15); color: #06B6D4; }
+/* Functional improvements */
+#search-global {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(99,102,241,0.25); color: #E2E8F0;
+  border-radius: 8px; padding: 8px 14px 8px 36px; font-size: 13px; font-family: 'Inter', sans-serif;
+  outline: none; transition: all 0.2s; width: 220px;
+}
+#search-global:focus { border-color: #6366F1; background: rgba(99,102,241,0.08); width: 280px; }
+.search-wrap { position: relative; display: inline-flex; align-items: center; }
+.search-icon { position: absolute; left: 10px; font-size: 14px; color: #64748B; pointer-events: none; }
+.health-pulse {
+  display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px;
+  background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25);
+  font-size: 11px; font-weight: 600; color: #10B981; letter-spacing: 0.05em;
+}
+.health-pulse-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #10B981;
+  animation: pulse-glow 2s infinite;
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(16,185,129,0); }
+}
+.topbar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.kbd-hint { font-size: 10px; color: #64748B; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); font-family: 'Space Grotesk', sans-serif; }
+
+</style>
+</head>
+<body>
+
+<!-- LAYER 1: SWISS GRID BACKGROUND -->
+<div class="swiss-grid"></div>
+
+<!-- TOP NAVIGATION -->
+<nav class="topbar">
+  <div class="brand">
+    <img src="data:image/jpeg;base64,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" alt="AAP" style="height:34px;width:auto;object-fit:contain;flex-shrink:0;">
+    <div class="brand-text">
+      <div class="main">AAP</div>
+      <div class="sub">HR Intelligence System</div>
+    </div>
+  </div>
+  
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="navigateTo('dashboard')">Dashboard</button>
+    <button class="nav-tab" onclick="navigateTo('roster')">Team Roster</button>
+    <button class="nav-tab" onclick="navigateTo('interactions')">Interactions</button>
+    <button class="nav-tab" onclick="navigateTo('goals')">Goals & OKRs</button>
+    <button class="nav-tab" onclick="navigateTo('meetings')">1:1 Meetings</button>
+    <button class="nav-tab" onclick="navigateTo('reviews')">Reviews</button>
+    <button class="nav-tab" onclick="navigateTo('analytics')">Analytics</button>
+    <button class="nav-tab" onclick="navigateTo('admin')">Admin</button>
+    <button class="nav-tab" onclick="navigateTo('notes')">Important Notes</button>
+    <button class="nav-tab" onclick="navigateTo('guide')">User Guide</button>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- ==================== DASHBOARD PAGE ==================== -->
+  <div id="page-dashboard" class="page active">
+    <div class="page-header reveal">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Executive overview of your people operations</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="grid grid-4 mb-4 reveal reveal-delay-1">
+      <div class="card metric-card">
+        <div class="metric-value" id="total-employees">0</div>
+        <div class="metric-label">Team Members</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-value" id="interactions-month">0</div>
+        <div class="metric-label">Interactions This Month</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-value" id="upcoming-reviews">0</div>
+        <div class="metric-label">Upcoming Reviews</div>
+      </div>
+      <div class="card metric-card">
+        <div class="metric-value" id="goal-completion">0%</div>
+        <div class="metric-label">Goal Completion</div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Recent Activity -->
+      <div class="card reveal reveal-delay-2">
+        <div class="card-header">
+          <h3 class="card-title">Recent Activity</h3>
+          <span class="card-badge">Last 7 Days</span>
+        </div>
+        <div id="recent-activity-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">📋</div>
+            <div class="empty-state-text">No recent activity</div>
+            <button class="btn btn-primary" onclick="navigateTo('interactions')">Log First Interaction</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Team Health -->
+      <div class="card reveal reveal-delay-3">
+        <div class="card-header">
+          <h3 class="card-title">Team Health Score</h3>
+          <span class="card-badge" id="health-score-badge">N/A</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="healthScoreChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card mt-4 reveal reveal-delay-4">
+      <div class="card-header">
+        <h3 class="card-title">Quick Actions</h3>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn btn-primary" onclick="openModal('add-interaction')">📝 Log Interaction</button>
+        <button class="btn btn-primary" onclick="openModal('add-employee')">👤 Add Team Member</button>
+        <button class="btn btn-secondary" onclick="navigateTo('meetings')">📅 Schedule 1:1</button>
+        <button class="btn btn-secondary" onclick="generateAllReports()">📊 Generate Reports</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== TEAM ROSTER PAGE ==================== -->
+  <div id="page-roster" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Team Roster</h1>
+      <p class="page-subtitle">Complete view of all team members</p>
+    </div>
+
+    <!-- Search & Filter -->
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="flex gap-2">
+        <input type="text" class="form-input" placeholder="Search employees..." id="employee-search" style="flex: 1;">
+        <select class="form-select" id="department-filter" style="width: 200px;">
+          <option value="">All Departments</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('add-employee')">+ Add Employee</button>
+      </div>
+    </div>
+
+    <!-- Employee Grid -->
+    <div id="employee-grid" class="reveal reveal-delay-2">
+      <div class="empty-state">
+        <div class="empty-state-icon">👥</div>
+        <div class="empty-state-text">No team members yet</div>
+        <button class="btn btn-primary" onclick="openModal('add-employee')">Add First Employee</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== INTERACTIONS PAGE ==================== -->
+  <div id="page-interactions" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Interaction Log</h1>
+      <p class="page-subtitle">Evidence trail of all people conversations</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="grid grid-4">
+        <select class="form-select" id="interaction-employee-filter">
+          <option value="">All Employees</option>
+        </select>
+        <select class="form-select" id="interaction-category-filter">
+          <option value="">All Categories</option>
+          <option value="win">🏆 Win</option>
+          <option value="concern">⚠️ Concern</option>
+          <option value="feedback">💬 Feedback</option>
+          <option value="commitment">🤝 Commitment</option>
+          <option value="absence">🏥 Absence</option>
+          <option value="meeting">📅 1:1 Meeting</option>
+          <option value="goal">🎯 Goal Progress</option>
+          <option value="recognition">🌟 Recognition</option>
+          <option value="development">📈 Development</option>
+          <option value="process">🔄 Process</option>
+        </select>
+        <input type="date" class="form-input" id="interaction-date-from" placeholder="From">
+        <input type="date" class="form-input" id="interaction-date-to" placeholder="To">
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button class="btn btn-primary" onclick="openModal('add-interaction')">+ Log Interaction</button>
+        <button class="btn btn-secondary" onclick="filterInteractions()">Apply Filters</button>
+        <button class="btn btn-outline" onclick="clearInteractionFilters()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Interaction List -->
+    <div id="interactions-list" class="reveal reveal-delay-2">
+      <div class="empty-state">
+        <div class="empty-state-icon">💬</div>
+        <div class="empty-state-text">No interactions logged yet</div>
+        <button class="btn btn-primary" onclick="openModal('add-interaction')">Log First Interaction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GOALS PAGE ==================== -->
+  <div id="page-goals" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Goals & OKRs</h1>
+      <p class="page-subtitle">Track objectives, key results, and progress</p>
+    </div>
+
+    <!-- Goal Filters -->
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="grid grid-3">
+        <select class="form-select" id="goal-employee-filter">
+          <option value="">All Employees</option>
+        </select>
+        <select class="form-select" id="goal-status-filter">
+          <option value="">All Statuses</option>
+          <option value="on_track">🟢 On Track</option>
+          <option value="at_risk">🟡 At Risk</option>
+          <option value="blocked">🔴 Blocked</option>
+          <option value="completed">✅ Completed</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('add-goal')">+ Add Goal</button>
+      </div>
+    </div>
+
+    <!-- Goals List -->
+    <div id="goals-list" class="reveal reveal-delay-2">
+      <div class="empty-state">
+        <div class="empty-state-icon">🎯</div>
+        <div class="empty-state-text">No goals set yet</div>
+        <button class="btn btn-primary" onclick="openModal('add-goal')">Create First Goal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MEETINGS PAGE ==================== -->
+  <div id="page-meetings" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">1:1 Meetings</h1>
+      <p class="page-subtitle">Structured, evidence-based conversations</p>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="flex gap-2">
+        <select class="form-select" id="meeting-employee-filter" style="flex: 1;">
+          <option value="">All Employees</option>
+        </select>
+        <button class="btn btn-primary" onclick="openModal('add-meeting')">+ Schedule 1:1</button>
+      </div>
+    </div>
+
+    <div id="meetings-list" class="reveal reveal-delay-2">
+      <div class="empty-state">
+        <div class="empty-state-icon">📅</div>
+        <div class="empty-state-text">No meetings scheduled</div>
+        <button class="btn btn-primary" onclick="openModal('add-meeting')">Schedule First 1:1</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REVIEWS PAGE ==================== -->
+  <div id="page-reviews" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Performance Reviews</h1>
+      <p class="page-subtitle">Auto-generated, evidence-based assessments</p>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="flex gap-2">
+        <select class="form-select" id="review-employee-select" style="flex: 1;">
+          <option value="">Select Employee</option>
+        </select>
+        <input type="date" class="form-input" id="review-start-date" style="width: 180px;">
+        <input type="date" class="form-input" id="review-end-date" style="width: 180px;">
+        <button class="btn btn-primary" onclick="generateReview()">Generate Review</button>
+      </div>
+    </div>
+
+    <div id="reviews-list" class="reveal reveal-delay-2">
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">No reviews generated yet</div>
+        <p style="color: var(--slate);">Select an employee and date range above to generate an evidence-based review</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ANALYTICS PAGE ==================== -->
+  <div id="page-analytics" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Analytics</h1>
+      <p class="page-subtitle">Data-driven insights into people operations</p>
+    </div>
+
+    <div class="grid grid-2 mb-4">
+      <!-- Interaction Trends -->
+      <div class="card reveal reveal-delay-1">
+        <div class="card-header">
+          <h3 class="card-title">Interaction Frequency</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="interactionTrendChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Goal Status Distribution -->
+      <div class="card reveal reveal-delay-2">
+        <div class="card-header">
+          <h3 class="card-title">Goal Status Distribution</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="goalStatusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Team Health Breakdown -->
+      <div class="card reveal reveal-delay-3">
+        <div class="card-header">
+          <h3 class="card-title">Team Health Radar</h3>
+        </div>
+        <div class="chart-container">
+          <canvas id="teamHealthRadar"></canvas>
+        </div>
+      </div>
+
+      <!-- Performance Metrics -->
+      <div class="card reveal reveal-delay-4">
+        <div class="card-header">
+          <h3 class="card-title">Key Metrics</h3>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Value</th>
+              <th>Target</th>
+            </tr>
+          </thead>
+          <tbody id="analytics-metrics-body">
+            <tr><td colspan="3" style="text-align: center; padding: 48px;">Loading metrics...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ADMIN PAGE ==================== -->
+  <div id="page-admin" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Administration</h1>
+      <p class="page-subtitle">System configuration and data management</p>
+    </div>
+
+    <div class="grid grid-2">
+      <!-- Data Management -->
+      <div class="card reveal reveal-delay-1">
+        <div class="card-header">
+          <h3 class="card-title">Data Management</h3>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" onclick="exportToJSON()" style="width: 100%;">📥 Export All Data (JSON)</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Import Data (JSON)</label>
+          <input type="file" id="import-file" accept=".json" class="form-input" onchange="importFromJSON(event)">
+        </div>
+        <div class="form-group">
+          <button class="btn btn-danger" onclick="resetDefaults()" style="width: 100%;">🗑️ Reset All Data</button>
+          <p style="font-size: 0.85rem; color: var(--slate); margin-top: 8px;">⚠️ This action cannot be undone</p>
+        </div>
+      </div>
+
+      <!-- GDPR Compliance -->
+      <div class="card reveal reveal-delay-2">
+        <div class="card-header">
+          <h3 class="card-title">GDPR Compliance</h3>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Data Retention (years)</label>
+          <input type="number" class="form-input" id="retention-years" value="3" min="1" max="10">
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" onclick="checkRetention()" style="width: 100%;">Check Retention Compliance</button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Right to Erasure</label>
+          <select class="form-select" id="erasure-employee">
+            <option value="">Select Employee</option>
+          </select>
+          <button class="btn btn-danger mt-2" onclick="eraseEmployeeData()" style="width: 100%;">Erase All Data (GDPR)</button>
+        </div>
+      </div>
+
+      <!-- Audit Log -->
+      <div class="card reveal reveal-delay-3">
+        <div class="card-header">
+          <h3 class="card-title">Audit Trail</h3>
+          <span class="card-badge">Last 30 Days</span>
+        </div>
+        <div id="audit-trail" style="max-height: 400px; overflow-y: auto;">
+          <div class="empty-state">
+            <div class="empty-state-text">No audit events logged</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Settings -->
+      <div class="card reveal reveal-delay-4">
+        <div class="card-header">
+          <h3 class="card-title">System Settings</h3>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" class="form-input" id="company-name" value="AAP Consulting">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fiscal Year Start</label>
+          <select class="form-select" id="fiscal-year-start">
+            <option value="1">January</option>
+            <option value="4">April</option>
+            <option value="7">July</option>
+            <option value="10">October</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== IMPORTANT NOTES PAGE ==================== -->
+  <div id="page-notes" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">Important Notes</h1>
+      <p class="page-subtitle">Data gaps and enhancement opportunities</p>
+    </div>
+
+    <!-- Data Gaps -->
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="card-header">
+        <h3 class="card-title">Data Gaps</h3>
+        <span class="card-badge">Ranked by Impact</span>
+      </div>
+      
+      <h4 style="color: var(--danger); margin-bottom: 16px;">🔴 High Impact</h4>
+      <ul style="list-style: none; padding: 0; margin-bottom: 32px;">
+        <li style="padding: 12px; background: rgba(192,57,43,0.05); border-left: 4px solid var(--danger); margin-bottom: 12px; border-radius: 4px;">
+          <strong>Employee Compensation Data:</strong> Currently not tracked. Affects ability to analyze pay equity, perform salary benchmarking, and make informed promotion decisions. Without this data, compensation planning relies on external sources only.
+        </li>
+        <li style="padding: 12px; background: rgba(192,57,43,0.05); border-left: 4px solid var(--danger); margin-bottom: 12px; border-radius: 4px;">
+          <strong>Skills & Certifications Matrix:</strong> No structured tracking of employee skills, certifications, or expertise levels. Limits ability to identify skill gaps, plan training investments, or match people to projects effectively.
+        </li>
+      </ul>
+
+      <h4 style="color: var(--warning); margin-bottom: 16px;">🟡 Medium Impact</h4>
+      <ul style="list-style: none; padding: 0; margin-bottom: 32px;">
+        <li style="padding: 12px; background: rgba(212,131,26,0.05); border-left: 4px solid var(--warning); margin-bottom: 12px; border-radius: 4px;">
+          <strong>Historical Performance Data:</strong> No import mechanism for pre-existing review data. New implementations start from zero history, reducing initial analytical value until 6-12 months of data accumulates.
+        </li>
+        <li style="padding: 12px; background: rgba(212,131,26,0.05); border-left: 4px solid var(--warning); margin-bottom: 12px; border-radius: 4px;">
+          <strong>Peer Feedback Collection:</strong> Current system only captures manager observations. 360-degree feedback from peers and direct reports would provide more balanced performance assessment.
+        </li>
+      </ul>
+
+      <h4 style="color: var(--info); margin-bottom: 16px;">🔵 Low Impact</h4>
+      <ul style="list-style: none; padding: 0;">
+        <li style="padding: 12px; background: rgba(52,152,219,0.05); border-left: 4px solid var(--info); margin-bottom: 12px; border-radius: 4px;">
+          <strong>Integration with Calendar Systems:</strong> 1:1 meetings are scheduled manually. Integration with Google Calendar/Outlook would enable automatic reminders and reduce scheduling friction.
+        </li>
+        <li style="padding: 12px; background: rgba(52,152,219,0.05); border-left: 4px solid var(--info); margin-bottom: 12px; border-radius: 4px;">
+          <strong>Bulk Import from Spreadsheets:</strong> Currently requires manual data entry. CSV import would accelerate initial setup for organizations migrating from spreadsheet-based systems.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Enhancement Opportunities -->
+    <div class="card reveal reveal-delay-2">
+      <div class="card-header">
+        <h3 class="card-title">Enhancement Opportunities</h3>
+      </div>
+
+      <div style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--ivory-dark);">
+        <h4 style="color: var(--navy); margin-bottom: 12px;">1. Compensation Analytics Module</h4>
+        <p style="margin-bottom: 12px;"><strong>Additional Data Needed:</strong> Salary, bonus, equity, benefits value per employee; market benchmarking data by role/location</p>
+        <p style="margin-bottom: 12px;"><strong>Improvements Enabled:</strong></p>
+        <ul style="margin-left: 24px; margin-bottom: 12px; color: var(--slate);">
+          <li>Pay equity analysis across demographics, departments, and roles</li>
+          <li>Compensation budget forecasting based on performance ratings and market trends</li>
+        </ul>
+        <p><strong>Business Impact:</strong> Reduces legal risk from pay inequity; improves retention by ensuring competitive compensation; enables data-driven promotion and raise decisions</p>
+      </div>
+
+      <div style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--ivory-dark);">
+        <h4 style="color: var(--navy); margin-bottom: 12px;">2. Skills & Development Tracking</h4>
+        <p style="margin-bottom: 12px;"><strong>Additional Data Needed:</strong> Skills taxonomy; employee proficiency levels (1-5 scale); certification dates and expiry; training course completions</p>
+        <p style="margin-bottom: 12px;"><strong>Improvements Enabled:</strong></p>
+        <ul style="margin-left: 24px; margin-bottom: 12px; color: var(--slate);">
+          <li>Skills gap analysis at individual, team, and organizational levels</li>
+          <li>Automated training recommendations based on role requirements and career goals</li>
+        </ul>
+        <p><strong>Business Impact:</strong> Optimizes training ROI by targeting actual gaps; accelerates internal mobility by surfacing hidden expertise; reduces external hiring costs</p>
+      </div>
+
+      <div style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--ivory-dark);">
+        <h4 style="color: var(--navy); margin-bottom: 12px;">3. Predictive Analytics for Retention</h4>
+        <p style="margin-bottom: 12px;"><strong>Additional Data Needed:</strong> 12+ months of historical interaction data; exit interview structured data; employee engagement survey scores</p>
+        <p style="margin-bottom: 12px;"><strong>Improvements Enabled:</strong></p>
+        <ul style="margin-left: 24px; margin-bottom: 12px; color: var(--slate);">
+          <li>Early warning system for flight risk based on interaction patterns, 1:1 frequency changes, and goal disengagement</li>
+          <li>Retention impact modeling for compensation changes, role adjustments, or manager switches</li>
+        </ul>
+        <p><strong>Business Impact:</strong> Reduces regrettable attrition by 20-30% through proactive intervention; lowers replacement costs (typically 50-200% of salary)</p>
+      </div>
+
+      <div style="margin-bottom: 32px; padding-bottom: 32px; border-bottom: 2px solid var(--ivory-dark);">
+        <h4 style="color: var(--navy); margin-bottom: 12px;">4. 360-Degree Feedback System</h4>
+        <p style="margin-bottom: 12px;"><strong>Additional Data Needed:</strong> Peer feedback forms; upward feedback from direct reports; self-assessment responses; custom competency frameworks</p>
+        <p style="margin-bottom: 12px;"><strong>Improvements Enabled:</strong></p>
+        <ul style="margin-left: 24px; margin-bottom: 12px; color: var(--slate);">
+          <li>Multi-perspective performance assessment reducing single-rater bias</li>
+          <li>Leadership effectiveness measurement from direct report perspectives</li>
+        </ul>
+        <p><strong>Business Impact:</strong> Improves accuracy of leadership assessments; surfaces blind spots in manager performance; increases employee trust in review process fairness</p>
+      </div>
+
+      <div>
+        <h4 style="color: var(--navy); margin-bottom: 12px;">5. Succession Planning Module</h4>
+        <p style="margin-bottom: 12px;"><strong>Additional Data Needed:</strong> Critical role identification; readiness assessment (1-3 year timelines); development plans for high-potential employees; bench strength mapping</p>
+        <p style="margin-bottom: 12px;"><strong>Improvements Enabled:</strong></p>
+        <ul style="margin-left: 24px; margin-bottom: 12px; color: var(--slate);">
+          <li>Visibility into organizational bench strength for key roles</li>
+          <li>Proactive development planning for future leaders</li>
+        </ul>
+        <p><strong>Business Impact:</strong> Reduces business disruption from unexpected departures; accelerates internal promotion velocity; demonstrates career path clarity improving retention</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== USER GUIDE PAGE ==================== -->
+  <div id="page-guide" class="page">
+    <div class="page-header reveal">
+      <h1 class="page-title">User Guide</h1>
+      <p class="page-subtitle">Complete instructions for using AAP HRIS</p>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-1">
+      <div class="card-header">
+        <h3 class="card-title">Getting Started</h3>
+      </div>
+      <ol style="margin-left: 24px; color: var(--slate); line-height: 1.8;">
+        <li><strong>Add Team Members:</strong> Navigate to Team Roster → Click "Add Employee" → Fill in basic information (name, title, department, start date)</li>
+        <li><strong>Log First Interaction:</strong> Go to Interactions → Click "Log Interaction" → Select employee, category, and add notes (takes ~30 seconds)</li>
+        <li><strong>Set Goals:</strong> Visit Goals & OKRs → Click "Add Goal" → Define objective, owner, timeline, and key results</li>
+        <li><strong>Schedule 1:1s:</strong> Navigate to 1:1 Meetings → Click "Schedule 1:1" → Set recurring cadence (weekly/biweekly)</li>
+        <li><strong>Review Dashboard Daily:</strong> Check team health, recent activity, and upcoming reviews</li>
+      </ol>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-2">
+      <div class="card-header">
+        <h3 class="card-title">Daily Manager Workflow</h3>
+      </div>
+      <div style="background: var(--gold-pale); padding: 24px; border-radius: var(--radius); margin-bottom: 16px;">
+        <h4 style="margin-bottom: 16px; color: var(--navy);">⏱️ Time Investment: 2-5 minutes/day</h4>
+        <ol style="margin-left: 24px; color: var(--slate); line-height: 1.8;">
+          <li>Open AAP HRIS (bookmark in browser)</li>
+          <li>View Dashboard for team health overview</li>
+          <li>Log interaction from any recent conversation (Win, Concern, Feedback, etc.)</li>
+          <li>Check upcoming 1:1 meetings</li>
+          <li>Review any at-risk goals</li>
+          <li>Close browser</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-3">
+      <div class="card-header">
+        <h3 class="card-title">Quarterly Review Process</h3>
+      </div>
+      <div style="background: var(--ivory-dark); padding: 24px; border-radius: var(--radius);">
+        <h4 style="margin-bottom: 16px; color: var(--navy);">⏱️ Time Investment: 1-2 hours per employee</h4>
+        <ol style="margin-left: 24px; color: var(--slate); line-height: 1.8;">
+          <li><strong>Auto-Generate Review:</strong> Navigate to Reviews → Select employee → Set date range → Click "Generate Review" (takes <5 seconds)</li>
+          <li><strong>Review Evidence:</strong> System aggregates all wins, concerns, feedback, and goal progress with date citations</li>
+          <li><strong>Add Commentary:</strong> Manager adds 2-3 paragraphs of narrative context (30 minutes)</li>
+          <li><strong>Share with Employee:</strong> Employee completes self-review section</li>
+          <li><strong>Conduct Review Meeting:</strong> Discuss performance, set next quarter goals (30-60 minutes)</li>
+          <li><strong>Finalize & Sign:</strong> Both parties sign off → Review saved with audit trail</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-4">
+      <div class="card-header">
+        <h3 class="card-title">Interaction Categories Guide</h3>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>When to Use</th>
+            <th>Example</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>🏆 Win</strong></td>
+            <td>Achievements, successes, exceeding expectations</td>
+            <td>"Led client presentation, secured $500K renewal"</td>
+          </tr>
+          <tr>
+            <td><strong>⚠️ Concern</strong></td>
+            <td>Issues needing attention, performance gaps</td>
+            <td>"Missed deadline on Q3 report, needs time management support"</td>
+          </tr>
+          <tr>
+            <td><strong>💬 Feedback</strong></td>
+            <td>General observations, coaching moments</td>
+            <td>"Excellent facilitation of team meeting today"</td>
+          </tr>
+          <tr>
+            <td><strong>🤝 Commitment</strong></td>
+            <td>Promises made, deliverables agreed upon</td>
+            <td>"Will complete API documentation by March 15"</td>
+          </tr>
+          <tr>
+            <td><strong>🏥 Absence</strong></td>
+            <td>PTO, sick leave, personal time</td>
+            <td>"Out sick 2/15-2/17, returned healthy"</td>
+          </tr>
+          <tr>
+            <td><strong>📅 1:1 Meeting</strong></td>
+            <td>Regular check-ins, notes, action items</td>
+            <td>"Discussed career goals, agreed to shadow director meetings"</td>
+          </tr>
+          <tr>
+            <td><strong>🎯 Goal Progress</strong></td>
+            <td>Updates on objectives, milestones</td>
+            <td>"Completed phase 1 of project Alpha, 2 weeks ahead"</td>
+          </tr>
+          <tr>
+            <td><strong>🌟 Recognition</strong></td>
+            <td>Public praise, awards, shoutouts</td>
+            <td>"Nominated for Employee of Quarter for mentorship work"</td>
+          </tr>
+          <tr>
+            <td><strong>📈 Development</strong></td>
+            <td>Training, learning, skill building</td>
+            <td>"Completed AWS Solutions Architect certification"</td>
+          </tr>
+          <tr>
+            <td><strong>🔄 Process</strong></td>
+            <td>Workflow changes, system improvements</td>
+            <td>"Implemented new code review process, team velocity up 15%"</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card mb-4 reveal reveal-delay-5">
+      <div class="card-header">
+        <h3 class="card-title">Data Export & Backup</h3>
+      </div>
+      <ul style="margin-left: 24px; color: var(--slate); line-height: 1.8;">
+        <li><strong>Regular Backups:</strong> Navigate to Admin → Click "Export All Data (JSON)" → Save file to secure location → Recommended frequency: Weekly</li>
+        <li><strong>PDF Reports:</strong> On any page, click "📄 PDF Export" button in bottom-right → Saves current page as PDF</li>
+        <li><strong>Data Import:</strong> Admin → "Import Data (JSON)" → Upload previously exported file → All data restored</li>
+        <li><strong>GDPR Compliance:</strong> Admin → "Right to Erasure" → Select employee → All personal data permanently deleted</li>
+      </ul>
+    </div>
+
+    <div class="card reveal reveal-delay-6">
+      <div class="card-header">
+        <h3 class="card-title">BPMN Process Flow</h3>
+      </div>
+      <div style="padding: 32px; background: var(--ivory); border-radius: var(--radius);">
+        <svg viewBox="0 0 800 400" style="width: 100%; height: auto;">
+          <!-- Start Event -->
+          <circle cx="50" cy="200" r="20" fill="var(--success)" stroke="var(--navy)" stroke-width="2"/>
+          <text x="50" y="240" text-anchor="middle" font-size="12" fill="var(--navy)">Start</text>
+          
+          <!-- Daily Logging -->
+          <rect x="110" y="170" width="120" height="60" rx="8" fill="var(--gold-pale)" stroke="var(--navy)" stroke-width="2"/>
+          <text x="170" y="195" text-anchor="middle" font-size="12" fill="var(--navy)">Log Daily</text>
+          <text x="170" y="210" text-anchor="middle" font-size="12" fill="var(--navy)">Interactions</text>
+          <line x1="70" y1="200" x2="110" y2="200" stroke="var(--navy)" stroke-width="2" marker-end="url(#arrowhead)"/>
+          
+          <!-- 1:1 Meetings -->
+          <rect x="270" y="170" width="120" height="60" rx="8" fill="var(--gold-pale)" stroke="var(--navy)" stroke-width="2"/>
+          <text x="330" y="195" text-anchor="middle" font-size="12" fill="var(--navy)">Conduct</text>
+          <text x="330" y="210" text-anchor="middle" font-size="12" fill="var(--navy)">1:1 Meetings</text>
+          <line x1="230" y1="200" x2="270" y2="200" stroke="var(--navy)" stroke-width="2" marker-end="url(#arrowhead)"/>
+          
+          <!-- Goal Tracking -->
+          <rect x="430" y="170" width="120" height="60" rx="8" fill="var(--gold-pale)" stroke="var(--navy)" stroke-width="2"/>
+          <text x="490" y="195" text-anchor="middle" font-size="12" fill="var(--navy)">Track Goal</text>
+          <text x="490" y="210" text-anchor="middle" font-size="12" fill="var(--navy)">Progress</text>
+          <line x1="390" y1="200" x2="430" y2="200" stroke="var(--navy)" stroke-width="2" marker-end="url(#arrowhead)"/>
+          
+          <!-- Review Generation -->
+          <rect x="590" y="170" width="120" height="60" rx="8" fill="var(--info)" stroke="var(--navy)" stroke-width="2"/>
+          <text x="650" y="195" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Generate</text>
+          <text x="650" y="210" text-anchor="middle" font-size="12" fill="white" font-weight="bold">Review</text>
+          <line x1="550" y1="200" x2="590" y2="200" stroke="var(--navy)" stroke-width="2" marker-end="url(#arrowhead)"/>
+          
+          <!-- End Event -->
+          <circle cx="750" cy="200" r="20" fill="var(--danger)" stroke="var(--navy)" stroke-width="3"/>
+          <text x="750" y="240" text-anchor="middle" font-size="12" fill="var(--navy)">Complete</text>
+          <line x1="710" y1="200" x2="730" y2="200" stroke="var(--navy)" stroke-width="2" marker-end="url(#arrowhead)"/>
+          
+          <!-- Feedback Loop -->
+          <path d="M 650 230 L 650 300 L 170 300 L 170 230" fill="none" stroke="var(--slate)" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrowhead-dashed)"/>
+          <text x="400" y="320" text-anchor="middle" font-size="11" fill="var(--slate)" font-style="italic">Continuous Feedback Loop</text>
+          
+          <!-- Arrow markers -->
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="var(--navy)" />
+            </marker>
+            <marker id="arrowhead-dashed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+              <polygon points="0 0, 10 3, 0 6" fill="var(--slate)" />
+            </marker>
+          </defs>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card reveal reveal-delay-7">
+      <div class="card-header">
+        <h3 class="card-title">Troubleshooting</h3>
+      </div>
+      <h4 style="margin-bottom: 12px; color: var(--navy);">Data Not Persisting?</h4>
+      <p style="margin-bottom: 16px; color: var(--slate);">Check browser localStorage settings. Some private/incognito modes disable localStorage. Use normal browsing mode or export data regularly as backup.</p>
+      
+      <h4 style="margin-bottom: 12px; color: var(--navy);">Charts Not Displaying?</h4>
+      <p style="margin-bottom: 16px; color: var(--slate);">Ensure JavaScript is enabled. Charts require Chart.js library loaded from CDN. Check browser console for errors.</p>
+      
+      <h4 style="margin-bottom: 12px; color: var(--navy);">Export Button Not Working?</h4>
+      <p style="margin-bottom: 16px; color: var(--slate);">Browser may be blocking downloads. Check browser permissions and allow downloads from this page.</p>
+      
+      <h4 style="margin-bottom: 12px; color: var(--navy);">Need Help?</h4>
+      <p style="color: var(--slate);">Contact your system administrator or HR department for assistance.</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- MODALS -->
+
+<!-- Add Employee Modal -->
+<div id="modal-add-employee" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('add-employee')">&times;</button>
+    <h2 style="font-family: var(--font-serif); margin-bottom: 24px;">Add Team Member</h2>
+    
+    <form id="form-add-employee" onsubmit="addEmployee(event)">
+      <div class="grid grid-2 mb-3">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          <input type="text" class="form-input" name="firstName" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name *</label>
+          <input type="text" class="form-input" name="lastName" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Email *</label>
+        <input type="email" class="form-input" name="email" required>
+      </div>
+      
+      <div class="grid grid-2 mb-3">
+        <div class="form-group">
+          <label class="form-label">Title *</label>
+          <input type="text" class="form-input" name="title" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Department *</label>
+          <input type="text" class="form-input" name="department" required>
+        </div>
+      </div>
+      
+      <div class="grid grid-2 mb-3">
+        <div class="form-group">
+          <label class="form-label">Start Date *</label>
+          <input type="date" class="form-input" name="startDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="leave">On Leave</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary">Add Employee</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-employee')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Interaction Modal -->
+<div id="modal-add-interaction" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('add-interaction')">&times;</button>
+    <h2 style="font-family: var(--font-serif); margin-bottom: 24px;">Log Interaction</h2>
+    
+    <form id="form-add-interaction" onsubmit="addInteraction(event)">
+      <div class="grid grid-2 mb-3">
+        <div class="form-group">
+          <label class="form-label">Employee *</label>
+          <select class="form-select" name="employeeId" id="interaction-employee-select" required>
+            <option value="">Select Employee</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select class="form-select" name="category" required>
+            <option value="win">🏆 Win</option>
+            <option value="concern">⚠️ Concern</option>
+            <option value="feedback">💬 Feedback</option>
+            <option value="commitment">🤝 Commitment</option>
+            <option value="absence">🏥 Absence</option>
+            <option value="meeting">📅 1:1 Meeting</option>
+            <option value="goal">🎯 Goal Progress</option>
+            <option value="recognition">🌟 Recognition</option>
+            <option value="development">📈 Development</option>
+            <option value="process">🔄 Process</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="grid grid-2 mb-3">
+        <div class="form-group">
+          <label class="form-label">Date *</label>
+          <input type="date" class="form-input" name="date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time</label>
+          <input type="time" class="form-input" name="time">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Notes *</label>
+        <textarea class="form-textarea" name="content" required placeholder="Describe what happened..."></textarea>
+      </div>
+      
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary">Save Interaction</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-interaction')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Goal Modal -->
+<div id="modal-add-goal" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('add-goal')">&times;</button>
+    <h2 style="font-family: var(--font-serif); margin-bottom: 24px;">Add Goal</h2>
+    
+    <form id="form-add-goal" onsubmit="addGoal(event)">
+      <div class="form-group">
+        <label class="form-label">Employee *</label>
+        <select class="form-select" name="employeeId" id="goal-employee-select" required>
+          <option value="">Select Employee</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Goal Title *</label>
+        <input type="text" class="form-input" name="title" required placeholder="e.g., Launch new customer portal by Q2">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-textarea" name="description" placeholder="Detailed description of the goal..."></textarea>
+      </div>
+      
+      <div class="grid grid-3 mb-3">
+        <div class="form-group">
+          <label class="form-label">Status *</label>
+          <select class="form-select" name="status" required>
+            <option value="on_track">🟢 On Track</option>
+            <option value="at_risk">🟡 At Risk</option>
+            <option value="blocked">🔴 Blocked</option>
+            <option value="completed">✅ Completed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Start Date *</label>
+          <input type="date" class="form-input" name="startDate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Date *</label>
+          <input type="date" class="form-input" name="targetDate" required>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Progress (%)</label>
+        <input type="number" class="form-input" name="progress" min="0" max="100" value="0">
+      </div>
+      
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary">Add Goal</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-goal')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Add Meeting Modal -->
+<div id="modal-add-meeting" class="modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal('add-meeting')">&times;</button>
+    <h2 style="font-family: var(--font-serif); margin-bottom: 24px;">Schedule 1:1 Meeting</h2>
+    
+    <form id="form-add-meeting" onsubmit="addMeeting(event)">
+      <div class="form-group">
+        <label class="form-label">Employee *</label>
+        <select class="form-select" name="employeeId" id="meeting-employee-select-modal" required>
+          <option value="">Select Employee</option>
+        </select>
+      </div>
+      
+      <div class="grid grid-2 mb-3">
+        <div class="form-group">
+          <label class="form-label">Date *</label>
+          <input type="date" class="form-input" name="date" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Duration (minutes)</label>
+          <input type="number" class="form-input" name="duration" value="30" min="15" step="15">
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Agenda</label>
+        <textarea class="form-textarea" name="agenda" placeholder="Meeting topics..."></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Recurring Meeting?</label>
+        <select class="form-select" name="recurring">
+          <option value="no">One-time</option>
+          <option value="weekly">Weekly</option>
+          <option value="biweekly">Bi-weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary">Schedule Meeting</button>
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-meeting')">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ACTION BUTTONS -->
+<div class="action-bar">
+  <button class="action-btn" onclick="exportToPDF()" title="Export to PDF">📄</button>
+  <button class="action-btn" onclick="emailResults()" title="Email Results">📧</button>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" class="toast"></div>
+
+<!-- ==========================================
+     JAVASCRIPT APPLICATION
+     ========================================== -->
+<script>
+/* ==========================================
+   AAP HRIS - DATA MODELS & STATE
+   ========================================== */
+
+// Data Storage Keys
+const STORAGE_KEYS = {
+  employees: 'aap_hris_employees',
+  interactions: 'aap_hris_interactions',
+  goals: 'aap_hris_goals',
+  meetings: 'aap_hris_meetings',
+  reviews: 'aap_hris_reviews',
+  settings: 'aap_hris_settings',
+  auditLog: 'aap_hris_audit_log'
+};
+
+// Initialize App State
+let AppState = {
+  employees: [],
+  interactions: [],
+  goals: [],
+  meetings: [],
+  reviews: [],
+  settings: {
+    companyName: 'AAP Consulting',
+    fiscalYearStart: 1,
+    retentionYears: 3
+  },
+  auditLog: []
+};
+
+// Load data from localStorage on startup
+function initializeApp() {
+  loadAllData();
+  renderCurrentPage();
+  setupRevealObserver();
+  setDefaultDates();
+  populateEmployeeSelects();
+  
+  // Log initialization
+  addAuditEntry('System initialized', 'system');
+  
+  console.log('AAP HRIS initialized successfully');
+}
+
+function loadAllData() {
+  try {
+    AppState.employees = JSON.parse(localStorage.getItem(STORAGE_KEYS.employees)) || [];
+    AppState.interactions = JSON.parse(localStorage.getItem(STORAGE_KEYS.interactions)) || [];
+    AppState.goals = JSON.parse(localStorage.getItem(STORAGE_KEYS.goals)) || [];
+    AppState.meetings = JSON.parse(localStorage.getItem(STORAGE_KEYS.meetings)) || [];
+    AppState.reviews = JSON.parse(localStorage.getItem(STORAGE_KEYS.reviews)) || [];
+    AppState.settings = JSON.parse(localStorage.getItem(STORAGE_KEYS.settings)) || AppState.settings;
+    AppState.auditLog = JSON.parse(localStorage.getItem(STORAGE_KEYS.auditLog)) || [];
+  } catch (error) {
+    console.error('Error loading data:', error);
+    showToast('Error loading data. Starting fresh.', 'error');
+  }
+}
+
+function saveData(key) {
+  try {
+    localStorage.setItem(STORAGE_KEYS[key], JSON.stringify(AppState[key]));
+  } catch (error) {
+    console.error('Error saving data:', error);
+    showToast('Error saving data. Storage may be full.', 'error');
+  }
+}
+
+function addAuditEntry(action, type = 'user', details = {}) {
+  const entry = {
+    id: generateId(),
+    timestamp: new Date().toISOString(),
+    action,
+    type,
+    details
+  };
+  AppState.auditLog.push(entry);
+  saveData('auditLog');
+}
+
+/* ==========================================
+   NAVIGATION
+   ========================================== */
+
+function navigateTo(page) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  
+  // Remove active state from all tabs
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  
+  // Show selected page
+  document.getElementById(`page-${page}`).classList.add('active');
+  
+  // Activate tab
+  event.target.classList.add('active');
+  
+  // Render page content
+  renderPage(page);
+  
+  // Re-observe reveal elements
+  setupRevealObserver();
+}
+
+function renderCurrentPage() {
+  const activePage = document.querySelector('.page.active');
+  if (activePage) {
+    const pageId = activePage.id.replace('page-', '');
+    renderPage(pageId);
+  }
+}
+
+function renderPage(page) {
+  switch(page) {
+    case 'dashboard':
+      renderDashboard();
+      break;
+    case 'roster':
+      renderRoster();
+      break;
+    case 'interactions':
+      renderInteractions();
+      break;
+    case 'goals':
+      renderGoals();
+      break;
+    case 'meetings':
+      renderMeetings();
+      break;
+    case 'reviews':
+      renderReviews();
+      break;
+    case 'analytics':
+      renderAnalytics();
+      break;
+    case 'admin':
+      renderAdmin();
+      break;
+  }
+}
+
+/* ==========================================
+   LAYER 2: SCROLL REVEAL OBSERVER
+   ========================================== */
+
+function setupRevealObserver() {
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('active');
+      }
+    });
+  }, { threshold: 0.1 });
+  
+  document.querySelectorAll('.reveal').forEach(el => {
+    revealObserver.observe(el);
+  });
+}
+
+/* ==========================================
+   DASHBOARD RENDERING
+   ========================================== */
+
+function renderDashboard() {
+  // Update metrics
+  document.getElementById('total-employees').textContent = AppState.employees.length;
+  
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const interactionsThisMonth = AppState.interactions.filter(i => 
+    new Date(i.date) >= startOfMonth
+  ).length;
+  document.getElementById('interactions-month').textContent = interactionsThisMonth;
+  
+  const upcomingReviews = AppState.employees.filter(e => {
+    // Count employees who need annual review in next 60 days
+    const startDate = new Date(e.startDate);
+    const yearsSinceStart = Math.floor((now - startDate) / (365.25 * 24 * 60 * 60 * 1000));
+    const nextReviewDate = new Date(startDate);
+    nextReviewDate.setFullYear(startDate.getFullYear() + yearsSinceStart + 1);
+    const daysUntilReview = (nextReviewDate - now) / (24 * 60 * 60 * 1000);
+    return daysUntilReview > 0 && daysUntilReview <= 60;
+  }).length;
+  document.getElementById('upcoming-reviews').textContent = upcomingReviews;
+  
+  const completedGoals = AppState.goals.filter(g => g.status === 'completed').length;
+  const totalGoals = AppState.goals.length;
+  const goalCompletion = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+  document.getElementById('goal-completion').textContent = goalCompletion + '%';
+  
+  // Render recent activity
+  renderRecentActivity();
+  
+  // Render team health chart
+  renderHealthScoreChart();
+}
+
+function renderRecentActivity() {
+  const container = document.getElementById('recent-activity-list');
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  const recentInteractions = AppState.interactions
+    .filter(i => new Date(i.date) >= sevenDaysAgo)
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 5);
+  
+  if (recentInteractions.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">No recent activity</div>
+        <button class="btn btn-primary" onclick="navigateTo('interactions')">Log First Interaction</button>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = recentInteractions.map(i => {
+    const employee = AppState.employees.find(e => e.id === i.employeeId);
+    const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown';
+    const categoryIcons = {
+      win: '🏆', concern: '⚠️', feedback: '💬', commitment: '🤝',
+      absence: '🏥', meeting: '📅', goal: '🎯', recognition: '🌟',
+      development: '📈', process: '🔄'
+    };
+    
+    return `
+      <div class="interaction-item">
+        <div class="interaction-header">
+          <span class="interaction-category category-${i.category}">
+            ${categoryIcons[i.category] || '💬'} ${i.category}
+          </span>
+          <span class="interaction-date">${formatDate(i.date)}</span>
+        </div>
+        <div class="interaction-content">
+          <strong>${employeeName}:</strong> ${truncateText(i.content, 100)}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHealthScoreChart() {
+  const avgHealth = calculateAverageTeamHealth();
+  document.getElementById('health-score-badge').textContent = avgHealth + '/100';
+  document.getElementById('health-score-badge').style.background = 
+    avgHealth >= 80 ? 'rgba(39,174,96,0.15)' :
+    avgHealth >= 60 ? 'rgba(212,131,26,0.15)' :
+    'rgba(192,57,43,0.15)';
+  
+  const ctx = document.getElementById('healthScoreChart');
+  if (!ctx) return;
+  
+  // Destroy existing chart if any
+  if (window.healthChart) {
+    window.healthChart.destroy();
+  }
+  
+  window.healthChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Excellent (80+)', 'Good (60-79)', 'Needs Attention (<60)'],
+      datasets: [{
+        data: calculateHealthDistribution(),
+        backgroundColor: [
+          'rgba(39,174,96,0.8)',
+          'rgba(212,131,26,0.8)',
+          'rgba(192,57,43,0.8)'
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: 'Inter' },
+            color: '#6B7280'
+          }
+        }
+      }
+    }
+  });
+}
+
+function calculateAverageTeamHealth() {
+  if (AppState.employees.length === 0) return 0;
+  const total = AppState.employees.reduce((sum, emp) => sum + calculateHealthScore(emp.id), 0);
+  return Math.round(total / AppState.employees.length);
+}
+
+function calculateHealthDistribution() {
+  const excellent = AppState.employees.filter(e => calculateHealthScore(e.id) >= 80).length;
+  const good = AppState.employees.filter(e => {
+    const score = calculateHealthScore(e.id);
+    return score >= 60 && score < 80;
+  }).length;
+  const needsAttention = AppState.employees.filter(e => calculateHealthScore(e.id) < 60).length;
+  
+  return [excellent, good, needsAttention];
+}
+
+function calculateHealthScore(employeeId) {
+  const interactions = AppState.interactions.filter(i => i.employeeId === employeeId);
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentInteractions = interactions.filter(i => new Date(i.date) >= thirtyDaysAgo);
+  
+  if (recentInteractions.length === 0) return 50; // Default neutral score
+  
+  // Win/concern ratio (40%)
+  const wins = recentInteractions.filter(i => i.category === 'win').length;
+  const concerns = recentInteractions.filter(i => i.category === 'concern').length;
+  const winConcernRatio = concerns > 0 ? wins / concerns : wins;
+  const winScore = Math.min(winConcernRatio / 5, 1) * 40;
+  
+  // Interaction frequency (30%)
+  const freqScore = Math.min(recentInteractions.length / 30, 1) * 30;
+  
+  // Goal progress (20%)
+  const employeeGoals = AppState.goals.filter(g => g.employeeId === employeeId);
+  const avgProgress = employeeGoals.length > 0 ?
+    employeeGoals.reduce((sum, g) => sum + (g.progress || 0), 0) / employeeGoals.length : 50;
+  const goalScore = (avgProgress / 100) * 20;
+  
+  // 1:1 cadence (10%)
+  const meetings = AppState.meetings.filter(m => m.employeeId === employeeId);
+  const recentMeetings = meetings.filter(m => new Date(m.date) >= thirtyDaysAgo);
+  const meetingScore = Math.min(recentMeetings.length / 2, 1) * 10;
+  
+  return Math.round(winScore + freqScore + goalScore + meetingScore);
+}
+
+/* ==========================================
+   ROSTER RENDERING
+   ========================================== */
+
+function renderRoster() {
+  populateDepartmentFilter();
+  filterAndRenderEmployees();
+  
+  // Setup search
+  document.getElementById('employee-search').addEventListener('input', filterAndRenderEmployees);
+  document.getElementById('department-filter').addEventListener('change', filterAndRenderEmployees);
+}
+
+function populateDepartmentFilter() {
+  const filter = document.getElementById('department-filter');
+  const departments = [...new Set(AppState.employees.map(e => e.department))];
+  
+  filter.innerHTML = '<option value="">All Departments</option>' +
+    departments.map(d => `<option value="${d}">${d}</option>`).join('');
+}
+
+function filterAndRenderEmployees() {
+  const searchTerm = document.getElementById('employee-search')?.value.toLowerCase() || '';
+  const department = document.getElementById('department-filter')?.value || '';
+  
+  let filtered = AppState.employees.filter(e => {
+    const matchesSearch = !searchTerm || 
+      `${e.firstName} ${e.lastName}`.toLowerCase().includes(searchTerm) ||
+      e.title.toLowerCase().includes(searchTerm) ||
+      e.email.toLowerCase().includes(searchTerm);
+    
+    const matchesDepartment = !department || e.department === department;
+    
+    return matchesSearch && matchesDepartment;
+  });
+  
+  const container = document.getElementById('employee-grid');
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">👥</div>
+        <div class="empty-state-text">No employees found</div>
+        ${AppState.employees.length === 0 ? 
+          '<button class="btn btn-primary" onclick="openModal(\'add-employee\')">Add First Employee</button>' : 
+          '<button class="btn btn-secondary" onclick="filterAndRenderEmployees()">Clear Filters</button>'}
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = '<div class="grid grid-2">' + filtered.map(emp => {
+    const interactions = AppState.interactions.filter(i => i.employeeId === emp.id);
+    const wins = interactions.filter(i => i.category === 'win').length;
+    const concerns = interactions.filter(i => i.category === 'concern').length;
+    const healthScore = calculateHealthScore(emp.id);
+    const goals = AppState.goals.filter(g => g.employeeId === emp.id);
+    const activeGoals = goals.filter(g => g.status !== 'completed' && g.status !== 'cancelled');
+    
+    return `
+      <div class="employee-card">
+        <div class="employee-photo">${emp.firstName.charAt(0)}${emp.lastName.charAt(0)}</div>
+        <div class="employee-info">
+          <div class="employee-name">${emp.firstName} ${emp.lastName}</div>
+          <div class="employee-title">${emp.title} · ${emp.department}</div>
+          <div class="employee-stats">
+            <div class="stat-item">
+              <span class="stat-icon">🏆</span>
+              <span class="stat-value">${wins}</span> Wins
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">⚠️</span>
+              <span class="stat-value">${concerns}</span> Concerns
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">💬</span>
+              <span class="stat-value">${interactions.length}</span> Total
+            </div>
+            <div class="stat-item">
+              <span class="stat-icon">📊</span>
+              <span class="stat-value">${healthScore}</span> Health
+            </div>
+          </div>
+          <div class="mt-2">
+            <span class="card-badge" style="font-size: 10px;">${activeGoals.length} Active Goals</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('') + '</div>';
+}
+
+/* ==========================================
+   INTERACTIONS RENDERING
+   ========================================== */
+
+function renderInteractions() {
+  populateInteractionFilters();
+  filterAndRenderInteractions();
+}
+
+function populateInteractionFilters() {
+  const employeeFilter = document.getElementById('interaction-employee-filter');
+  employeeFilter.innerHTML = '<option value="">All Employees</option>' +
+    AppState.employees.map(e => 
+      `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+    ).join('');
+}
+
+function filterInteractions() {
+  filterAndRenderInteractions();
+}
+
+function clearInteractionFilters() {
+  document.getElementById('interaction-employee-filter').value = '';
+  document.getElementById('interaction-category-filter').value = '';
+  document.getElementById('interaction-date-from').value = '';
+  document.getElementById('interaction-date-to').value = '';
+  filterAndRenderInteractions();
+}
+
+function filterAndRenderInteractions() {
+  const employeeId = document.getElementById('interaction-employee-filter')?.value || '';
+  const category = document.getElementById('interaction-category-filter')?.value || '';
+  const dateFrom = document.getElementById('interaction-date-from')?.value || '';
+  const dateTo = document.getElementById('interaction-date-to')?.value || '';
+  
+  let filtered = AppState.interactions.filter(i => {
+    const matchesEmployee = !employeeId || i.employeeId === employeeId;
+    const matchesCategory = !category || i.category === category;
+    const matchesDateFrom = !dateFrom || i.date >= dateFrom;
+    const matchesDateTo = !dateTo || i.date <= dateTo;
+    
+    return matchesEmployee && matchesCategory && matchesDateFrom && matchesDateTo;
+  });
+  
+  // Sort by date descending
+  filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  const container = document.getElementById('interactions-list');
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">💬</div>
+        <div class="empty-state-text">No interactions found</div>
+        ${AppState.interactions.length === 0 ?
+          '<button class="btn btn-primary" onclick="openModal(\'add-interaction\')">Log First Interaction</button>' :
+          '<button class="btn btn-secondary" onclick="clearInteractionFilters()">Clear Filters</button>'}
+      </div>
+    `;
+    return;
+  }
+  
+  const categoryIcons = {
+    win: '🏆', concern: '⚠️', feedback: '💬', commitment: '🤝',
+    absence: '🏥', meeting: '📅', goal: '🎯', recognition: '🌟',
+    development: '📈', process: '🔄'
+  };
+  
+  container.innerHTML = filtered.map(i => {
+    const employee = AppState.employees.find(e => e.id === i.employeeId);
+    const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown';
+    
+    return `
+      <div class="interaction-item">
+        <div class="interaction-header">
+          <div>
+            <span class="interaction-category category-${i.category}">
+              ${categoryIcons[i.category] || '💬'} ${i.category.toUpperCase()}
+            </span>
+            <strong style="margin-left: 12px; color: var(--navy);">${employeeName}</strong>
+          </div>
+          <span class="interaction-date">${formatDate(i.date)} ${i.time || ''}</span>
+        </div>
+        <div class="interaction-content">${i.content}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ==========================================
+   GOALS RENDERING
+   ========================================== */
+
+function renderGoals() {
+  populateGoalFilters();
+  filterAndRenderGoals();
+}
+
+function populateGoalFilters() {
+  const employeeFilter = document.getElementById('goal-employee-filter');
+  employeeFilter.innerHTML = '<option value="">All Employees</option>' +
+    AppState.employees.map(e => 
+      `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+    ).join('');
+}
+
+function filterAndRenderGoals() {
+  const employeeId = document.getElementById('goal-employee-filter')?.value || '';
+  const status = document.getElementById('goal-status-filter')?.value || '';
+  
+  let filtered = AppState.goals.filter(g => {
+    const matchesEmployee = !employeeId || g.employeeId === employeeId;
+    const matchesStatus = !status || g.status === status;
+    return matchesEmployee && matchesStatus;
+  });
+  
+  const container = document.getElementById('goals-list');
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">🎯</div>
+        <div class="empty-state-text">No goals found</div>
+        ${AppState.goals.length === 0 ?
+          '<button class="btn btn-primary" onclick="openModal(\'add-goal\')">Create First Goal</button>' :
+          '<button class="btn btn-secondary" onclick="document.getElementById(\'goal-employee-filter\').value=\'\'; document.getElementById(\'goal-status-filter\').value=\'\'; filterAndRenderGoals()">Clear Filters</button>'}
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = filtered.map(g => {
+    const employee = AppState.employees.find(e => e.id === g.employeeId);
+    const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown';
+    
+    const statusLabels = {
+      on_track: '🟢 On Track',
+      at_risk: '🟡 At Risk',
+      blocked: '🔴 Blocked',
+      completed: '✅ Completed'
+    };
+    
+    return `
+      <div class="goal-card">
+        <div class="goal-header">
+          <div class="goal-title">${g.title}</div>
+          <span class="goal-status status-${g.status}">${statusLabels[g.status]}</span>
+        </div>
+        <p style="color: var(--slate); margin-bottom: 16px;">
+          <strong>Owner:</strong> ${employeeName} | 
+          <strong>Timeline:</strong> ${formatDate(g.startDate)} → ${formatDate(g.targetDate)}
+        </p>
+        ${g.description ? `<p style="color: var(--slate); margin-bottom: 16px;">${g.description}</p>` : ''}
+        <div class="goal-progress">
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" style="width: ${g.progress}%"></div>
+          </div>
+          <div class="progress-label">${g.progress}% Complete</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ==========================================
+   MEETINGS RENDERING
+   ========================================== */
+
+function renderMeetings() {
+  populateMeetingFilters();
+  filterAndRenderMeetings();
+}
+
+function populateMeetingFilters() {
+  const employeeFilter = document.getElementById('meeting-employee-filter');
+  employeeFilter.innerHTML = '<option value="">All Employees</option>' +
+    AppState.employees.map(e => 
+      `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+    ).join('');
+}
+
+function filterAndRenderMeetings() {
+  const employeeId = document.getElementById('meeting-employee-filter')?.value || '';
+  
+  let filtered = AppState.meetings.filter(m => {
+    return !employeeId || m.employeeId === employeeId;
+  });
+  
+  // Sort by date ascending (upcoming first)
+  filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  const container = document.getElementById('meetings-list');
+  
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📅</div>
+        <div class="empty-state-text">No meetings scheduled</div>
+        ${AppState.meetings.length === 0 ?
+          '<button class="btn btn-primary" onclick="openModal(\'add-meeting\')">Schedule First 1:1</button>' :
+          '<button class="btn btn-secondary" onclick="document.getElementById(\'meeting-employee-filter\').value=\'\'; filterAndRenderMeetings()">Clear Filter</button>'}
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = filtered.map(m => {
+    const employee = AppState.employees.find(e => e.id === m.employeeId);
+    const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown';
+    const isPast = new Date(m.date) < new Date();
+    
+    return `
+      <div class="card mb-3">
+        <div class="card-header">
+          <h4 style="margin: 0;">1:1 with ${employeeName}</h4>
+          <span class="card-badge">${isPast ? 'Completed' : 'Upcoming'}</span>
+        </div>
+        <p style="color: var(--slate); margin-bottom: 12px;">
+          <strong>Date:</strong> ${formatDate(m.date)} | 
+          <strong>Duration:</strong> ${m.duration} minutes
+          ${m.recurring !== 'no' ? ` | <strong>Recurring:</strong> ${m.recurring}` : ''}
+        </p>
+        ${m.agenda ? `
+          <div style="margin-bottom: 16px;">
+            <strong style="color: var(--navy);">Agenda:</strong>
+            <p style="color: var(--slate); margin-top: 8px;">${m.agenda}</p>
+          </div>
+        ` : ''}
+        ${m.notes ? `
+          <div style="margin-bottom: 16px;">
+            <strong style="color: var(--navy);">Notes:</strong>
+            <p style="color: var(--slate); margin-top: 8px;">${m.notes}</p>
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+/* ==========================================
+   REVIEWS RENDERING
+   ========================================== */
+
+function renderReviews() {
+  populateReviewEmployeeSelect();
+  renderReviewsList();
+}
+
+function populateReviewEmployeeSelect() {
+  const select = document.getElementById('review-employee-select');
+  select.innerHTML = '<option value="">Select Employee</option>' +
+    AppState.employees.map(e => 
+      `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+    ).join('');
+}
+
+function renderReviewsList() {
+  const container = document.getElementById('reviews-list');
+  
+  if (AppState.reviews.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">No reviews generated yet</div>
+        <p style="color: var(--slate);">Select an employee and date range above to generate an evidence-based review</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = AppState.reviews.map(r => {
+    const employee = AppState.employees.find(e => e.id === r.employeeId);
+    const employeeName = employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown';
+    
+    return `
+      <div class="card mb-4">
+        <div class="card-header">
+          <h3 class="card-title">Performance Review: ${employeeName}</h3>
+          <span class="card-badge">${formatDate(r.startDate)} - ${formatDate(r.endDate)}</span>
+        </div>
+        
+        <div style="background: var(--gold-pale); padding: 24px; border-radius: var(--radius); margin-bottom: 24px;">
+          <h4 style="margin-bottom: 16px; color: var(--navy);">Auto-Generated Summary</h4>
+          <p style="color: var(--slate); line-height: 1.7;">${r.summary}</p>
+        </div>
+        
+        ${r.wins && r.wins.length > 0 ? `
+          <div style="margin-bottom: 24px;">
+            <h4 style="margin-bottom: 12px; color: var(--success);">🏆 Key Wins (${r.wins.length})</h4>
+            <ul style="margin-left: 24px; color: var(--slate); line-height: 1.8;">
+              ${r.wins.map(w => `
+                <li>${w.content} <span style="color: var(--slate-light); font-size: 0.9rem;">[${formatDate(w.date)}]</span></li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+        
+        ${r.concerns && r.concerns.length > 0 ? `
+          <div style="margin-bottom: 24px;">
+            <h4 style="margin-bottom: 12px; color: var(--warning);">⚠️ Areas of Concern (${r.concerns.length})</h4>
+            <ul style="margin-left: 24px; color: var(--slate); line-height: 1.8;">
+              ${r.concerns.map(c => `
+                <li>${c.content} <span style="color: var(--slate-light); font-size: 0.9rem;">[${formatDate(c.date)}]</span></li>
+              `).join('')}
+            </ul>
+          </div>
+        ` : ''}
+        
+        ${r.goals && r.goals.length > 0 ? `
+          <div style="margin-bottom: 24px;">
+            <h4 style="margin-bottom: 12px; color: var(--info);">🎯 Goal Achievement</h4>
+            ${r.goals.map(g => `
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <span style="color: var(--navy); font-weight: 600;">${g.title}</span>
+                  <span style="color: var(--slate);">${g.progress}%</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-fill" style="width: ${g.progress}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        
+        <div style="border-top: 2px solid var(--ivory-dark); padding-top: 24px;">
+          <p style="color: var(--slate-light); font-size: 0.9rem;">
+            <strong>Generated:</strong> ${formatDate(r.generatedAt)} | 
+            <strong>Interactions Analyzed:</strong> ${r.interactionCount}
+          </p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function generateReview() {
+  const employeeId = document.getElementById('review-employee-select').value;
+  const startDate = document.getElementById('review-start-date').value;
+  const endDate = document.getElementById('review-end-date').value;
+  
+  if (!employeeId || !startDate || !endDate) {
+    showToast('Please select employee and date range', 'error');
+    return;
+  }
+  
+  const employee = AppState.employees.find(e => e.id === employeeId);
+  
+  // Get interactions in date range
+  const interactions = AppState.interactions.filter(i => 
+    i.employeeId === employeeId &&
+    i.date >= startDate &&
+    i.date <= endDate
+  );
+  
+  const wins = interactions.filter(i => i.category === 'win');
+  const concerns = interactions.filter(i => i.category === 'concern');
+  const feedback = interactions.filter(i => i.category === 'feedback');
+  
+  // Get goals
+  const goals = AppState.goals.filter(g => g.employeeId === employeeId);
+  
+  // Generate summary
+  const summary = `
+    Review period: ${formatDate(startDate)} to ${formatDate(endDate)}. 
+    ${employee.firstName} demonstrated strong performance with ${wins.length} documented wins, 
+    ${concerns.length} areas identified for development, and ${feedback.length} coaching interactions. 
+    ${goals.filter(g => g.status === 'completed').length} of ${goals.length} goals achieved during this period.
+    Overall interaction frequency: ${interactions.length} logged touchpoints over ${Math.round((new Date(endDate) - new Date(startDate)) / (24 * 60 * 60 * 1000))} days.
+  `.trim();
+  
+  const review = {
+    id: generateId(),
+    employeeId,
+    startDate,
+    endDate,
+    summary,
+    wins: wins.map(w => ({ content: w.content, date: w.date })),
+    concerns: concerns.map(c => ({ content: c.content, date: c.date })),
+    goals: goals.map(g => ({ title: g.title, progress: g.progress, status: g.status })),
+    interactionCount: interactions.length,
+    generatedAt: new Date().toISOString()
+  };
+  
+  AppState.reviews.push(review);
+  saveData('reviews');
+  
+  addAuditEntry(`Generated review for ${employee.firstName} ${employee.lastName}`, 'review', {
+    employeeId,
+    period: `${startDate} to ${endDate}`
+  });
+  
+  showToast('Review generated successfully', 'success');
+  renderReviewsList();
+}
+
+/* ==========================================
+   ANALYTICS RENDERING (LAYER 3: CHARTS)
+   ========================================== */
+
+function renderAnalytics() {
+  renderInteractionTrendChart();
+  renderGoalStatusChart();
+  renderTeamHealthRadar();
+  renderAnalyticsMetrics();
+}
+
+function renderInteractionTrendChart() {
+  const ctx = document.getElementById('interactionTrendChart');
+  if (!ctx) return;
+  
+  // Get last 6 months of data
+  const months = [];
+  const data = [];
+  const now = new Date();
+  
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+    
+    const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+    const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    
+    const count = AppState.interactions.filter(i => {
+      const interactionDate = new Date(i.date);
+      return interactionDate >= monthStart && interactionDate <= monthEnd;
+    }).length;
+    
+    data.push(count);
+  }
+  
+  if (window.interactionChart) {
+    window.interactionChart.destroy();
+  }
+  
+  window.interactionChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Interactions',
+        data: data,
+        backgroundColor: 'rgba(201,168,76,0.8)',
+        borderColor: 'rgba(201,168,76,1)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            font: { family: 'Inter' },
+            color: '#6B7280'
+          },
+          grid: {
+            color: 'rgba(201,168,76,0.1)'
+          }
+        },
+        x: {
+          ticks: {
+            font: { family: 'Inter' },
+            color: '#6B7280'
+          },
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderGoalStatusChart() {
+  const ctx = document.getElementById('goalStatusChart');
+  if (!ctx) return;
+  
+  const onTrack = AppState.goals.filter(g => g.status === 'on_track').length;
+  const atRisk = AppState.goals.filter(g => g.status === 'at_risk').length;
+  const blocked = AppState.goals.filter(g => g.status === 'blocked').length;
+  const completed = AppState.goals.filter(g => g.status === 'completed').length;
+  
+  if (window.goalChart) {
+    window.goalChart.destroy();
+  }
+  
+  window.goalChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['On Track', 'At Risk', 'Blocked', 'Completed'],
+      datasets: [{
+        data: [onTrack, atRisk, blocked, completed],
+        backgroundColor: [
+          'rgba(39,174,96,0.8)',
+          'rgba(212,131,26,0.8)',
+          'rgba(192,57,43,0.8)',
+          'rgba(201,168,76,0.8)'
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            font: { family: 'Inter' },
+            color: '#6B7280'
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderTeamHealthRadar() {
+  const ctx = document.getElementById('teamHealthRadar');
+  if (!ctx) return;
+  
+  // Calculate average scores across dimensions
+  const dimensions = [
+    'Interaction Frequency',
+    'Goal Progress',
+    'Win/Concern Ratio',
+    '1:1 Cadence',
+    'Overall Health'
+  ];
+  
+  const scores = [
+    calculateAverageInteractionFrequency(),
+    calculateAverageGoalProgress(),
+    calculateAverageWinConcernRatio(),
+    calculateAverage1on1Cadence(),
+    calculateAverageTeamHealth()
+  ];
+  
+  if (window.radarChart) {
+    window.radarChart.destroy();
+  }
+  
+  window.radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: dimensions,
+      datasets: [{
+        label: 'Team Average',
+        data: scores,
+        backgroundColor: 'rgba(201,168,76,0.2)',
+        borderColor: 'rgba(201,168,76,1)',
+        pointBackgroundColor: 'rgba(201,168,76,1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(201,168,76,1)',
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        r: {
+          beginAtZero: true,
+          max: 100,
+          ticks: {
+            font: { family: 'Inter' },
+            color: '#6B7280',
+            stepSize: 20
+          },
+          grid: {
+            color: 'rgba(201,168,76,0.1)'
+          },
+          pointLabels: {
+            font: { family: 'Inter', size: 11 },
+            color: '#0D1B2A'
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false }
+      }
+    }
+  });
+}
+
+function calculateAverageInteractionFrequency() {
+  if (AppState.employees.length === 0) return 0;
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const avgPerEmployee = AppState.employees.reduce((sum, emp) => {
+    const count = AppState.interactions.filter(i => 
+      i.employeeId === emp.id && new Date(i.date) >= thirtyDaysAgo
+    ).length;
+    return sum + Math.min((count / 30) * 100, 100);
+  }, 0) / AppState.employees.length;
+  
+  return Math.round(avgPerEmployee);
+}
+
+function calculateAverageGoalProgress() {
+  if (AppState.goals.length === 0) return 0;
+  const total = AppState.goals.reduce((sum, g) => sum + (g.progress || 0), 0);
+  return Math.round(total / AppState.goals.length);
+}
+
+function calculateAverageWinConcernRatio() {
+  const wins = AppState.interactions.filter(i => i.category === 'win').length;
+  const concerns = AppState.interactions.filter(i => i.category === 'concern').length;
+  if (concerns === 0) return wins > 0 ? 100 : 0;
+  const ratio = wins / concerns;
+  return Math.min(Math.round((ratio / 5) * 100), 100);
+}
+
+function calculateAverage1on1Cadence() {
+  if (AppState.employees.length === 0) return 0;
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const avgMeetings = AppState.employees.reduce((sum, emp) => {
+    const count = AppState.meetings.filter(m => 
+      m.employeeId === emp.id && new Date(m.date) >= thirtyDaysAgo
+    ).length;
+    return sum + Math.min((count / 2) * 100, 100);
+  }, 0) / AppState.employees.length;
+  
+  return Math.round(avgMeetings);
+}
+
+function renderAnalyticsMetrics() {
+  const tbody = document.getElementById('analytics-metrics-body');
+  
+  const metrics = [
+    { name: 'Average Health Score', value: calculateAverageTeamHealth(), target: 80 },
+    { name: 'Interactions/Employee/Month', value: Math.round(AppState.interactions.length / Math.max(AppState.employees.length, 1)), target: 8 },
+    { name: 'Goal Completion Rate', value: Math.round((AppState.goals.filter(g => g.status === 'completed').length / Math.max(AppState.goals.length, 1)) * 100) + '%', target: '80%' },
+    { name: '1:1 Meeting Frequency', value: Math.round(AppState.meetings.length / Math.max(AppState.employees.length, 1)) + '/employee', target: '2/employee' },
+    { name: 'Win/Concern Ratio', value: (AppState.interactions.filter(i => i.category === 'win').length / Math.max(AppState.interactions.filter(i => i.category === 'concern').length, 1)).toFixed(2), target: '5.0' }
+  ];
+  
+  tbody.innerHTML = metrics.map(m => `
+    <tr>
+      <td style="font-weight: 600;">${m.name}</td>
+      <td>${m.value}</td>
+      <td>${m.target}</td>
+    </tr>
+  `).join('');
+}
+
+/* ==========================================
+   ADMIN PAGE RENDERING
+   ========================================== */
+
+function renderAdmin() {
+  populateErasureSelect();
+  renderAuditLog();
+  loadSettings();
+}
+
+function populateErasureSelect() {
+  const select = document.getElementById('erasure-employee');
+  select.innerHTML = '<option value="">Select Employee</option>' +
+    AppState.employees.map(e => 
+      `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+    ).join('');
+}
+
+function renderAuditLog() {
+  const container = document.getElementById('audit-trail');
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  const recentAudits = AppState.auditLog
+    .filter(a => new Date(a.timestamp) >= thirtyDaysAgo)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 50);
+  
+  if (recentAudits.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-text">No audit events logged</div>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = recentAudits.map(a => `
+    <div style="padding: 12px; border-bottom: 1px solid var(--ivory-dark);">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+        <strong style="color: var(--navy); font-size: 0.9rem;">${a.action}</strong>
+        <span style="color: var(--slate-light); font-size: 0.85rem;">${formatDate(a.timestamp)}</span>
+      </div>
+      <div style="color: var(--slate); font-size: 0.85rem;">Type: ${a.type}</div>
+    </div>
+  `).join('');
+}
+
+function loadSettings() {
+  document.getElementById('company-name').value = AppState.settings.companyName;
+  document.getElementById('fiscal-year-start').value = AppState.settings.fiscalYearStart;
+  document.getElementById('retention-years').value = AppState.settings.retentionYears;
+}
+
+function saveSettings() {
+  AppState.settings.companyName = document.getElementById('company-name').value;
+  AppState.settings.fiscalYearStart = parseInt(document.getElementById('fiscal-year-start').value);
+  AppState.settings.retentionYears = parseInt(document.getElementById('retention-years').value);
+  
+  saveData('settings');
+  addAuditEntry('System settings updated', 'admin');
+  showToast('Settings saved successfully', 'success');
+}
+
+function checkRetention() {
+  const retentionYears = AppState.settings.retentionYears;
+  const cutoffDate = new Date();
+  cutoffDate.setFullYear(cutoffDate.getFullYear() - retentionYears);
+  
+  const oldInteractions = AppState.interactions.filter(i => new Date(i.date) < cutoffDate);
+  const oldMeetings = AppState.meetings.filter(m => new Date(m.date) < cutoffDate);
+  
+  if (oldInteractions.length === 0 && oldMeetings.length === 0) {
+    showToast('All data within retention period', 'success');
+  } else {
+    const message = `Found ${oldInteractions.length} interactions and ${oldMeetings.length} meetings older than ${retentionYears} years. These should be archived or deleted per GDPR compliance.`;
+    showToast(message, 'warning');
+  }
+}
+
+function eraseEmployeeData() {
+  const employeeId = document.getElementById('erasure-employee').value;
+  
+  if (!employeeId) {
+    showToast('Please select an employee', 'error');
+    return;
+  }
+  
+  const employee = AppState.employees.find(e => e.id === employeeId);
+  
+  if (!confirm(`⚠️ GDPR DATA ERASURE\n\nThis will permanently delete ALL data for ${employee.firstName} ${employee.lastName}, including:\n\n• Employee profile\n• All interactions\n• All goals\n• All meetings\n• All reviews\n\nThis action CANNOT be undone.\n\nAre you absolutely sure?`)) {
+    return;
+  }
+  
+  // Remove all data
+  AppState.employees = AppState.employees.filter(e => e.id !== employeeId);
+  AppState.interactions = AppState.interactions.filter(i => i.employeeId !== employeeId);
+  AppState.goals = AppState.goals.filter(g => g.employeeId !== employeeId);
+  AppState.meetings = AppState.meetings.filter(m => m.employeeId !== employeeId);
+  AppState.reviews = AppState.reviews.filter(r => r.employeeId !== employeeId);
+  
+  // Save all
+  saveData('employees');
+  saveData('interactions');
+  saveData('goals');
+  saveData('meetings');
+  saveData('reviews');
+  
+  addAuditEntry(`GDPR erasure: ${employee.firstName} ${employee.lastName}`, 'gdpr', { employeeId });
+  
+  showToast('Employee data erased per GDPR right to erasure', 'success');
+  
+  // Refresh page
+  setTimeout(() => {
+    renderCurrentPage();
+    document.getElementById('erasure-employee').value = '';
+  }, 1500);
+}
+
+/* ==========================================
+   MODAL MANAGEMENT
+   ========================================== */
+
+function openModal(modalName) {
+  const modal = document.getElementById(`modal-${modalName}`);
+  if (modal) {
+    modal.classList.add('active');
+    
+    // Populate employee selects when modal opens
+    if (modalName === 'add-interaction') {
+      const select = document.getElementById('interaction-employee-select');
+      select.innerHTML = '<option value="">Select Employee</option>' +
+        AppState.employees.map(e => 
+          `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+        ).join('');
+      
+      // Set default date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.querySelector('#form-add-interaction input[name="date"]').value = today;
+    }
+    
+    if (modalName === 'add-goal') {
+      const select = document.getElementById('goal-employee-select');
+      select.innerHTML = '<option value="">Select Employee</option>' +
+        AppState.employees.map(e => 
+          `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+        ).join('');
+    }
+    
+    if (modalName === 'add-meeting') {
+      const select = document.getElementById('meeting-employee-select-modal');
+      select.innerHTML = '<option value="">Select Employee</option>' +
+        AppState.employees.map(e => 
+          `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+        ).join('');
+    }
+  }
+}
+
+function closeModal(modalName) {
+  const modal = document.getElementById(`modal-${modalName}`);
+  if (modal) {
+    modal.classList.remove('active');
+    
+    // Reset form
+    const form = modal.querySelector('form');
+    if (form) form.reset();
+  }
+}
+
+// Close modal on background click
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) {
+    e.target.classList.remove('active');
+  }
+});
+
+/* ==========================================
+   FORM SUBMISSIONS
+   ========================================== */
+
+function addEmployee(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  const employee = {
+    id: generateId(),
+    firstName: formData.get('firstName'),
+    lastName: formData.get('lastName'),
+    email: formData.get('email'),
+    title: formData.get('title'),
+    department: formData.get('department'),
+    startDate: formData.get('startDate'),
+    status: formData.get('status'),
+    createdAt: new Date().toISOString()
+  };
+  
+  AppState.employees.push(employee);
+  saveData('employees');
+  
+  addAuditEntry(`Added employee: ${employee.firstName} ${employee.lastName}`, 'employee', { employeeId: employee.id });
+  
+  closeModal('add-employee');
+  showToast('Employee added successfully', 'success');
+  
+  // Refresh current page
+  renderCurrentPage();
+  populateEmployeeSelects();
+}
+
+function addInteraction(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  const interaction = {
+    id: generateId(),
+    employeeId: formData.get('employeeId'),
+    category: formData.get('category'),
+    date: formData.get('date'),
+    time: formData.get('time') || '',
+    content: formData.get('content'),
+    author: 'current_user', // In a real app, this would be the logged-in user
+    createdAt: new Date().toISOString()
+  };
+  
+  AppState.interactions.push(interaction);
+  saveData('interactions');
+  
+  const employee = AppState.employees.find(e => e.id === interaction.employeeId);
+  addAuditEntry(`Logged ${interaction.category} for ${employee.firstName} ${employee.lastName}`, 'interaction', { interactionId: interaction.id });
+  
+  closeModal('add-interaction');
+  showToast('Interaction logged successfully', 'success');
+  
+  renderCurrentPage();
+}
+
+function addGoal(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  const goal = {
+    id: generateId(),
+    employeeId: formData.get('employeeId'),
+    title: formData.get('title'),
+    description: formData.get('description'),
+    status: formData.get('status'),
+    startDate: formData.get('startDate'),
+    targetDate: formData.get('targetDate'),
+    progress: parseInt(formData.get('progress')) || 0,
+    createdAt: new Date().toISOString()
+  };
+  
+  AppState.goals.push(goal);
+  saveData('goals');
+  
+  const employee = AppState.employees.find(e => e.id === goal.employeeId);
+  addAuditEntry(`Added goal for ${employee.firstName} ${employee.lastName}`, 'goal', { goalId: goal.id });
+  
+  closeModal('add-goal');
+  showToast('Goal added successfully', 'success');
+  
+  renderCurrentPage();
+}
+
+function addMeeting(event) {
+  event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
+  
+  const meeting = {
+    id: generateId(),
+    employeeId: formData.get('employeeId'),
+    date: formData.get('date'),
+    duration: parseInt(formData.get('duration')),
+    agenda: formData.get('agenda'),
+    recurring: formData.get('recurring'),
+    notes: '',
+    createdAt: new Date().toISOString()
+  };
+  
+  AppState.meetings.push(meeting);
+  saveData('meetings');
+  
+  const employee = AppState.employees.find(e => e.id === meeting.employeeId);
+  addAuditEntry(`Scheduled 1:1 with ${employee.firstName} ${employee.lastName}`, 'meeting', { meetingId: meeting.id });
+  
+  closeModal('add-meeting');
+  showToast('Meeting scheduled successfully', 'success');
+  
+  renderCurrentPage();
+}
+
+/* ==========================================
+   EXPORT / IMPORT FUNCTIONS
+   ========================================== */
+
+function exportToJSON() {
+  const data = {
+    version: '1.0',
+    exportDate: new Date().toISOString(),
+    employees: AppState.employees,
+    interactions: AppState.interactions,
+    goals: AppState.goals,
+    meetings: AppState.meetings,
+    reviews: AppState.reviews,
+    settings: AppState.settings
+  };
+  
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `aap-hris-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  
+  addAuditEntry('Data exported to JSON', 'export');
+  showToast('Data exported successfully', 'success');
+}
+
+function importFromJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      
+      if (!confirm('⚠️ Import will REPLACE all current data. Continue?')) {
+        return;
+      }
+      
+      AppState.employees = data.employees || [];
+      AppState.interactions = data.interactions || [];
+      AppState.goals = data.goals || [];
+      AppState.meetings = data.meetings || [];
+      AppState.reviews = data.reviews || [];
+      AppState.settings = data.settings || AppState.settings;
+      
+      saveData('employees');
+      saveData('interactions');
+      saveData('goals');
+      saveData('meetings');
+      saveData('reviews');
+      saveData('settings');
+      
+      addAuditEntry('Data imported from JSON', 'import');
+      showToast('Data imported successfully', 'success');
+      
+      setTimeout(() => window.location.reload(), 1500);
+    } catch (error) {
+      console.error('Import error:', error);
+      showToast('Error importing data. Invalid file format.', 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetDefaults() {
+  if (!confirm('⚠️ This will DELETE ALL DATA and cannot be undone. Are you sure?')) {
+    return;
+  }
+  
+  if (!confirm('⚠️ FINAL WARNING: All employees, interactions, goals, meetings, and reviews will be permanently deleted. Continue?')) {
+    return;
+  }
+  
+  // Clear all data
+  AppState.employees = [];
+  AppState.interactions = [];
+  AppState.goals = [];
+  AppState.meetings = [];
+  AppState.reviews = [];
+  AppState.auditLog = [];
+  
+  // Clear localStorage
+  Object.keys(STORAGE_KEYS).forEach(key => {
+    localStorage.removeItem(STORAGE_KEYS[key]);
+  });
+  
+  addAuditEntry('System reset - all data cleared', 'system');
+  showToast('All data cleared. Reloading...', 'success');
+  
+  setTimeout(() => window.location.reload(), 1500);
+}
+
+function exportToPDF() {
+  showToast('PDF export requires additional libraries. Use browser Print to PDF for now.', 'info');
+  setTimeout(() => window.print(), 500);
+}
+
+function emailResults() {
+  const employee = AppState.employees[0];
+  const subject = 'AAP HRIS Report';
+  const body = `Team Size: ${AppState.employees.length}\nInteractions: ${AppState.interactions.length}\nGoals: ${AppState.goals.length}`;
+  
+  const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailto;
+  
+  showToast('Opening email client...', 'info');
+}
+
+function generateAllReports() {
+  showToast('Report generation not yet implemented', 'info');
+}
+
+/* ==========================================
+   UTILITY FUNCTIONS
+   ========================================== */
+
+function generateId() {
+  return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function formatDate(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function truncateText(text, maxLength) {
+  if (text.length <= maxLength) return text;
+  return text.substr(0, maxLength) + '...';
+}
+
+function setDefaultDates() {
+  const today = new Date().toISOString().split('T')[0];
+  const firstDayOfYear = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+  
+  const reviewStartDate = document.getElementById('review-start-date');
+  const reviewEndDate = document.getElementById('review-end-date');
+  
+  if (reviewStartDate && reviewEndDate) {
+    reviewStartDate.value = firstDayOfYear;
+    reviewEndDate.value = today;
+  }
+}
+
+function populateEmployeeSelects() {
+  // This is called after adding/removing employees to update all dropdowns
+  const selects = [
+    'interaction-employee-filter',
+    'goal-employee-filter',
+    'meeting-employee-filter',
+    'review-employee-select'
+  ];
+  
+  selects.forEach(selectId => {
+    const select = document.getElementById(selectId);
+    if (select) {
+      const currentValue = select.value;
+      select.innerHTML = '<option value="">All Employees</option>' +
+        AppState.employees.map(e => 
+          `<option value="${e.id}">${e.firstName} ${e.lastName}</option>`
+        ).join('');
+      select.value = currentValue;
+    }
+  });
+}
+
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.style.background = 
+    type === 'success' ? 'var(--success)' :
+    type === 'error' ? 'var(--danger)' :
+    type === 'warning' ? 'var(--warning)' :
+    'var(--navy)';
+  
+  toast.classList.add('show');
+  
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3000);
+}
+
+/* ==========================================
+   APP INITIALIZATION
+   ========================================== */
+
+// Initialize app when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeApp);
+} else {
+  initializeApp();
+}
+
+
+// === GLOBAL SEARCH ===
+function globalSearch(query) {
+  if (!query || query.length < 2) return;
+  const q = query.toLowerCase();
+  const results = [];
+  const data = JSON.parse(localStorage.getItem('hrisData') || '{}');
+  if (data.employees) {
+    data.employees.forEach(e => {
+      if ((e.name||'').toLowerCase().includes(q) || (e.role||'').toLowerCase().includes(q) || (e.department||'').toLowerCase().includes(q)) {
+        results.push({ type: 'Employee', label: e.name + ' — ' + e.role, page: 'roster' });
+      }
+    });
+  }
+  if (results.length > 0) {
+    navigateTo(results[0].page);
+    showToast('Found ' + results.length + ' result(s)', 'info');
+  }
+}
+
+// === KEYBOARD SHORTCUTS ===
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey || e.metaKey) {
+    const shortcuts = { '1': 'dashboard', '2': 'roster', '3': 'interactions', '4': 'goals', '5': 'meetings', '6': 'reviews', '7': 'analytics' };
+    if (shortcuts[e.key]) { e.preventDefault(); navigateTo(shortcuts[e.key]); }
+    if (e.key === 'k') { e.preventDefault(); document.getElementById('search-global')?.focus(); }
+  }
+});
+
+// === NAV HEALTH SCORE UPDATE ===
+function updateNavHealth() {
+  try {
+    const score = calculateAverageTeamHealth ? calculateAverageTeamHealth() : null;
+    const el = document.getElementById('nav-health-score');
+    if (el && score !== null) {
+      el.textContent = 'Health ' + Math.round(score) + '%';
+      const pulse = document.getElementById('nav-health');
+      if (pulse) {
+        if (score >= 70) { pulse.style.background = 'rgba(16,185,129,0.12)'; pulse.style.color = '#10B981'; pulse.style.borderColor = 'rgba(16,185,129,0.25)'; }
+        else if (score >= 40) { pulse.style.background = 'rgba(245,158,11,0.12)'; pulse.style.color = '#F59E0B'; pulse.style.borderColor = 'rgba(245,158,11,0.25)'; }
+        else { pulse.style.background = 'rgba(239,68,68,0.12)'; pulse.style.color = '#EF4444'; pulse.style.borderColor = 'rgba(239,68,68,0.25)'; }
+      }
+    }
+  } catch(e) {}
+}
+setTimeout(updateNavHealth, 1500);
+
+</script>
+
+</body>
+</html>

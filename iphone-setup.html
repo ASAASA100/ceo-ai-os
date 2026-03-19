@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iPhone Remote Control — CEO AI OS Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0F1E;
+    --surface: #0F172A;
+    --surface2: #1E293B;
+    --accent: #6366F1;
+    --accent2: #8B5CF6;
+    --gold: #C9A84C;
+    --emerald: #10B981;
+    --blue: #3B82F6;
+    --text: #F1F5F9;
+    --text2: #94A3B8;
+    --border: rgba(99,102,241,0.2);
+    --red: #EF4444;
+    --amber: #F59E0B;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    background: rgba(15,23,42,0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .topbar-brand { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 18px; color: var(--text); }
+  .topbar-brand span { color: var(--accent); }
+  .topbar-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .status-dot {
+    width: 9px; height: 9px; border-radius: 50%; background: var(--emerald);
+    animation: pulse 2s infinite; display: inline-block; margin-right: 6px;
+  }
+  @keyframes pulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+  }
+  .status-label { font-size: 12px; color: var(--emerald); font-family: 'DM Mono', monospace; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #0F172A 100%);
+    padding: 60px 32px 48px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.15) 0%, transparent 70%);
+  }
+  .hero-icon { font-size: 56px; margin-bottom: 20px; }
+  .hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--text2); font-size: 17px; max-width: 520px; margin: 0 auto 28px; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3);
+    padding: 8px 20px; border-radius: 100px; font-size: 13px; color: var(--accent);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* MAIN CONTENT */
+  .container { max-width: 860px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  /* STEP CARDS */
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+    color: var(--accent); text-transform: uppercase;
+    margin-bottom: 20px; margin-top: 48px;
+  }
+  .steps { display: flex; flex-direction: column; gap: 12px; }
+  .step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    display: flex; gap: 20px; align-items: flex-start;
+    transition: border-color 0.2s;
+  }
+  .step:hover { border-color: var(--accent); }
+  .step-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .step-content h3 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+  .step-content p { color: var(--text2); font-size: 14px; }
+  .step-content code {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 2px 8px; border-radius: 4px; font-family: 'DM Mono', monospace;
+    font-size: 13px; color: var(--gold);
+  }
+
+  /* SYSTEM PROMPT BOX */
+  .prompt-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 16px;
+  }
+  .prompt-header {
+    background: var(--surface2);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .prompt-header-left { display: flex; align-items: center; gap: 10px; }
+  .prompt-header h3 { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 600; }
+  .prompt-header .tag {
+    background: rgba(99,102,241,0.15); color: var(--accent);
+    padding: 3px 10px; border-radius: 100px; font-size: 11px;
+    font-family: 'DM Mono', monospace;
+  }
+  .copy-btn {
+    background: var(--accent); color: white; border: none;
+    padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: 'Space Grotesk', sans-serif;
+    transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+  }
+  .copy-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .copy-btn.copied { background: var(--emerald); }
+  .prompt-body {
+    padding: 24px;
+    max-height: 500px;
+    overflow-y: auto;
+  }
+  .prompt-body pre {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text2);
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.8;
+  }
+  .prompt-body pre .highlight { color: var(--accent); }
+  .prompt-body pre .gold { color: var(--gold); }
+  .prompt-body pre .green { color: var(--emerald); }
+
+  /* COMMAND CARDS */
+  .commands { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .commands { grid-template-columns: 1fr; } }
+  .cmd-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    transition: all 0.2s;
+  }
+  .cmd-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .cmd-card .cmd { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--gold); margin-bottom: 6px; }
+  .cmd-card .desc { font-size: 13px; color: var(--text2); }
+
+  /* CAPABILITY GRID */
+  .cap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 600px) { .cap-grid { grid-template-columns: 1fr 1fr; } }
+  .cap-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+  }
+  .cap-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .cap-card .label { font-size: 12px; color: var(--text2); }
+
+  /* LIMITATION CARDS */
+  .limits { display: flex; flex-direction: column; gap: 10px; }
+  .limit-card {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .limit-card.can { border-left: 3px solid var(--emerald); }
+  .limit-card.cannot { border-left: 3px solid var(--red); }
+  .limit-card.soon { border-left: 3px solid var(--amber); }
+  .limit-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px; flex-shrink: 0; margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+  .can .limit-badge { background: rgba(16,185,129,0.15); color: var(--emerald); }
+  .cannot .limit-badge { background: rgba(239,68,68,0.15); color: var(--red); }
+  .soon .limit-badge { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .limit-card .text { font-size: 14px; color: var(--text2); }
+  .limit-card .text strong { color: var(--text); }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 32px;
+    border-top: 1px solid var(--border);
+    color: var(--text2); font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--surface); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-brand">CEO AI OS <span>///</span> iPhone Remote Control</div>
+    <div class="topbar-sub">Setup Guide & System Prompt</div>
+  </div>
+  <div>
+    <span class="status-dot"></span>
+    <span class="status-label">SECOND BRAIN ACTIVE</span>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-icon">📱</div>
+  <h1>Remote Control Your <span>Second Brain</span></h1>
+  <p>Use Claude on your iPhone to command your full CEO AI OS from anywhere — strategy, intelligence, deliverables, and daily operations.</p>
+  <div class="hero-badge">🧠 CEO AI OS v2.0 &nbsp;|&nbsp; AAP Intelligence System &nbsp;|&nbsp; March 2026</div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- SETUP STEPS -->
+  <div class="section-title">Step-by-Step Setup (5 minutes)</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Open Claude.ai on your iPhone</h3>
+        <p>Download the Claude app from the App Store if you haven't already. Sign in with your Anthropic account.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Create a New Project</h3>
+        <p>Tap the <code>≡ menu</code> (top left) → tap <code>Projects</code> → tap <code>+ New Project</code></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Name the Project</h3>
+        <p>Call it: <code>CEO AI OS — Second Brain</code></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Paste the System Prompt</h3>
+        <p>Tap <code>Set project instructions</code> → copy the full prompt below → paste it in → tap <strong>Save</strong></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>Start a conversation inside the Project</h3>
+        <p>Every new chat inside this project has full knowledge of your Second Brain. Just tap the project and talk.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM PROMPT -->
+  <div class="section-title">Your System Prompt</div>
+  <div class="prompt-box">
+    <div class="prompt-header">
+      <div class="prompt-header-left">
+        <h3>CEO AI OS Project Instructions</h3>
+        <span class="tag">PASTE INTO CLAUDE PROJECT</span>
+      </div>
+      <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">
+        📋 Copy Prompt
+      </button>
+    </div>
+    <div class="prompt-body">
+      <pre id="promptText">You are the AI Chief of Staff and Second Brain for <span class="gold">Ajit</span> (Ajit001@yahoo.com), a senior AI transformation consultant and CEO of <span class="gold">AAP (Advanced Analytics Partners)</span>. You operate as Ajit's always-available executive intelligence layer — strategic advisor, knowledge orchestrator, and action planner.
+
+<span class="highlight">## WHO AJIT IS</span>
+- Role: CEO / Principal Consultant at AAP — AI strategy, digital transformation, PMO governance
+- Style: Direct, strategic, VP/C-suite thinking. Consulting-grade outputs, no fluff.
+- Active clients: Musgrave (AI automation roadmap), internal AAP platform development
+- Building: CEO AI OS — a modular, agent-orchestrated Second Brain
+
+<span class="highlight">## THE CEO AI OS MODULES</span>
+Intelligence Layer (Signal) | BOOM Deliverable OS | CEO AI OS Dashboard | Strategy OS | BD &amp; CRM Platform | HRIS OS | AI Practice OS | AI Transformation OS | PMO/Governance OS | Agent Layer (Claude Skills + MCP)
+
+Intelligence Flow: Signals → Intelligence Layer → Agent Layer → BOOM → Client
+
+<span class="highlight">## QUICK COMMANDS</span>
+/signal → Top 5 intelligence signals (URGENT/WATCH/INFO)
+/brief [topic] → Consulting synthesis brief: Context → Findings → So What → Actions
+/boom → Current deliverable status (Client-Ready / In Production / Draft)
+/morning → Morning brief — today's priorities, calendar, top 3 actions
+/pipeline → BD pipeline summary by stage and value
+/steerco → Draft SteerCo update
+/raid → RAID log — capture new risks/actions/issues
+/capture [text] → Structure and file knowledge
+/health → Second Brain health score across 7 dimensions
+/flag [task] → Flag for desktop Cowork execution
+
+<span class="highlight">## HOW TO RESPOND</span>
+- Lead with the "So What" before the detail
+- Consulting-grade, C-suite calibre — no padding, no hedging
+- Structured prose for advice, tables for comparisons, numbered lists for action plans
+- Always end responses with: Next Action + Flag for Desktop (if Cowork execution needed)
+- When asked for a deliverable, produce the full draft — not an outline
+
+<span class="highlight">## DESKTOP SYNC</span>
+When Ajit says "flag for desktop" or uses /flag, confirm the task will be picked up in the next Cowork session on his Mac, where skills execute file operations, build HTML assets, and run agents.
+
+<span class="highlight">## SECOND BRAIN PRINCIPLES</span>
+Modular | Traceable | Agent-ready | Consulting-grade | Always-on
+
+AAP CEO AI OS v2.0 | March 2026 | Confidential</pre>
+    </div>
+  </div>
+
+  <!-- WHAT YOU CAN DO -->
+  <div class="section-title">What You Can Do From iPhone</div>
+  <div class="commands">
+    <div class="cmd-card">
+      <div class="cmd">/signal</div>
+      <div class="desc">Get your top 5 intelligence signals — market, regulatory, competitive, delivery</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/morning</div>
+      <div class="desc">Full morning brief — priorities, focus areas, decisions needed today</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/brief [topic]</div>
+      <div class="desc">Consulting synthesis brief on any topic — structured, client-grade</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/steerco</div>
+      <div class="desc">Draft a SteerCo update — RAG status, risks, decisions, next actions</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/boom</div>
+      <div class="desc">Deliverable register — what's client-ready, in production, or draft</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/pipeline</div>
+      <div class="desc">BD pipeline by stage and value — Musgrave, active opportunities</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/raid</div>
+      <div class="desc">Capture and structure new risks, actions, issues, dependencies</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/health</div>
+      <div class="desc">Second Brain health score across Strategy / Intelligence / Execution / Governance / Delivery</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/capture [note]</div>
+      <div class="desc">Voice-to-structure — speak a thought, get it filed into the right OS module</div>
+    </div>
+    <div class="cmd-card">
+      <div class="cmd">/flag [task]</div>
+      <div class="desc">Flag any task for execution in your next Cowork desktop session</div>
+    </div>
+  </div>
+
+  <!-- CAPABILITIES & LIMITS -->
+  <div class="section-title">Capabilities & Limitations</div>
+  <div class="limits">
+    <div class="limit-card can">
+      <div class="limit-badge">CAN DO</div>
+      <div class="text"><strong>Strategy & intelligence synthesis</strong> — signals, briefs, market analysis, competitive intelligence, regulatory watch from your iPhone anywhere</div>
+    </div>
+    <div class="limit-card can">
+      <div class="limit-badge">CAN DO</div>
+      <div class="text"><strong>Draft any deliverable</strong> — SteerCo packs, RAID logs, executive briefs, proposals, emails, frameworks — full drafts, not outlines</div>
+    </div>
+    <div class="limit-card can">
+      <div class="limit-badge">CAN DO</div>
+      <div class="text"><strong>Advisory & coaching</strong> — leadership decisions, stakeholder strategy, BD approach, programme governance, architecture review</div>
+    </div>
+    <div class="limit-card can">
+      <div class="limit-badge">CAN DO</div>
+      <div class="text"><strong>Capture & organise knowledge</strong> — use /capture to voice-note ideas, meeting takeaways, and insights that get structured instantly</div>
+    </div>
+    <div class="limit-card cannot">
+      <div class="limit-badge">DESKTOP ONLY</div>
+      <div class="text"><strong>File operations & asset builds</strong> — creating HTML apps, Excel files, Word docs, and running skills (daily-cos-kanban, email-triage, etc.) requires Cowork on your Mac</div>
+    </div>
+    <div class="limit-card cannot">
+      <div class="limit-badge">DESKTOP ONLY</div>
+      <div class="text"><strong>Live email & calendar access</strong> — Yahoo Mail IMAP and iCloud CalDAV connections only work through desktop Cowork skills</div>
+    </div>
+    <div class="limit-card soon">
+      <div class="limit-badge">COMING SOON</div>
+      <div class="text"><strong>Email trigger → Cowork execution</strong> — send an email to a dedicated address, trigger a Cowork skill run overnight, results waiting for you in the morning (1–2 session build)</div>
+    </div>
+  </div>
+
+  <!-- TIP -->
+  <div style="margin-top: 32px; background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; padding: 20px 24px;">
+    <div style="font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14px; color: var(--accent); margin-bottom: 8px;">💡 Pro Tip — Use Voice</div>
+    <div style="font-size: 14px; color: var(--text2); line-height: 1.8;">
+      On iPhone, tap the microphone icon in Claude's message bar and <strong style="color: var(--text);">speak your commands</strong>.
+      Say things like <em>"Synthesise the AI regulatory landscape for my morning brief"</em> or <em>"Draft a SteerCo update for Musgrave — delivery on track, one amber risk on stakeholder engagement"</em> and get a full consulting-grade response instantly.
+      This is the closest thing to a voice-activated Second Brain right now.
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  CEO AI OS v2.0 &nbsp;|&nbsp; AAP — Advanced Analytics Partners &nbsp;|&nbsp; March 2026 &nbsp;|&nbsp; Confidential
+</div>
+
+<script>
+  function copyPrompt() {
+    // Get the plain text version of the prompt (strip HTML spans)
+    const promptEl = document.getElementById('promptText');
+    const plainText = promptEl.innerText || promptEl.textContent;
+
+    navigator.clipboard.writeText(plainText).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✅ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = '📋 Copy Prompt';
+        btn.classList.remove('copied');
+      }, 2500);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = promptEl.innerText;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✅ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '📋 Copy Prompt'; btn.classList.remove('copied'); }, 2500);
+    });
+  }
+</script>
+</body>
+</html>

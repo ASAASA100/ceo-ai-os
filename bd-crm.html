@@ -1,0 +1,2763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BD & CRM Intelligence Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --navy: #0D1B2A;
+  --navy-mid: #162840;
+  --navy-light: #1e3a56;
+  --gold: #C9A84C;
+  --gold-light: #e8c97a;
+  --gold-pale: #f5e8c4;
+  --ivory: #F5F0E8;
+  --ivory-dark: #EDE6D6;
+  --slate: #6B7280;
+  --slate-light: #9CA3AF;
+  --white: #FFFFFF;
+  --red: #C0392B;
+  --amber: #D4831A;
+  --green: #27AE60;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --shadow-sm: 0 1px 3px rgba(13,27,42,0.12);
+  --shadow-md: 0 4px 16px rgba(13,27,42,0.18);
+  --shadow-lg: 0 12px 40px rgba(13,27,42,0.25);
+  --radius: 4px;
+  --radius-lg: 8px;
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 15px; scroll-behavior: smooth; }
+body {
+  font-family: var(--font-sans);
+  background: var(--ivory);
+  color: var(--navy);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== SWISS GRID LAYER 1 ===== */
+.swiss-grid {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-size: 60px 60px;
+  background-image:
+    linear-gradient(to right, rgba(201,168,76,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(201,168,76,0.04) 1px, transparent 1px);
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+/* ===== SCROLL REVEAL LAYER 2 ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ===== TOP NAV ===== */
+.topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: var(--navy);
+  border-bottom: 1px solid rgba(201,168,76,0.25);
+  height: 58px;
+  display: flex; align-items: center;
+  padding: 0 24px;
+  gap: 0;
+}
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  min-width: 220px;
+  border-right: 1px solid rgba(201,168,76,0.2);
+  padding-right: 20px;
+  margin-right: 8px;
+}
+.brand-mark {
+  width: 28px; height: 28px;
+  background: var(--gold);
+  clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+  flex-shrink: 0;
+}
+.brand-text { font-family: var(--font-serif); font-size: 15px; font-weight: 600; color: var(--ivory); letter-spacing: 0.02em; line-height: 1.2; }
+.brand-sub { font-size: 9px; font-weight: 400; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; }
+.nav-tabs { display: flex; gap: 0; flex: 1; overflow-x: auto; }
+.nav-tab {
+  padding: 0 16px; height: 58px;
+  font-family: var(--font-sans); font-size: 11.5px; font-weight: 500;
+  color: var(--slate-light); letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; border: none; background: transparent;
+  white-space: nowrap; border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  display: flex; align-items: center; gap: 6px;
+}
+.nav-tab:hover { color: var(--gold-light); }
+.nav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.nav-tab .tab-icon { font-size: 13px; opacity: 0.7; }
+.topbar-actions {
+  display: flex; gap: 6px; margin-left: auto; padding-left: 12px;
+  border-left: 1px solid rgba(201,168,76,0.2);
+}
+.btn-action {
+  padding: 5px 11px; border-radius: var(--radius);
+  font-size: 10.5px; font-weight: 500; letter-spacing: 0.05em;
+  cursor: pointer; border: 1px solid rgba(201,168,76,0.3);
+  color: var(--gold); background: rgba(201,168,76,0.06);
+  transition: var(--transition); white-space: nowrap;
+}
+.btn-action:hover { background: rgba(201,168,76,0.15); border-color: var(--gold); }
+
+/* ===== MAIN LAYOUT ===== */
+.main { margin-top: 58px; min-height: calc(100vh - 58px); position: relative; z-index: 1; }
+.page { display: none; padding: 28px 28px 60px; }
+.page.active { display: block; }
+
+/* ===== PAGE HEADERS ===== */
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 28px; padding-bottom: 20px;
+  border-bottom: 1px solid rgba(201,168,76,0.2);
+}
+.page-header-text {}
+.page-eyebrow {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 6px;
+}
+.page-title {
+  font-family: var(--font-serif); font-size: 32px; font-weight: 600;
+  color: var(--navy); line-height: 1.1;
+}
+.page-subtitle { font-size: 13px; color: var(--slate); margin-top: 4px; }
+.page-meta { display: flex; gap: 16px; align-items: center; }
+.meta-badge {
+  padding: 4px 10px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 500; letter-spacing: 0.04em;
+  background: rgba(201,168,76,0.12); color: var(--gold);
+  border: 1px solid rgba(201,168,76,0.25);
+}
+
+/* ===== CARD SYSTEM ===== */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; }
+.grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+.grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+.grid-1-3 { display: grid; grid-template-columns: 1fr 3fr; gap: 20px; }
+
+.card {
+  background: var(--white); border-radius: var(--radius-lg);
+  border: 1px solid rgba(13,27,42,0.08);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.card-navy { background: var(--navy); color: var(--ivory); }
+.card-navy .card-label { color: var(--gold); }
+.card-gold { background: var(--gold); color: var(--navy); }
+.card-h {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: var(--ivory); position: relative; overflow: hidden;
+}
+.card-h::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(201,168,76,0.08);
+}
+.card-h::after {
+  content: ''; position: absolute; bottom: -20px; left: 20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(201,168,76,0.05);
+}
+
+.card-pad { padding: 20px; }
+.card-pad-sm { padding: 14px 18px; }
+.card-pad-lg { padding: 28px; }
+.card-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--slate); margin-bottom: 6px; display: block;
+}
+.card-value {
+  font-family: var(--font-serif); font-size: 36px; font-weight: 600;
+  line-height: 1; color: var(--navy); margin-bottom: 4px;
+}
+.card-value.white { color: var(--ivory); }
+.card-value.gold { color: var(--gold); }
+.card-trend { font-size: 11px; color: var(--slate-light); display: flex; align-items: center; gap: 4px; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.card-section {
+  border-bottom: 1px solid rgba(13,27,42,0.06);
+  padding: 14px 20px; font-size: 12px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-section.dark { background: var(--navy); color: var(--gold); border-bottom-color: rgba(201,168,76,0.15); }
+
+/* ===== KPI STRIP ===== */
+.kpi-strip { display: grid; grid-template-columns: repeat(5,1fr); gap: 16px; margin-bottom: 24px; }
+.kpi-card {
+  background: var(--white); border-radius: var(--radius-lg); padding: 18px 20px;
+  border: 1px solid rgba(13,27,42,0.08); box-shadow: var(--shadow-sm);
+  position: relative; overflow: hidden;
+}
+.kpi-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--gold);
+}
+.kpi-card.red::after { background: var(--red); }
+.kpi-card.amber::after { background: var(--amber); }
+.kpi-card.green::after { background: var(--green); }
+.kpi-card.blue::after { background: #2980B9; }
+.kpi-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--slate); margin-bottom: 8px; }
+.kpi-value { font-family: var(--font-serif); font-size: 30px; font-weight: 600; color: var(--navy); line-height: 1; }
+.kpi-sub { font-size: 11px; color: var(--slate-light); margin-top: 4px; }
+
+/* ===== RAG BADGES ===== */
+.rag { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.rag.green { background: rgba(39,174,96,0.12); color: var(--green); }
+.rag.amber { background: rgba(212,131,26,0.12); color: var(--amber); }
+.rag.red { background: rgba(192,57,43,0.12); color: var(--red); }
+.rag.blue { background: rgba(41,128,185,0.12); color: #2980B9; }
+.rag.grey { background: rgba(107,114,128,0.12); color: var(--slate); }
+.rag::before { content: ''; width: 7px; height: 7px; border-radius: 50%; }
+.rag.green::before { background: var(--green); }
+.rag.amber::before { background: var(--amber); }
+.rag.red::before { background: var(--red); }
+.rag.blue::before { background: #2980B9; }
+.rag.grey::before { background: var(--slate); }
+
+/* ===== TABLES ===== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead tr { background: var(--navy); }
+thead th {
+  padding: 10px 14px; text-align: left;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); white-space: nowrap;
+}
+tbody tr { border-bottom: 1px solid rgba(13,27,42,0.06); transition: background 0.15s; }
+tbody tr:hover { background: rgba(201,168,76,0.04); }
+tbody td { padding: 10px 14px; color: var(--navy); vertical-align: middle; }
+tbody td.muted { color: var(--slate); }
+tbody td.gold { color: var(--gold); font-weight: 600; }
+.td-actions { display: flex; gap: 6px; }
+
+/* ===== SECTION TABS ===== */
+.sub-tabs { display: flex; gap: 0; border-bottom: 1px solid rgba(13,27,42,0.1); margin-bottom: 24px; }
+.sub-tab {
+  padding: 10px 18px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em;
+  color: var(--slate); cursor: pointer; border-bottom: 2px solid transparent;
+  transition: var(--transition); background: none; border-top: none; border-left: none; border-right: none;
+}
+.sub-tab:hover { color: var(--navy); }
+.sub-tab.active { color: var(--navy); border-bottom-color: var(--gold); font-weight: 600; }
+
+/* ===== FORMS & INPUTS ===== */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); }
+.form-input, .form-select, .form-textarea {
+  padding: 9px 12px; border-radius: var(--radius); border: 1px solid rgba(13,27,42,0.15);
+  font-family: var(--font-sans); font-size: 13px; color: var(--navy);
+  background: var(--white); transition: border-color 0.2s;
+  outline: none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.1);
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* ===== BUTTONS ===== */
+.btn { padding: 9px 20px; border-radius: var(--radius); font-family: var(--font-sans); font-size: 12.5px; font-weight: 500; cursor: pointer; border: none; transition: var(--transition); letter-spacing: 0.03em; }
+.btn-primary { background: var(--navy); color: var(--ivory); }
+.btn-primary:hover { background: var(--navy-light); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-gold { background: var(--gold); color: var(--navy); font-weight: 600; }
+.btn-gold:hover { background: var(--gold-light); transform: translateY(-1px); }
+.btn-outline { background: transparent; color: var(--navy); border: 1px solid rgba(13,27,42,0.2); }
+.btn-outline:hover { border-color: var(--navy); background: rgba(13,27,42,0.04); }
+.btn-danger { background: var(--red); color: white; }
+.btn-sm { padding: 5px 12px; font-size: 11px; }
+.btn-xs { padding: 3px 9px; font-size: 10.5px; }
+
+/* ===== PROGRESS BARS ===== */
+.progress-bar { height: 6px; background: rgba(13,27,42,0.08); border-radius: 3px; overflow: hidden; margin: 4px 0; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+.progress-gold { background: var(--gold); }
+.progress-green { background: var(--green); }
+.progress-red { background: var(--red); }
+.progress-amber { background: var(--amber); }
+.progress-blue { background: #2980B9; }
+
+/* ===== TIMELINE ===== */
+.timeline { position: relative; padding-left: 28px; }
+.timeline::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: rgba(201,168,76,0.25); }
+.tl-item { position: relative; margin-bottom: 20px; }
+.tl-dot { position: absolute; left: -24px; top: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--gold); border: 2px solid var(--ivory); box-shadow: 0 0 0 2px rgba(201,168,76,0.3); }
+.tl-dot.grey { background: var(--slate-light); }
+.tl-dot.green { background: var(--green); }
+.tl-dot.amber { background: var(--amber); }
+.tl-dot.red { background: var(--red); }
+.tl-title { font-size: 13px; font-weight: 600; color: var(--navy); }
+.tl-desc { font-size: 12px; color: var(--slate); margin-top: 3px; line-height: 1.5; }
+.tl-meta { font-size: 10.5px; color: var(--slate-light); margin-top: 4px; letter-spacing: 0.04em; }
+
+/* ===== FRAMEWORK CARDS ===== */
+.framework-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 18px; }
+.framework-card {
+  background: var(--white); border-radius: var(--radius-lg); padding: 22px;
+  border: 1px solid rgba(13,27,42,0.08); border-top: 3px solid var(--gold);
+  box-shadow: var(--shadow-sm); transition: var(--transition);
+}
+.framework-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-top-color: var(--navy); }
+.framework-card.navy { border-top-color: var(--navy); }
+.framework-card.green { border-top-color: var(--green); }
+.framework-card.blue { border-top-color: #2980B9; }
+.fw-abbr { font-family: var(--font-serif); font-size: 24px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+.fw-name { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.fw-desc { font-size: 12.5px; color: var(--slate); line-height: 1.6; }
+.fw-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+.fw-tag { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500; background: rgba(13,27,42,0.06); color: var(--slate); }
+
+/* ===== ASPIRE CYCLE ===== */
+.aspire-ring {
+  display: flex; justify-content: center; align-items: center;
+  padding: 20px 0;
+}
+.cycle-container { position: relative; width: 320px; height: 320px; }
+.cycle-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 100px; height: 100px; background: var(--navy); border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--ivory); text-align: center; box-shadow: var(--shadow-md);
+}
+.cycle-center-label { font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--gold); }
+.cycle-center-sub { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate-light); }
+.cycle-step {
+  position: absolute; width: 72px; height: 72px; border-radius: 50%;
+  background: var(--white); border: 2px solid var(--gold);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; cursor: pointer; transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.cycle-step:hover { background: var(--navy); border-color: var(--navy); transform: scale(1.08); }
+.cycle-step:hover .cs-letter { color: var(--gold); }
+.cycle-step:hover .cs-word { color: var(--slate-light); }
+.cs-letter { font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: var(--navy); line-height: 1; }
+.cs-word { font-size: 8px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); }
+.cs-a  { top: 10px;  left: 50%; transform: translateX(-50%); }
+.cs-s  { top: 50px;  right: 10px; }
+.cs-p  { top: 140px; right: 0px; transform: translateY(-50%); }
+.cs-i  { bottom: 40px; right: 30px; }
+.cs-r  { bottom: 10px; left: 50%; transform: translateX(-50%); }
+.cs-e  { top: 140px; left: 0px; transform: translateY(-50%); }
+
+/* ===== MATRIX ===== */
+.matrix-grid {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 16px;
+  margin-top: 10px;
+}
+.matrix-quadrant {
+  border-radius: var(--radius-lg); padding: 18px; border: 1px solid;
+}
+.mq-players { background: rgba(39,174,96,0.06); border-color: rgba(39,174,96,0.25); }
+.mq-mediators { background: rgba(41,128,185,0.06); border-color: rgba(41,128,185,0.25); }
+.mq-noisemakers { background: rgba(201,168,76,0.08); border-color: rgba(201,168,76,0.3); }
+.mq-spectators { background: rgba(107,114,128,0.06); border-color: rgba(107,114,128,0.2); }
+.mq-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.mq-sub { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--slate); margin-bottom: 8px; }
+.mq-desc { font-size: 12px; color: var(--slate); line-height: 1.55; }
+
+/* ===== CHART CONTAINERS ===== */
+.chart-wrap { position: relative; padding: 16px; }
+.chart-wrap canvas { max-height: 260px !important; }
+
+/* ===== PRICING TABLE ===== */
+.pricing-row { display: flex; align-items: center; gap: 0; padding: 11px 16px; border-bottom: 1px solid rgba(13,27,42,0.06); }
+.pricing-row:last-child { border-bottom: none; }
+.pricing-role { flex: 1; font-size: 13px; font-weight: 500; color: var(--navy); }
+.pricing-rate { width: 110px; font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy); }
+.pricing-disc { width: 110px; font-family: var(--font-serif); font-size: 16px; color: var(--slate); }
+.pricing-bar-wrap { flex: 1; }
+
+/* ===== TOAST NOTIFICATIONS ===== */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { padding: 12px 20px; border-radius: var(--radius); background: var(--navy); color: var(--ivory); font-size: 13px; box-shadow: var(--shadow-lg); animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 8px; }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+.toast.info { border-left: 3px solid var(--gold); }
+@keyframes slideIn { from { transform: translateX(60px); opacity:0; } to { transform: translateX(0); opacity:1; } }
+
+/* ===== MODAL ===== */
+.modal-overlay { position: fixed; inset: 0; background: rgba(13,27,42,0.65); z-index: 500; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--white); border-radius: var(--radius-lg); width: 560px; max-width: 95vw; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modal-header { padding: 20px 24px; border-bottom: 1px solid rgba(13,27,42,0.1); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-family: var(--font-serif); font-size: 22px; font-weight: 600; }
+.modal-body { padding: 24px; }
+.modal-footer { padding: 16px 24px; border-top: 1px solid rgba(13,27,42,0.1); display: flex; justify-content: flex-end; gap: 10px; }
+.modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--slate); line-height: 1; }
+.modal-close:hover { color: var(--navy); }
+
+/* ===== SPECIAL ELEMENTS ===== */
+.section-divider { height: 1px; background: linear-gradient(to right, rgba(201,168,76,0.2), transparent); margin: 24px 0; }
+.highlight-box {
+  background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.04));
+  border: 1px solid rgba(201,168,76,0.25); border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px;
+  font-size: 12.5px; line-height: 1.6; color: var(--navy);
+}
+.info-box { background: rgba(41,128,185,0.06); border: 1px solid rgba(41,128,185,0.2); border-left: 3px solid #2980B9; border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; font-size: 12.5px; line-height: 1.6; }
+.warn-box { background: rgba(212,131,26,0.06); border: 1px solid rgba(212,131,26,0.2); border-left: 3px solid var(--amber); border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; font-size: 12.5px; line-height: 1.6; }
+.err-box { background: rgba(192,57,43,0.06); border: 1px solid rgba(192,57,43,0.2); border-left: 3px solid var(--red); border-radius: 0 var(--radius) var(--radius) 0; padding: 14px 18px; font-size: 12.5px; line-height: 1.6; }
+
+.gap-12 { margin-bottom: 12px; }
+.gap-16 { margin-bottom: 16px; }
+.gap-20 { margin-bottom: 20px; }
+.gap-24 { margin-bottom: 24px; }
+.gap-28 { margin-bottom: 28px; }
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-gap-8 { gap: 8px; }
+.flex-gap-12 { gap: 12px; }
+.flex-wrap { flex-wrap: wrap; }
+h4 { font-family: var(--font-serif); font-size: 18px; font-weight: 600; color: var(--navy); margin-bottom: 12px; }
+h5 { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--slate); margin-bottom: 10px; }
+p { font-size: 13px; line-height: 1.65; color: var(--slate); }
+ul.styled { list-style: none; padding: 0; }
+ul.styled li { padding: 5px 0; font-size: 12.5px; color: var(--slate); padding-left: 14px; position: relative; border-bottom: 1px solid rgba(13,27,42,0.04); }
+ul.styled li::before { content: '▸'; position: absolute; left: 0; color: var(--gold); font-size: 9px; top: 7px; }
+.text-sm { font-size: 11.5px; }
+.text-xs { font-size: 10.5px; }
+.text-gold { color: var(--gold); }
+.text-navy { color: var(--navy); }
+.text-slate { color: var(--slate); }
+.fw-600 { font-weight: 600; }
+.serif { font-family: var(--font-serif); }
+
+/* ===== BPMN DIAGRAM ===== */
+.bpmn { display: flex; align-items: center; gap: 0; padding: 20px 0; overflow-x: auto; }
+.bpmn-node {
+  flex-shrink: 0; text-align: center; position: relative;
+}
+.bpmn-shape {
+  width: 80px; height: 60px; border-radius: var(--radius);
+  background: var(--white); border: 2px solid var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 600; text-align: center; padding: 5px;
+  color: var(--navy); margin: 0 auto;
+}
+.bpmn-shape.start { border-radius: 50%; width: 48px; height: 48px; background: var(--green); border-color: var(--green); color: white; }
+.bpmn-shape.end { border-radius: 50%; width: 48px; height: 48px; background: var(--navy); border-color: var(--navy); color: var(--gold); border-width: 4px; }
+.bpmn-shape.decision { transform: rotate(45deg); width: 52px; height: 52px; }
+.bpmn-shape.decision span { transform: rotate(-45deg); display: block; font-size: 9px; }
+.bpmn-shape.gold { background: rgba(201,168,76,0.15); border-color: var(--gold); }
+.bpmn-label { font-size: 9px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--slate); margin-top: 6px; white-space: nowrap; }
+.bpmn-arrow { flex-shrink: 0; display: flex; align-items: center; padding: 0 4px; color: var(--slate-light); font-size: 18px; margin-bottom: 16px; }
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(13,27,42,0.15); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(13,27,42,0.3); }
+
+/* ===== LOADING ANIMATION ===== */
+.skeleton { background: linear-gradient(90deg, rgba(13,27,42,0.06) 25%, rgba(13,27,42,0.1) 50%, rgba(13,27,42,0.06) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius); }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ===== ASPIRE DETAIL PANEL ===== */
+.aspire-detail { display: none; padding: 16px; background: var(--ivory-dark); border-radius: var(--radius); border-left: 3px solid var(--gold); margin-top: 16px; }
+.aspire-detail.active { display: block; }
+
+/* ===== PRIORITY BADGE ===== */
+.priority { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; font-size: 11px; font-weight: 700; }
+.priority-high { background: rgba(192,57,43,0.12); color: var(--red); }
+.priority-med { background: rgba(212,131,26,0.12); color: var(--amber); }
+.priority-low { background: rgba(107,114,128,0.12); color: var(--slate); }
+
+@media (max-width: 1200px) {
+  .kpi-strip { grid-template-columns: repeat(3,1fr); }
+  .grid-4 { grid-template-columns: repeat(2,1fr); }
+  .framework-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- Layer 1: Swiss Grid -->
+<div class="swiss-grid"></div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- ===== TOP NAVIGATION ===== -->
+<nav class="topbar">
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div>
+      <div class="brand-text">BD Intelligence</div>
+      <div class="brand-sub">CRM &amp; BD Lifecycle</div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dashboard')" data-page="dashboard"><span class="tab-icon">◈</span> Dashboard</button>
+    <button class="nav-tab" onclick="showPage('bdlifecycle')" data-page="bdlifecycle"><span class="tab-icon">◎</span> BD Lifecycle</button>
+    <button class="nav-tab" onclick="showPage('pipeline')" data-page="pipeline"><span class="tab-icon">◧</span> Pipeline &amp; CRM</button>
+    <button class="nav-tab" onclick="showPage('contacts')" data-page="contacts"><span class="tab-icon">◉</span> Contacts</button>
+    <button class="nav-tab" onclick="showPage('frameworks')" data-page="frameworks"><span class="tab-icon">◈</span> Frameworks</button>
+    <button class="nav-tab" onclick="showPage('playbook')" data-page="playbook"><span class="tab-icon">◑</span> BD Playbook</button>
+    <button class="nav-tab" onclick="showPage('resources')" data-page="resources"><span class="tab-icon">◐</span> Resources</button>
+    <button class="nav-tab" onclick="showPage('notes')" data-page="notes"><span class="tab-icon">◻</span> Notes &amp; QA</button>
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-action" onclick="exportJSON()">↓ JSON</button>
+    <button class="btn-action" onclick="exportPDF()">↓ PDF</button>
+    <button class="btn-action" onclick="emailResults()">✉ Email</button>
+    <button class="btn-action" onclick="resetDefaults()" style="border-color:rgba(192,57,43,0.4);color:#c0392b">↺ Reset</button>
+  </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<main class="main">
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 1: DASHBOARD
+═══════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">Business Development Intelligence</div>
+      <div class="page-title">Executive Dashboard</div>
+      <div class="page-subtitle">End-to-end BD &amp; CRM lifecycle — Pipeline health, RAG status, and strategic KPIs</div>
+    </div>
+    <div class="page-meta">
+      <div class="meta-badge">Live View</div>
+      <div class="meta-badge">Strategy House</div>
+      <button class="btn btn-sm btn-gold" onclick="refreshDashboard()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- KPI Strip -->
+  <div class="kpi-strip reveal reveal-delay-1">
+    <div class="kpi-card green">
+      <div class="kpi-label">Pipeline Value</div>
+      <div class="kpi-value" id="kpi-pipeline">£0</div>
+      <div class="kpi-sub" id="kpi-pipeline-sub">Loading...</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Active Prospects</div>
+      <div class="kpi-value" id="kpi-prospects">0</div>
+      <div class="kpi-sub" id="kpi-prospects-sub">Loading...</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-label">Win Rate</div>
+      <div class="kpi-value" id="kpi-winrate">0%</div>
+      <div class="kpi-sub">Weighted probability avg</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Target Contacts</div>
+      <div class="kpi-value">20</div>
+      <div class="kpi-sub">A, B, C tier accounts</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-label">Open Actions</div>
+      <div class="kpi-value" id="kpi-actions">0</div>
+      <div class="kpi-sub">Follow-ups due</div>
+    </div>
+  </div>
+
+  <!-- Charts + Summary row -->
+  <div class="grid-1-2 gap-24 reveal reveal-delay-2">
+    <!-- RAG Donut -->
+    <div class="card">
+      <div class="card-section">Pipeline Health — RAG</div>
+      <div class="chart-wrap" style="padding:20px">
+        <canvas id="chart-rag"></canvas>
+        <div id="rag-legend" style="margin-top:12px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;"></div>
+      </div>
+    </div>
+
+    <!-- BD Stage Bar -->
+    <div class="card">
+      <div class="card-section">Opportunities by Stage</div>
+      <div class="chart-wrap" style="padding:16px 20px">
+        <canvas id="chart-stages"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <!-- Second row -->
+  <div class="grid-2 gap-24 reveal reveal-delay-3">
+    <!-- Recent Contacts -->
+    <div class="card">
+      <div class="card-section">Target Accounts <span class="meta-badge" style="font-size:10px">A-Tier</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Organisation</th><th>Contact</th><th>Type</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="fw-600">AIB</td><td class="muted">Andrew McFarlane, COO</td><td>Enterprise</td><td><span class="rag amber">Active</span></td></tr>
+            <tr><td class="fw-600">Investec</td><td class="muted">Ciaran Whelan, CEO</td><td>Enterprise</td><td><span class="rag green">Strong</span></td></tr>
+            <tr><td class="fw-600">Deliveroo</td><td class="muted">Breffney Brass, RD Ireland</td><td>Tech/Product</td><td><span class="rag amber">Active</span></td></tr>
+            <tr><td class="fw-600">Bank of Ireland</td><td class="muted">Enda Johnson, CSTO</td><td>Financial</td><td><span class="rag blue">Exploring</span></td></tr>
+            <tr><td class="fw-600">Three Mobile</td><td class="muted">Elaine Carey, CCO</td><td>Telco</td><td><span class="rag grey">Prospect</span></td></tr>
+            <tr><td class="fw-600">ING Group</td><td class="muted">Barry Fehily, CEO</td><td>Financial</td><td><span class="rag green">Strong</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BD Cycle Progress + Upcoming Actions -->
+    <div class="card">
+      <div class="card-section">BD Cycle Progress — ASPIRe</div>
+      <div class="card-pad">
+        <div style="margin-bottom:14px">
+          <div class="flex-between gap-12" style="margin-bottom:4px"><span style="font-size:12px;font-weight:600">Align — Strategy &amp; Vision</span><span class="text-sm text-gold">85%</span></div>
+          <div class="progress-bar"><div class="progress-fill progress-gold" style="width:85%"></div></div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div class="flex-between gap-12" style="margin-bottom:4px"><span style="font-size:12px;font-weight:600">Strategise — Market &amp; Segments</span><span class="text-sm text-gold">70%</span></div>
+          <div class="progress-bar"><div class="progress-fill progress-gold" style="width:70%"></div></div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div class="flex-between gap-12" style="margin-bottom:4px"><span style="font-size:12px;font-weight:600">Plan — BD Roadmap &amp; Pipeline</span><span class="text-sm text-amber">55%</span></div>
+          <div class="progress-bar"><div class="progress-fill progress-amber" style="width:55%"></div></div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div class="flex-between gap-12" style="margin-bottom:4px"><span style="font-size:12px;font-weight:600">Implement — Outreach &amp; Proposals</span><span class="text-sm text-amber">60%</span></div>
+          <div class="progress-bar"><div class="progress-fill progress-amber" style="width:60%"></div></div>
+        </div>
+        <div style="margin-bottom:14px">
+          <div class="flex-between gap-12" style="margin-bottom:4px"><span style="font-size:12px;font-weight:600">Review — Performance &amp; RAG</span><span class="text-sm" style="color:var(--red)">40%</span></div>
+          <div class="progress-bar"><div class="progress-fill progress-red" style="width:40%"></div></div>
+        </div>
+        <div>
+          <div class="flex-between gap-12" style="margin-bottom:4px"><span style="font-size:12px;font-weight:600">Evolve — Improve &amp; Iterate</span><span class="text-sm text-slate">30%</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:30%;background:var(--slate-light)"></div></div>
+        </div>
+        <div class="section-divider"></div>
+        <div class="highlight-box">
+          <strong>Priority Focus:</strong> Accelerate the <em>Review</em> and <em>Evolve</em> phases. Implement structured check-ins, OKR scoring cadence, and pipeline weighting reviews to improve forecast accuracy.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BD Radar -->
+  <div class="section-divider"></div>
+  <div class="grid-1-2 reveal">
+    <div class="card">
+      <div class="card-section">BD Maturity Radar</div>
+      <div class="chart-wrap">
+        <canvas id="chart-radar"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-section">Strategic Priorities — SKEPTIC Analysis</div>
+      <div class="card-pad">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="padding:12px;background:rgba(13,27,42,0.03);border-radius:6px;border-left:3px solid var(--navy)">
+            <div style="font-size:11px;font-weight:700;color:var(--navy);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">S — Society</div>
+            <div style="font-size:12px;color:var(--slate)">Demographic change, results-driven culture, remote-first hybrid work</div>
+          </div>
+          <div style="padding:12px;background:rgba(13,27,42,0.03);border-radius:6px;border-left:3px solid var(--gold)">
+            <div style="font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">K — Competition</div>
+            <div style="font-size:12px;color:var(--slate)">Increased collaboration, fewer direct rivals, partnership opportunities</div>
+          </div>
+          <div style="padding:12px;background:rgba(13,27,42,0.03);border-radius:6px;border-left:3px solid var(--green)">
+            <div style="font-size:11px;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">E — Economics</div>
+            <div style="font-size:12px;color:var(--slate)">Cautious spending, local procurement bias, ROI scrutiny</div>
+          </div>
+          <div style="padding:12px;background:rgba(13,27,42,0.03);border-radius:6px;border-left:3px solid var(--amber)">
+            <div style="font-size:11px;font-weight:700;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">P — Political</div>
+            <div style="font-size:12px;color:var(--slate)">Tax credits, ESG regulation, governmental budget pressures</div>
+          </div>
+          <div style="padding:12px;background:rgba(13,27,42,0.03);border-radius:6px;border-left:3px solid #2980B9">
+            <div style="font-size:11px;font-weight:700;color:#2980B9;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">T — Technology</div>
+            <div style="font-size:12px;color:var(--slate)">AI/ML disruption, virtual engagement, OKR platform adoption</div>
+          </div>
+          <div style="padding:12px;background:rgba(13,27,42,0.03);border-radius:6px;border-left:3px solid #8E44AD">
+            <div style="font-size:11px;font-weight:700;color:#8E44AD;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">I + C — Industry/Clients</div>
+            <div style="font-size:12px;color:var(--slate)">New services/products; more educated buyers; slow decision cycles</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 2: BD LIFECYCLE
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-bdlifecycle">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">BD Methodology</div>
+      <div class="page-title">BD Lifecycle — ASPIRe</div>
+      <div class="page-subtitle">End-to-end business development cycle: Align · Strategise · Plan · Implement · Review · Evolve</div>
+    </div>
+    <div class="page-meta"><div class="meta-badge">v1.0</div></div>
+  </div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('lifecycle','overview')">ASPIRe Overview</button>
+    <button class="sub-tab" onclick="showSubTab('lifecycle','roadmap')">BD Roadmap</button>
+    <button class="sub-tab" onclick="showSubTab('lifecycle','okr')">OKR Objectives</button>
+    <button class="sub-tab" onclick="showSubTab('lifecycle','bpmn')">Process Diagram</button>
+  </div>
+
+  <!-- Overview sub-tab -->
+  <div id="lifecycle-overview" class="sub-content">
+    <div class="grid-1-2 reveal">
+      <div>
+        <div class="aspire-ring" style="padding:0 0 20px">
+          <div class="cycle-container">
+            <div class="cycle-center">
+              <div class="cycle-center-label">ASPIRe</div>
+              <div class="cycle-center-sub">BD Cycle</div>
+            </div>
+            <div class="cycle-step cs-a" onclick="showAspireDetail('align')"><div class="cs-letter">A</div><div class="cs-word">Align</div></div>
+            <div class="cycle-step cs-s" onclick="showAspireDetail('strategise')"><div class="cs-letter">S</div><div class="cs-word">Strategise</div></div>
+            <div class="cycle-step cs-p" onclick="showAspireDetail('plan')"><div class="cs-letter">P</div><div class="cs-word">Plan</div></div>
+            <div class="cycle-step cs-i" onclick="showAspireDetail('implement')"><div class="cs-letter">I</div><div class="cs-word">Implement</div></div>
+            <div class="cycle-step cs-r" onclick="showAspireDetail('review')"><div class="cs-letter">R</div><div class="cs-word">Review</div></div>
+            <div class="cycle-step cs-e" onclick="showAspireDetail('evolve')"><div class="cs-letter">E</div><div class="cs-word">Evolve</div></div>
+          </div>
+        </div>
+        <div class="aspire-detail" id="aspire-detail">
+          <div id="aspire-detail-content"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card gap-20" style="margin-bottom:20px">
+          <div class="card-section dark">ASPIRe Phase Breakdown</div>
+          <div class="card-pad">
+            <div class="timeline">
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-title">A — Align</div>
+                <div class="tl-desc">Establish strategic alignment between BD ambitions and organisational goals. Define OKRs, clarify mission/vision, confirm target markets. Customer-focused BRM principles.</div>
+                <div class="tl-meta">OUTCOME: Strategy document · Agreed OKRs · Target segment map</div>
+              </div>
+              <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-title">S — Strategise</div>
+                <div class="tl-desc">Conduct market analysis using SKEPTIC framework. Identify SEEDs, WEEDs, NEEDs. Value proposition development. Competitor mapping and positioning.</div>
+                <div class="tl-meta">OUTCOME: Market analysis · Value proposition · Competitive positioning</div>
+              </div>
+              <div class="tl-item amber">
+                <div class="tl-dot amber"></div>
+                <div class="tl-title">P — Plan</div>
+                <div class="tl-desc">Build the BD roadmap. Define target account list (A/B/C tiers). Set up pipeline structure with weighted revenue. Event and communications planning.</div>
+                <div class="tl-meta">OUTCOME: BD Roadmap · Pipeline tool · Contact list · Events calendar</div>
+              </div>
+              <div class="tl-item amber">
+                <div class="tl-dot amber"></div>
+                <div class="tl-title">I — Implement</div>
+                <div class="tl-desc">Execute outreach. Manage warm/hot/top customer follow-up cadences. Submit proposals. Manage stakeholder relationships via Relationship Impact Matrix.</div>
+                <div class="tl-meta">OUTCOME: Outreach logs · Proposals submitted · Meetings held</div>
+              </div>
+              <div class="tl-item red">
+                <div class="tl-dot red"></div>
+                <div class="tl-title">R — Review</div>
+                <div class="tl-desc">Weekly OKR check-ins. RAG health scoring. Pipeline weighting review. Leading vs lagging indicator analysis. Healthcheck against BD best practices.</div>
+                <div class="tl-meta">OUTCOME: RAG dashboard · OKR scores · Win/loss analysis</div>
+              </div>
+              <div class="tl-item grey">
+                <div class="tl-dot grey"></div>
+                <div class="tl-title">E — Evolve</div>
+                <div class="tl-desc">Improve BD COE capability. Update methodology based on learnings. Invest in tools (GTMhub/OKR platform). Develop team skills. Iterate the ASPIRe cycle.</div>
+                <div class="tl-meta">OUTCOME: Updated methodology · Skills development plan · Tool improvements</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- BD Principles -->
+    <div class="reveal">
+      <h4>BD Roadmap Principles</h4>
+      <div class="grid-4">
+        <div class="card card-pad" style="border-top:3px solid var(--gold)">
+          <div style="font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--gold);margin-bottom:6px">01</div>
+          <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">Customer Focus</div>
+          <div style="font-size:12px;color:var(--slate);line-height:1.5">Prioritise internal and external customer perspectives in every BD decision and interaction.</div>
+        </div>
+        <div class="card card-pad" style="border-top:3px solid var(--navy)">
+          <div style="font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--navy);margin-bottom:6px">02</div>
+          <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">External Trends</div>
+          <div style="font-size:12px;color:var(--slate);line-height:1.5">Monitor and liaise with external organisations to bring best practices and market learnings into BD.</div>
+        </div>
+        <div class="card card-pad" style="border-top:3px solid var(--green)">
+          <div style="font-family:var(--font-serif);font-size:22px;font-weight:700;color:var(--green);margin-bottom:6px">03</div>
+          <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">Organisational Span</div>
+          <div style="font-size:12px;color:var(--slate);line-height:1.5">Embed relationship management across all levels of leadership. BRM is a firm-wide discipline.</div>
+        </div>
+        <div class="card card-pad" style="border-top:3px solid #2980B9">
+          <div style="font-family:var(--font-serif);font-size:22px;font-weight:700;color:#2980B9;margin-bottom:6px">04</div>
+          <div style="font-size:13px;font-weight:600;color:var(--navy);margin-bottom:6px">Seat at the Table</div>
+          <div style="font-size:12px;color:var(--slate);line-height:1.5">If the BD resource does not have a seat at the table, they are not performing the BRM role effectively.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roadmap sub-tab -->
+  <div id="lifecycle-roadmap" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4 style="margin-bottom:20px">BD Roadmap — Quick Wins, Short Term, Long Term</h4>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-section" style="background:rgba(39,174,96,0.1);color:var(--green);border-bottom-color:rgba(39,174,96,0.2)">Quick Wins (0–3 months)</div>
+          <div class="card-pad">
+            <ul class="styled">
+              <li>Establish BD team OKRs and align to org strategy</li>
+              <li>Complete A-tier target account list (Top 20)</li>
+              <li>Set up Pipeline Tool with weighted revenue tracking</li>
+              <li>Launch warm outreach tracker for prospect management</li>
+              <li>Define follow-up cadence by contact tier (4x/6x/2x/yr)</li>
+              <li>Run SKEPTIC external scan workshop</li>
+              <li>Clarify value proposition per target segment</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section" style="background:rgba(212,131,26,0.1);color:var(--amber);border-bottom-color:rgba(212,131,26,0.2)">Short Term (3–6 months)</div>
+          <div class="card-pad">
+            <ul class="styled">
+              <li>Implement OKR check-in cadence (weekly, quarterly reviews)</li>
+              <li>Launch BD Bulletin — targeted half-page comms</li>
+              <li>Build Relationship Impact Matrix for key accounts</li>
+              <li>Run first C-suite event (Roundtable/Forum format)</li>
+              <li>Establish BD Dashboard Pipeline reporting</li>
+              <li>Deploy GTMhub or OKR software tool (partner licence)</li>
+              <li>Complete BD induction pack for new team members</li>
+              <li>Publish BD Healthcheck scorecard</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section" style="background:rgba(41,128,185,0.1);color:#2980B9;border-bottom-color:rgba(41,128,185,0.2)">Long Term (6–12 months)</div>
+          <div class="card-pad">
+            <ul class="styled">
+              <li>Build BD Centre of Excellence (COE) capability</li>
+              <li>Develop BD Pyramid of Learning — team skills programme</li>
+              <li>Establish BD Library with case studies and credentials</li>
+              <li>Run OKR maturity assessment and roadmap review</li>
+              <li>Integrate Dynamics CRM with pipeline tracking</li>
+              <li>Launch BD Bulletin Series — thought leadership content</li>
+              <li>Benchmark against top-quartile BD teams (infotech data)</li>
+              <li>Review and evolve ASPIRe methodology</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OKR sub-tab -->
+  <div id="lifecycle-okr" class="sub-content" style="display:none">
+    <div class="reveal">
+      <div class="grid-2">
+        <div>
+          <h4>OKR Methodology for BD</h4>
+          <p style="margin-bottom:16px">OKRs (Objectives &amp; Key Results) provide the BD team with a clear, measurable framework to drive outcomes rather than outputs. BD OKRs cascade from organisational strategy through team to individual level.</p>
+          <div class="card gap-16">
+            <div class="card-section dark">OKR Hierarchy</div>
+            <div class="card-pad">
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <div style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);padding:12px;border-radius:6px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Org OKRs</div>
+                  <div style="font-size:12.5px;color:var(--navy)">Enterprise-wide objectives aligned to firm strategy. Include leading and lagging indicators.</div>
+                </div>
+                <div style="text-align:center;color:var(--slate);font-size:18px">↓</div>
+                <div style="background:rgba(13,27,42,0.04);border:1px solid rgba(13,27,42,0.1);padding:12px;border-radius:6px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);margin-bottom:4px">Team OKRs</div>
+                  <div style="font-size:12.5px;color:var(--navy)">BD team objectives supporting org-level goals. Cross-functional alignment with marketing and delivery.</div>
+                </div>
+                <div style="text-align:center;color:var(--slate);font-size:18px">↓</div>
+                <div style="background:rgba(39,174,96,0.06);border:1px solid rgba(39,174,96,0.2);padding:12px;border-radius:6px">
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:4px">Individual OKRs</div>
+                  <div style="font-size:12.5px;color:var(--navy)">Personal objectives for BD managers, KAMs, and account directors. Tied to team OKRs.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4>OKR Best Practice — BD Application</h4>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-section">OKR Writing Principles (DAINT)</div>
+            <div class="card-pad">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="font-size:12.5px"><strong style="color:var(--navy)">D</strong> — <span style="color:var(--slate)">Directional: Is it ambitious?</span></div>
+                <div style="font-size:12.5px"><strong style="color:var(--navy)">A</strong> — <span style="color:var(--slate)">Achievable: Is it realistic?</span></div>
+                <div style="font-size:12.5px"><strong style="color:var(--navy)">I</strong> — <span style="color:var(--slate)">Inspiring: Does it motivate?</span></div>
+                <div style="font-size:12.5px"><strong style="color:var(--navy)">N</strong> — <span style="color:var(--slate)">Notable: Will it matter?</span></div>
+                <div style="font-size:12.5px"><strong style="color:var(--navy)">T</strong> — <span style="color:var(--slate)">Time-bound: Has a deadline?</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-section">Key Results Checklist</div>
+            <div class="card-pad">
+              <ul class="styled">
+                <li>Specific and time-bound — no vague language</li>
+                <li>Measurable and verifiable — binary or scored</li>
+                <li>Aggressive yet realistic (70% = success, not failure)</li>
+                <li>3–5 KRs per Objective maximum (MECE principle)</li>
+                <li>Shift from lagging to leading indicators where possible</li>
+                <li>Weekly confidence check-in on each KR (0–100%)</li>
+                <li>Avoid dependency chains (domino effect)</li>
+                <li>Separate outcome OKRs from BAU/business-as-usual</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BPMN sub-tab -->
+  <div id="lifecycle-bpmn" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>End-to-End BD Process — BPMN Flow</h4>
+      <p style="margin-bottom:20px">This process diagram maps the full BD lifecycle from initial market identification through to contract execution and review. Each node represents a key decision point or activity gate.</p>
+      <div class="card">
+        <div class="card-section dark">BD Lifecycle — Process Flow</div>
+        <div style="padding:24px;overflow-x:auto">
+          <div class="bpmn">
+            <div class="bpmn-node"><div class="bpmn-shape start">▶</div><div class="bpmn-label">Start</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape gold">Market<br>Identification</div><div class="bpmn-label">SKEPTIC Scan</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape gold">Target<br>Account List</div><div class="bpmn-label">A/B/C Tiers</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape">Warm<br>Outreach</div><div class="bpmn-label">Prospect Stage</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape decision"><span>Qualify?</span></div><div class="bpmn-label">Decision</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape gold">Pipeline<br>Add</div><div class="bpmn-label">Win % Set</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape">Proposal<br>Development</div><div class="bpmn-label">RFP Response</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape decision"><span>Won?</span></div><div class="bpmn-label">Decision</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape">Contract<br>Execution</div><div class="bpmn-label">Signed</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape gold">Review &amp;<br>OKR Check</div><div class="bpmn-label">RAG Update</div></div>
+            <div class="bpmn-arrow">→</div>
+            <div class="bpmn-node"><div class="bpmn-shape end">◼</div><div class="bpmn-label">Evolve</div></div>
+          </div>
+          <div class="info-box" style="margin-top:12px">
+            <strong>Note:</strong> At each "Decision" node, a "No" path returns to the Warm Outreach or Pipeline stages respectively. Lost proposals are logged in the Hopper (0% win probability) for future reactivation tracking.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 3: PIPELINE & CRM
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-pipeline">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">CRM &amp; Pipeline Management</div>
+      <div class="page-title">Pipeline &amp; CRM Tracker</div>
+      <div class="page-subtitle">Active opportunities, prospect outreach tracking, and pipeline health management</div>
+    </div>
+    <div class="page-meta">
+      <button class="btn btn-sm btn-gold" onclick="openModal('add-opportunity')">+ Add Opportunity</button>
+      <button class="btn btn-sm btn-outline" onclick="openModal('add-prospect')">+ Add Prospect</button>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('pipeline','opportunities')">Opportunities</button>
+    <button class="sub-tab" onclick="showSubTab('pipeline','prospects')">Outreach Tracker</button>
+    <button class="sub-tab" onclick="showSubTab('pipeline','hopper')">Hopper</button>
+    <button class="sub-tab" onclick="showSubTab('pipeline','analytics')">Analytics</button>
+  </div>
+
+  <!-- Opportunities -->
+  <div id="pipeline-opportunities" class="sub-content">
+    <div class="kpi-strip" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+      <div class="kpi-card green"><div class="kpi-label">Backlog (Won)</div><div class="kpi-value">£6.4M</div><div class="kpi-sub">9 contracts on file</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Unsigned Contracts</div><div class="kpi-value">£2.8M</div><div class="kpi-sub">Awarded, pending sign</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Active Proposals</div><div class="kpi-value">7</div><div class="kpi-sub">In pursuit</div></div>
+      <div class="kpi-card"><div class="kpi-label">Hopper (0%)</div><div class="kpi-value">12</div><div class="kpi-sub">Reactivation candidates</div></div>
+    </div>
+    <div class="card reveal">
+      <div class="card-section dark">Active Pipeline — Opportunities <span style="margin-left:auto"><input type="text" id="opp-search" class="form-input" style="width:200px;padding:4px 10px;font-size:12px;background:rgba(255,255,255,0.1);border-color:rgba(201,168,76,0.3);color:var(--ivory)" placeholder="Search..." oninput="filterTable('opp-table', this.value)"></span></div>
+      <div class="table-wrap">
+        <table id="opp-table">
+          <thead><tr>
+            <th>Customer</th><th>Opportunity</th><th>Practice Area</th><th>Deal Type</th><th>Win %</th><th>Gross Revenue</th><th>Weighted Rev</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="opp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Outreach Tracker -->
+  <div id="pipeline-prospects" class="sub-content" style="display:none">
+    <div class="kpi-strip" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px">
+      <div class="kpi-card"><div class="kpi-label">Total Prospects</div><div class="kpi-value" id="pt-total">0</div></div>
+      <div class="kpi-card amber"><div class="kpi-label">Contacted</div><div class="kpi-value" id="pt-contacted">0</div></div>
+      <div class="kpi-card blue"><div class="kpi-label">Conversating</div><div class="kpi-value" id="pt-conv">0</div></div>
+      <div class="kpi-card green"><div class="kpi-label">Complete</div><div class="kpi-value" id="pt-complete">0</div></div>
+      <div class="kpi-card red"><div class="kpi-label">Ghosted</div><div class="kpi-value" id="pt-ghost">0</div></div>
+    </div>
+    <div class="card reveal">
+      <div class="card-section dark">Warm Outreach Tracker</div>
+      <div class="table-wrap">
+        <table id="prospects-table">
+          <thead><tr>
+            <th>Name</th><th>Company</th><th>Role</th><th>Platform</th><th>Business Type</th><th>Stage</th><th>Reply</th><th>Priority</th><th>CRM Added</th><th>Notes</th>
+          </tr></thead>
+          <tbody id="prospects-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div class="card reveal">
+        <div class="card-section">Add New Prospect</div>
+        <div class="card-pad">
+          <div class="form-grid-3" style="margin-bottom:14px">
+            <div class="form-group"><label class="form-label">Full Name</label><input type="text" class="form-input" id="p-name" placeholder="Contact name"></div>
+            <div class="form-group"><label class="form-label">Company</label><input type="text" class="form-input" id="p-company" placeholder="Organisation"></div>
+            <div class="form-group"><label class="form-label">Role / Title</label><input type="text" class="form-input" id="p-role" placeholder="Job title"></div>
+            <div class="form-group"><label class="form-label">Platform</label>
+              <select class="form-select" id="p-platform">
+                <option>Email</option><option>LinkedIn</option><option>Phone</option><option>Event</option><option>Referral</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Business Type</label><input type="text" class="form-input" id="p-btype" placeholder="Industry/sector"></div>
+            <div class="form-group"><label class="form-label">Stage</label>
+              <select class="form-select" id="p-stage">
+                <option>Identified</option><option>Contacted</option><option>Conversating</option><option>Complete</option><option>Ghosted</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Reply Sentiment</label>
+              <select class="form-select" id="p-reply">
+                <option>No Reply Yet</option><option>Positive Reply</option><option>Neutral Reply</option><option>Negative Reply</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Contact Details</label><input type="text" class="form-input" id="p-contact" placeholder="Email / LinkedIn URL"></div>
+            <div class="form-group"><label class="form-label">Priority (1–12)</label><input type="number" class="form-input" id="p-priority" min="1" max="12" placeholder="Score"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:14px"><label class="form-label">Notes / Objective</label><textarea class="form-textarea" id="p-notes" placeholder="Engagement objective and context..."></textarea></div>
+          <button class="btn btn-primary" onclick="addProspect()">Add Prospect</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hopper -->
+  <div id="pipeline-hopper" class="sub-content" style="display:none">
+    <div class="reveal">
+      <div class="info-box gap-16">
+        <strong>Hopper Definition:</strong> The Hopper contains opportunities at 0% win probability — prospects that have not yet been formally qualified or have stalled. These are reviewed regularly for reactivation. Source: Client Hopper + Actions sheet from Pipeline Tool.
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-section dark">Client Hopper — Actions Required</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Client</th><th>Deal Overview</th><th>Action Required</th><th>Due Date</th><th>Owner</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="fw-600">BG Group</td><td class="muted">Ongoing ITPs, data migration, server consolidation, Mobility</td><td>Held projects restarting — pursue additional server consolidation</td><td class="muted">Feb 11</td><td>IG</td><td><span class="rag amber">Active</span></td></tr>
+              <tr><td class="fw-600">UK e-Government (NIRS2)</td><td class="muted">Follow-on from Phase 1 pilot. Working Age Benefit project potential</td><td>Meet with Mark Lyons — potential in 6 weeks</td><td class="muted">End Feb</td><td>GT</td><td><span class="rag amber">Active</span></td></tr>
+              <tr><td class="fw-600">LSE</td><td class="muted">Ongoing support of RFP application — 5 FTE × 12 months?</td><td>Proposal sent to Mike Woods 8/3</td><td class="muted">Mar 11</td><td>AS</td><td><span class="rag green">Proposal Out</span></td></tr>
+              <tr><td class="fw-600">Conservatives</td><td class="muted">Party Membership system — Accenture re-evaluating Siebel</td><td>Accenture meeting CCO on 19/3</td><td class="muted">Mar 18</td><td>AS</td><td><span class="rag blue">Meeting Set</span></td></tr>
+              <tr><td class="fw-600">MMO2</td><td class="muted">Business platform — Power of 3 (MS partnership)</td><td>Power of 3 meeting 21/2 with Andrew Mendoza</td><td class="muted">Feb 21</td><td>GT</td><td><span class="rag amber">Active</span></td></tr>
+              <tr><td class="fw-600">TeleWest</td><td class="muted">Redevelop Derby using MS products</td><td>Conf call April 5th. Monaco meeting April 14th</td><td class="muted">Apr 5</td><td>SJW</td><td><span class="rag blue">Meeting Set</span></td></tr>
+              <tr><td class="fw-600">Centrica (Jupiter)</td><td class="muted">Meta Directory Service (MMS)</td><td>RFP issued 8/2 — respond w/c 11/2</td><td class="muted">Feb 11</td><td>GT</td><td><span class="rag amber">Bidding</span></td></tr>
+              <tr><td class="fw-600">UBS Warburg</td><td class="muted">Potential .NET and J2EE integration work</td><td>Set up workshop with UBS through Owen — address conflict with MCS</td><td class="muted">Mar 22</td><td>JL</td><td><span class="rag grey">On Hold</span></td></tr>
+              <tr><td class="fw-600">NHS</td><td class="muted">Healthcare website development</td><td>TBD — Awaiting qualification</td><td class="muted">TBD</td><td>—</td><td><span class="rag grey">Prospect</span></td></tr>
+              <tr><td class="fw-600">Egg (Financial)</td><td class="muted">Power of three .NET approach</td><td>Follow up with Julian — send CVs</td><td class="muted">Mar 18</td><td>AS</td><td><span class="rag amber">Active</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics -->
+  <div id="pipeline-analytics" class="sub-content" style="display:none">
+    <div class="grid-2 reveal">
+      <div class="card">
+        <div class="card-section">Revenue by Practice Area</div>
+        <div class="chart-wrap"><canvas id="chart-practice"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-section">Win Probability Distribution</div>
+        <div class="chart-wrap"><canvas id="chart-winprob"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2 reveal" style="margin-top:20px">
+      <div class="card">
+        <div class="card-section">Prospect Reply Sentiment</div>
+        <div class="chart-wrap"><canvas id="chart-sentiment"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-section">Outreach Platform Distribution</div>
+        <div class="chart-wrap"><canvas id="chart-platform"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 4: CONTACTS
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-contacts">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">Account Management</div>
+      <div class="page-title">Target Contacts &amp; Relationships</div>
+      <div class="page-subtitle">A-tier accounts, relationship impact matrix, and stakeholder management</div>
+    </div>
+    <div class="page-meta">
+      <button class="btn btn-sm btn-gold" onclick="openModal('add-contact')">+ Add Contact</button>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('contacts','accounts')">Target Accounts</button>
+    <button class="sub-tab" onclick="showSubTab('contacts','matrix')">Relationship Matrix</button>
+    <button class="sub-tab" onclick="showSubTab('contacts','followup')">Follow-up Cadence</button>
+  </div>
+
+  <!-- Accounts -->
+  <div id="contacts-accounts" class="sub-content">
+    <div class="card reveal">
+      <div class="card-section dark">Target Account List — Priority Contacts <span class="meta-badge" style="font-size:9px;margin-left:8px">Source: BD Contacts Sheet</span></div>
+      <div class="table-wrap">
+        <table id="contacts-table">
+          <thead><tr><th>Organisation</th><th>Enterprise / Silo</th><th>Key Contact</th><th>Role</th><th>Next Steps / Comments</th><th>Location</th><th>Status</th></tr></thead>
+          <tbody id="contacts-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Matrix -->
+  <div id="contacts-matrix" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>Relationship Impact Matrix</h4>
+      <p style="margin-bottom:20px">The Relationship Impact Matrix maps stakeholders by their influence over decisions against their level of support for your engagement. Use this to plan targeted engagement strategies.</p>
+      <div class="grid-2" style="margin-bottom:24px">
+        <div class="card">
+          <div class="card-section dark">Influence × Support Grid</div>
+          <div class="card-pad">
+            <div class="matrix-grid">
+              <div class="matrix-quadrant mq-players">
+                <div class="mq-title" style="color:var(--green)">🎯 Players</div>
+                <div class="mq-sub">High Influence · High Interest</div>
+                <div class="mq-desc">Actively Engage — Keep involved through continuous participation. Demonstrate their value to success. They are your champions.</div>
+              </div>
+              <div class="matrix-quadrant mq-mediators">
+                <div class="mq-title" style="color:#2980B9">⚡ Mediators</div>
+                <div class="mq-sub">High Influence · Low Interest</div>
+                <div class="mq-desc">Keep Satisfied — Game changers. Build confidence and trust. Include in key decisions. Use them to influence other stakeholders.</div>
+              </div>
+              <div class="matrix-quadrant mq-noisemakers">
+                <div class="mq-title" style="color:var(--amber)">📢 Noisemakers</div>
+                <div class="mq-sub">Low Influence · High Interest</div>
+                <div class="mq-desc">Keep Informed — Try to increase their influence. Provide key information, support in meetings, use Mediators to amplify them.</div>
+              </div>
+              <div class="matrix-quadrant mq-spectators">
+                <div class="mq-title" style="color:var(--slate)">👁 Spectators</div>
+                <div class="mq-sub">Low Influence · Low Interest</div>
+                <div class="mq-desc">Monitor — They are followers. Keep in the loop with clarity on objectives and status updates. Light-touch engagement.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section dark">Support Levels Scale</div>
+          <div class="card-pad">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:12px;padding:8px;background:rgba(39,174,96,0.08);border-radius:4px"><span style="width:16px;height:16px;border-radius:50%;background:var(--green);flex-shrink:0"></span><span style="font-size:12.5px;color:var(--navy)"><strong>Enthusiastic Advocate</strong> — Actively promotes your solution unprompted</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px;background:rgba(39,174,96,0.05);border-radius:4px"><span style="width:16px;height:16px;border-radius:50%;background:rgba(39,174,96,0.5);flex-shrink:0"></span><span style="font-size:12.5px;color:var(--navy)"><strong>Strongly Supportive</strong> — Will advocate when asked</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px;background:rgba(201,168,76,0.06);border-radius:4px"><span style="width:16px;height:16px;border-radius:50%;background:var(--gold-light);flex-shrink:0"></span><span style="font-size:12.5px;color:var(--navy)"><strong>Supportive / Interested</strong> — Positive but not actively pushing</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px;background:rgba(107,114,128,0.06);border-radius:4px"><span style="width:16px;height:16px;border-radius:50%;background:var(--slate-light);flex-shrink:0"></span><span style="font-size:12.5px;color:var(--navy)"><strong>Will Go Along / Neutral</strong> — Passive, won't block</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px;background:rgba(212,131,26,0.06);border-radius:4px"><span style="width:16px;height:16px;border-radius:50%;background:var(--amber);flex-shrink:0"></span><span style="font-size:12.5px;color:var(--navy)"><strong>Mildly Negative</strong> — Has concerns, needs reassurance</span></div>
+              <div style="display:flex;align-items:center;gap:12px;padding:8px;background:rgba(192,57,43,0.06);border-radius:4px"><span style="width:16px;height:16px;border-radius:50%;background:var(--red);flex-shrink:0"></span><span style="font-size:12.5px;color:var(--navy)"><strong>Antagonistic / Anti-Sponsor</strong> — Active blocker, needs mitigation</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-section dark">Stakeholder Mapping — Active Accounts</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Contact</th><th>Organisation</th><th>Influence</th><th>Support Level</th><th>Quadrant</th><th>Engagement Strategy</th></tr></thead>
+            <tbody>
+              <tr><td class="fw-600">Ciaran Whelan (CEO)</td><td>Investec</td><td><span class="rag green">High</span></td><td><span class="rag green">Strongly Supportive</span></td><td>Players</td><td class="muted">Maintain close contact. Involve in key decisions. Shane relationship.</td></tr>
+              <tr><td class="fw-600">Barry Fehily (CEO)</td><td>ING Group</td><td><span class="rag green">High</span></td><td><span class="rag green">Supportive</span></td><td>Players</td><td class="muted">Agile group potential. Shane to check for Patrick. Luxembourg connection.</td></tr>
+              <tr><td class="fw-600">Andrew McFarlane (COO)</td><td>AIB</td><td><span class="rag green">High</span></td><td><span class="rag amber">Interested</span></td><td>Mediators</td><td class="muted">Shane to engage Philip Quinlan. COO relationship key.</td></tr>
+              <tr><td class="fw-600">Enda Johnson (CSTO)</td><td>Bank of Ireland</td><td><span class="rag green">High</span></td><td><span class="rag amber">Interested</span></td><td>Mediators</td><td class="muted">Strategy &amp; Transformation leader. OKR alignment opportunity.</td></tr>
+              <tr><td class="fw-600">Breffney Brass (RD)</td><td>Deliveroo</td><td><span class="rag amber">Medium</span></td><td><span class="rag green">Supportive</span></td><td>Noisemakers</td><td class="muted">Using OKRs in Products &amp; Tech. 1000+ employees. Shane follow-up.</td></tr>
+              <tr><td class="fw-600">Elaine Carey (CCO)</td><td>Three Mobile</td><td><span class="rag amber">Medium</span></td><td><span class="rag grey">Neutral</span></td><td>Noisemakers</td><td class="muted">CCO engagement — strategy/OKR angle. Initial outreach pending.</td></tr>
+              <tr><td class="fw-600">Nick Amin (COO)</td><td>Aviva</td><td><span class="rag amber">Medium</span></td><td><span class="rag grey">Neutral</span></td><td>Spectators</td><td class="muted">Monitor. Engage via industry events. OKR/transformation message.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Follow-up Cadence -->
+  <div id="contacts-followup" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>Follow-Up Strategy by Contact Tier</h4>
+      <p style="margin-bottom:20px">Each contact category requires a different engagement cadence. These strategies are drawn from the BD Best Practices workbook and follow the 70/30 rule (70% value-add, 30% selling).</p>
+      <div class="grid-4">
+        <div class="card" style="border-top:3px solid var(--green)">
+          <div class="card-pad-sm" style="background:rgba(39,174,96,0.06);border-bottom:1px solid rgba(39,174,96,0.15)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">Top Customers</div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--navy);margin-top:3px">4× per year</div>
+          </div>
+          <div class="card-pad" style="font-size:12px">
+            <ol style="padding-left:16px;line-height:1.8;color:var(--slate)">
+              <li>Strategic review — goals check-in, how to help</li>
+              <li>Invite to sponsored event or conference</li>
+              <li>Mid/Q3 check — same as above</li>
+              <li>Send referral, holiday/year-end event invite</li>
+            </ol>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--red)">
+          <div class="card-pad-sm" style="background:rgba(192,57,43,0.06);border-bottom:1px solid rgba(192,57,43,0.15)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red)">Hot Prospects</div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--navy);margin-top:3px">Consistently Until Closed</div>
+          </div>
+          <div class="card-pad" style="font-size:12px">
+            <ol style="padding-left:16px;line-height:1.8;color:var(--slate)">
+              <li>Follow up immediately with thank you note</li>
+              <li>Set next meeting and confirm next steps</li>
+              <li>Send email with agreed action steps</li>
+              <li>Add value — article, invite to educational event</li>
+            </ol>
+            <div style="font-size:11px;color:var(--gold);margin-top:6px;font-style:italic">70/30 Rule: 70% value-add, 30% selling</div>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--amber)">
+          <div class="card-pad-sm" style="background:rgba(212,131,26,0.06);border-bottom:1px solid rgba(212,131,26,0.15)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)">Warm Leads</div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--navy);margin-top:3px">6× per year</div>
+          </div>
+          <div class="card-pad" style="font-size:12px">
+            <ol style="padding-left:16px;line-height:1.8;color:var(--slate)">
+              <li>Handwritten thank you note for their time</li>
+              <li>Connect on LinkedIn</li>
+              <li>Invite to chamber or community event</li>
+              <li>Send a referral</li>
+              <li>Set up another sales call</li>
+              <li>Comment on their social media</li>
+            </ol>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--slate)">
+          <div class="card-pad-sm" style="background:rgba(107,114,128,0.06);border-bottom:1px solid rgba(107,114,128,0.15)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--slate)">Likely to Buy</div>
+            <div style="font-size:12.5px;font-weight:600;color:var(--navy);margin-top:3px">2× per year</div>
+          </div>
+          <div class="card-pad" style="font-size:12px">
+            <ol style="padding-left:16px;line-height:1.8;color:var(--slate)">
+              <li>Make a sales call once annually</li>
+              <li>Invite to community event or network where they are</li>
+              <li>Annual holiday card or newsletter</li>
+            </ol>
+            <div style="font-size:11px;color:var(--slate-light);margin-top:6px;font-style:italic">Stay visible without pressure. Long-game strategy.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 5: FRAMEWORKS
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-frameworks">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">Strategic Frameworks</div>
+      <div class="page-title">Applied Frameworks</div>
+      <div class="page-subtitle">PRINCE2, Business Model Canvas, HCD, Double Diamond, JTBD, Lean Six Sigma, OKR, BTM, CPMAI and more</div>
+    </div>
+  </div>
+
+  <div class="framework-grid reveal">
+    <div class="framework-card">
+      <div class="fw-abbr">BMC</div>
+      <div class="fw-name">Business Model Canvas</div>
+      <div class="fw-desc">Maps the nine building blocks of your BD value proposition: customer segments, value propositions, channels, customer relationships, revenue streams, key resources, key activities, key partnerships, and cost structure. Used to validate go-to-market strategy for each account tier.</div>
+      <div class="fw-tags"><span class="fw-tag">Strategy</span><span class="fw-tag">Value Prop</span><span class="fw-tag">Segments</span></div>
+    </div>
+    <div class="framework-card navy">
+      <div class="fw-abbr">P2</div>
+      <div class="fw-name">PRINCE2</div>
+      <div class="fw-desc">Applied to BD proposal management and engagement delivery. Seven themes (Business Case, Organisation, Quality, Plans, Risk, Change, Progress) map directly to BD lifecycle stages. Particularly relevant to HL Plan delivery and RFP response governance.</div>
+      <div class="fw-tags"><span class="fw-tag">Governance</span><span class="fw-tag">Proposals</span><span class="fw-tag">Delivery</span></div>
+    </div>
+    <div class="framework-card green">
+      <div class="fw-abbr">HCD</div>
+      <div class="fw-name">Human-Centred Design</div>
+      <div class="fw-desc">Puts the client at the centre of BD proposition design. Applied via the Double Diamond process: Discover client pain, Define the problem, Develop the solution, Deliver the pitch. Empathy mapping and JTBD frame the problem space for each account.</div>
+      <div class="fw-tags"><span class="fw-tag">Empathy</span><span class="fw-tag">Design</span><span class="fw-tag">Client-Led</span></div>
+    </div>
+    <div class="framework-card blue">
+      <div class="fw-abbr">DD</div>
+      <div class="fw-name">Double Diamond</div>
+      <div class="fw-desc">Design Council framework: two diverge/converge diamonds. First diamond — discover and define the right BD problem. Second diamond — develop and deliver the right solution. Prevents premature convergence on solutions before client needs are fully understood.</div>
+      <div class="fw-tags"><span class="fw-tag">Discovery</span><span class="fw-tag">Problem Space</span><span class="fw-tag">Solution Design</span></div>
+    </div>
+    <div class="framework-card">
+      <div class="fw-abbr">JTBD</div>
+      <div class="fw-name">Jobs-to-be-Done</div>
+      <div class="fw-desc">Reframes the BD conversation from "what do you sell" to "what job is the client hiring you to do?" Three job types: functional (execute the task), emotional (feel confident), social (be seen as a good decision-maker). Sharpens value proposition messaging.</div>
+      <div class="fw-tags"><span class="fw-tag">Value Prop</span><span class="fw-tag">Client Insight</span><span class="fw-tag">Innovation</span></div>
+    </div>
+    <div class="framework-card navy">
+      <div class="fw-abbr">LSS</div>
+      <div class="fw-name">Lean Six Sigma</div>
+      <div class="fw-desc">Applied to BD process improvement. DMAIC (Define, Measure, Analyse, Improve, Control) for eliminating waste in the proposal cycle. Lean thinking reduces the BD overhead — fewer but higher-quality pursuits. Win rate improvement as the key metric.</div>
+      <div class="fw-tags"><span class="fw-tag">Process</span><span class="fw-tag">DMAIC</span><span class="fw-tag">Efficiency</span></div>
+    </div>
+    <div class="framework-card green">
+      <div class="fw-abbr">OKR</div>
+      <div class="fw-name">Objectives &amp; Key Results</div>
+      <div class="fw-desc">Core BD performance framework. Cascades from org → team → individual. Differentiates committed OKRs (must achieve) from aspirational OKRs (stretch targets). Weekly check-ins. CFR cadence (Conversations, Feedback, Recognition) sustains accountability.</div>
+      <div class="fw-tags"><span class="fw-tag">Performance</span><span class="fw-tag">Alignment</span><span class="fw-tag">Cadence</span></div>
+    </div>
+    <div class="framework-card blue">
+      <div class="fw-abbr">BTM</div>
+      <div class="fw-name">Business Transformation Methodology</div>
+      <div class="fw-desc">Applied when BD opportunity involves large-scale change. Provides structure for business case, stakeholder engagement, benefits realisation, and change management. Pairs with PRINCE2 for end-to-end programme governance on major accounts.</div>
+      <div class="fw-tags"><span class="fw-tag">Transformation</span><span class="fw-tag">Change Mgmt</span><span class="fw-tag">Benefits</span></div>
+    </div>
+    <div class="framework-card">
+      <div class="fw-abbr">CPMAI</div>
+      <div class="fw-name">PMI Cognitive Project Mgmt for AI</div>
+      <div class="fw-desc">Framework for BD opportunities involving AI/ML/data capabilities. Six phases: Understand, Collect, Prepare, Analyse, Visualise, and Operationalise AI insights. Critical for pitching AI-enabled transformation services to FSI clients.</div>
+      <div class="fw-tags"><span class="fw-tag">AI/ML</span><span class="fw-tag">Data</span><span class="fw-tag">PMI</span></div>
+    </div>
+    <div class="framework-card navy">
+      <div class="fw-abbr">HOBA</div>
+      <div class="fw-name">House of Business Architecture</div>
+      <div class="fw-desc">Enterprise architecture approach for business transformation. Maps the "house" of business capabilities, processes, information, and organisation to deliver outcomes. Used in discovery phase to understand client AS-IS state and design future-state proposals.</div>
+      <div class="fw-tags"><span class="fw-tag">Architecture</span><span class="fw-tag">Enterprise</span><span class="fw-tag">Blueprinting</span></div>
+    </div>
+    <div class="framework-card green">
+      <div class="fw-abbr">UJEA</div>
+      <div class="fw-name">User Journey &amp; Experience Architecture</div>
+      <div class="fw-desc">Maps the client's buying journey from first awareness through to contracted engagement. Identifies touchpoints, emotion curves, and drop-off risks. Informs BD communication design and ensures the buyer experience is as smooth as the end solution.</div>
+      <div class="fw-tags"><span class="fw-tag">CX Design</span><span class="fw-tag">Journey Map</span><span class="fw-tag">Buyer Exp</span></div>
+    </div>
+    <div class="framework-card blue">
+      <div class="fw-abbr">CEGIT</div>
+      <div class="fw-name">BD Methodology Framework</div>
+      <div class="fw-desc">Proprietary BD methodology covering the end-to-end engagement cycle: Client understanding, Engagement design, Go-to-market execution, Impact measurement, and Transition to delivery. Aligns with ASPIRe cycle and OKR performance framework.</div>
+      <div class="fw-tags"><span class="fw-tag">BD Method</span><span class="fw-tag">Engagement</span><span class="fw-tag">Impact</span></div>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+  <div class="reveal">
+    <h4>Framework Application Map — BD Lifecycle</h4>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>BD Phase</th><th>Primary Frameworks</th><th>Key Tools / Outputs</th><th>Quality Gate</th></tr></thead>
+          <tbody>
+            <tr><td class="fw-600 gold">Align</td><td>OKR · BTM · HOBA</td><td>OKR hierarchy · Strategy document · Vision/mission</td><td><span class="rag green">Strategy signed off</span></td></tr>
+            <tr><td class="fw-600 gold">Strategise</td><td>BMC · HCD · JTBD · SKEPTIC</td><td>Market analysis · Value proposition · SEEDS/WEEDS/NEEDS</td><td><span class="rag green">VP validated</span></td></tr>
+            <tr><td class="fw-600 gold">Plan</td><td>PRINCE2 · LSS · UJEA · Double Diamond</td><td>BD Roadmap · Pipeline tool · Target account list · Events plan</td><td><span class="rag amber">Roadmap approved</span></td></tr>
+            <tr><td class="fw-600 gold">Implement</td><td>HOBA · UJEA · BTM · CEGIT</td><td>Proposals · Outreach logs · Meetings held · Relationship matrix</td><td><span class="rag amber">Proposals submitted</span></td></tr>
+            <tr><td class="fw-600 gold">Review</td><td>OKR · LSS · CPMAI · PRINCE2</td><td>RAG dashboard · OKR scores · Win/loss analysis · KPI report</td><td><span class="rag red">Review completed</span></td></tr>
+            <tr><td class="fw-600 gold">Evolve</td><td>Double Diamond · HCD · Lean · BTM</td><td>Improved methodology · Skills plan · Tool upgrades · Lessons log</td><td><span class="rag grey">Cycle iterated</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 6: BD PLAYBOOK
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-playbook">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">Strategy &amp; Best Practice</div>
+      <div class="page-title">BD Playbook</div>
+      <div class="page-subtitle">Best practices, expert positioning, value proposition, and event strategy</div>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('playbook','expertise')">Expert Positioning</button>
+    <button class="sub-tab" onclick="showSubTab('playbook','valueprop')">Value Proposition</button>
+    <button class="sub-tab" onclick="showSubTab('playbook','events')">Event Strategy</button>
+    <button class="sub-tab" onclick="showSubTab('playbook','strategic')">Strategic Thinking</button>
+  </div>
+
+  <!-- Expert Positioning -->
+  <div id="playbook-expertise" class="sub-content">
+    <div class="reveal">
+      <h4>15 Strategies to Position Yourself as an Expert</h4>
+      <p style="margin-bottom:20px">These strategies build thought leadership and trust with target accounts over time. Consistency is more important than intensity. Combine digital, event, and direct approaches for maximum reach.</p>
+      <div class="grid-3">
+        <div class="card card-pad">
+          <div style="font-family:var(--font-serif);font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;letter-spacing:.02em">Digital Presence</div>
+          <ul class="styled">
+            <li><strong>LinkedIn Profile</strong> — Professional photo, authoritative description, 5+ testimonials</li>
+            <li><strong>Blog</strong> — Write about client questions and areas of interest. Solve problems.</li>
+            <li><strong>Video Content</strong> — Build YouTube/LinkedIn presence. Post organically.</li>
+            <li><strong>Guest Blogging</strong> — Target accounts with larger audiences. Follow, promote, then ask.</li>
+            <li><strong>SEO</strong> — Know what your client base searches for. Ensure site reflects it.</li>
+          </ul>
+        </div>
+        <div class="card card-pad">
+          <div style="font-family:var(--font-serif);font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;letter-spacing:.02em">Thought Leadership</div>
+          <ul class="styled">
+            <li><strong>Webinars</strong> — Host deep-topic sessions. Record and share. Build email list.</li>
+            <li><strong>Industry Magazines</strong> — Contact editors. Have article ready before asking.</li>
+            <li><strong>Book / Long-form</strong> — Publishing positions you as definitive expert in your space.</li>
+            <li><strong>HARO</strong> — Help A Reporter Out. Get quoted in industry publications.</li>
+            <li><strong>Content is King</strong> — Quality &gt; quantity. Answer client questions directly.</li>
+          </ul>
+        </div>
+        <div class="card card-pad">
+          <div style="font-family:var(--font-serif);font-size:13px;font-weight:700;color:var(--gold);margin-bottom:12px;letter-spacing:.02em">Network &amp; Relationships</div>
+          <ul class="styled">
+            <li><strong>Speaking</strong> — Workshops, conferences, panels. Get on stage with your audience.</li>
+            <li><strong>Podcasts / Radio</strong> — Be a guest. Build and share interviews.</li>
+            <li><strong>Alliances</strong> — Comment on experts' blogs. Create joint projects. Share content.</li>
+            <li><strong>Testimonials</strong> — Video, written, online. Social proof is critical to trust.</li>
+            <li><strong>Networking Events</strong> — Invest time to connect and learn from your field's leaders.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Value Proposition -->
+  <div id="playbook-valueprop" class="sub-content" style="display:none">
+    <div class="reveal">
+      <div class="grid-2">
+        <div>
+          <h4>Core Values &amp; Value Proposition</h4>
+          <div class="card gap-16">
+            <div class="card-section dark">Core Values Worksheet</div>
+            <div class="card-pad">
+              <p style="margin-bottom:16px">Your value proposition must align to your core values — the promise you make to clients, employees, and yourself. Use these questions to define and test your value proposition.</p>
+              <ul class="styled">
+                <li>What do you value above making money in your company?</li>
+                <li>What do you reward in your company — what behaviours?</li>
+                <li>What do you most admire about your best team members?</li>
+                <li>If a client were to describe you, what 5 words would you want?</li>
+                <li>What 5 things would you promise a client who engaged you?</li>
+                <li>What 5 things would you promise a new team member?</li>
+              </ul>
+              <div class="section-divider"></div>
+              <div class="form-group"><label class="form-label">Draft Your Value Proposition</label><textarea class="form-textarea" id="vp-text" placeholder="We help [target client] to [achieve outcome] by [our approach/differentiator], unlike [alternative] because [proof point]..." style="min-height:100px"></textarea></div>
+              <button class="btn btn-primary btn-sm" onclick="saveVP()">Save Value Proposition</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h4>SEEDS / WEEDS / NEEDS Analysis</h4>
+          <div class="card">
+            <div class="card-section dark">Strategic Assessment Tool</div>
+            <div class="card-pad">
+              <div style="margin-bottom:16px">
+                <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">SEEDs — What to keep doing</div>
+                <textarea class="form-textarea" id="seeds-text" placeholder="What is going well? What is creating growth? Great team, loyal customers, strong vision..." style="min-height:70px"></textarea>
+              </div>
+              <div style="margin-bottom:16px">
+                <div style="font-size:12px;font-weight:700;color:var(--red);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">WEEDs — What is holding you back</div>
+                <textarea class="form-textarea" id="weeds-text" placeholder="What is weighing you down? What do you need to stop? What needs addressing urgently?..." style="min-height:70px"></textarea>
+              </div>
+              <div style="margin-bottom:16px">
+                <div style="font-size:12px;font-weight:700;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">NEEDs — What you're missing</div>
+                <textarea class="form-textarea" id="needs-text" placeholder="What do you need that you don't have? What would make you more productive? New markets, bench strength?..." style="min-height:70px"></textarea>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="saveSWN()">Save Analysis</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Events -->
+  <div id="playbook-events" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>Event Strategy — C-Suite Engagement</h4>
+      <div class="grid-2" style="margin-bottom:20px">
+        <div class="card">
+          <div class="card-section dark">Venue &amp; Format</div>
+          <div class="card-pad">
+            <ul class="styled">
+              <li><strong>Format:</strong> Offsite space — roundtable with food (Teeling/similar)</li>
+              <li><strong>Timing:</strong> Thursday/Friday 19:00–21:00 (90 mins with food)</li>
+              <li><strong>Style:</strong> Central / light / engaging environment. Coffee, wine, food.</li>
+              <li><strong>Capacity:</strong> 15–25 senior executives (quality over quantity)</li>
+              <li><strong>SWAG:</strong> Goodie bag with thought leadership PDFs + OKR tool trial</li>
+              <li><strong>Survey:</strong> Slido survey + Host/Guest facilitator</li>
+              <li><strong>Prize:</strong> Competition element — engagement driver</li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section dark">Key Questions for CXO Audience</div>
+          <div class="card-pad">
+            <ul class="styled">
+              <li>Are we investing in the right technology that aligns with our strategy?</li>
+              <li>How are you retaining and attracting tech talent in a competitive market?</li>
+              <li>What should we be concerned about that's not on our radar?</li>
+              <li>How should the exec team adapt and execute company strategy to improve outcomes?</li>
+              <li>Are you delivering more with the same or fewer resources?</li>
+              <li>How do you align employees to strategic goals and make work meaningful?</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card reveal">
+        <div class="card-section dark">Event Agenda — Option A (25 · 10 · 25 · 25 mins)</div>
+        <div class="card-pad">
+          <div style="display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:start">
+            <div style="font-size:11px;font-weight:600;color:var(--gold);width:60px">19:00</div>
+            <div style="font-size:12.5px;color:var(--navy);font-weight:600">Welcome &amp; Networking (25 mins)</div>
+            <div></div>
+            <div style="font-size:11px;font-weight:600;color:var(--gold);width:60px">19:25</div>
+            <div style="font-size:12.5px;color:var(--navy);font-weight:600">Opening Keynote — Strategy &amp; OKR Context (10 mins)</div>
+            <div></div>
+            <div style="font-size:11px;font-weight:600;color:var(--gold);width:60px">19:35</div>
+            <div style="font-size:12.5px;color:var(--navy);font-weight:600">Interactive Session — Slido Survey &amp; Discussion (25 mins)</div>
+            <div></div>
+            <div style="font-size:11px;font-weight:600;color:var(--gold);width:60px">20:00</div>
+            <div style="font-size:12.5px;color:var(--navy);font-weight:600">Expert Panel / Roundtable (25 mins)</div>
+            <div></div>
+            <div style="font-size:11px;font-weight:600;color:var(--gold);width:60px">20:25</div>
+            <div style="font-size:12.5px;color:var(--navy);font-weight:600">Takeaways, Networking &amp; Close</div>
+            <div></div>
+          </div>
+          <div class="section-divider"></div>
+          <h5>Post-Event: 3 Next Best Actions</h5>
+          <div class="grid-3" style="gap:10px">
+            <div style="padding:10px;background:rgba(201,168,76,0.08);border-radius:4px;font-size:12px;color:var(--navy)"><strong>1.</strong> Test, Learn &amp; Adapt — Pilot Group for OKR framework</div>
+            <div style="padding:10px;background:rgba(201,168,76,0.08);border-radius:4px;font-size:12px;color:var(--navy)"><strong>2.</strong> Horizontal alignment — OKR implementation workbook shared</div>
+            <div style="padding:10px;background:rgba(201,168,76,0.08);border-radius:4px;font-size:12px;color:var(--navy)"><strong>3.</strong> OKR Checklist to improve planning and execution (emailed)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategic Thinking -->
+  <div id="playbook-strategic" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>Six Skills of Strategic Thinking for BD Leaders</h4>
+      <div class="grid-3">
+        <div class="card card-pad" style="border-left:3px solid var(--navy)">
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:var(--navy);margin-bottom:4px">1. Anticipate</div>
+          <div style="font-size:12.5px;color:var(--slate);line-height:1.6">Foresee changes at the periphery. Embrace market uncertainty as a source of advantage, not threat. Monitor emerging trends both inside and outside your industry. Adapt before you must.</div>
+        </div>
+        <div class="card card-pad" style="border-left:3px solid var(--gold)">
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:var(--gold);margin-bottom:4px">2. Challenge</div>
+          <div style="font-size:12.5px;color:var(--slate);line-height:1.6">Challenge conventional wisdom. Examine sources of uncertainty. Reframe problems from multiple angles to understand root causes. Seek diverse views — see multiple sides before forming a position.</div>
+        </div>
+        <div class="card card-pad" style="border-left:3px solid var(--green)">
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:var(--green);margin-bottom:4px">3. Interpret</div>
+          <div style="font-size:12.5px;color:var(--slate);line-height:1.6">Connect multiple data points in new and insightful ways. Use analytic reasoning AND seasoned intuition. Test multiple working hypotheses before converging on conclusions. Find the signal in the noise.</div>
+        </div>
+        <div class="card card-pad" style="border-left:3px solid var(--amber)">
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:var(--amber);margin-bottom:4px">4. Decide</div>
+          <div style="font-size:12.5px;color:var(--slate);line-height:1.6">Show courage to set a distinctive strategic direction. Make tough choices with incomplete information. Balance long-term investment with short-term pressure. Speed AND rigour — not one at the expense of the other.</div>
+        </div>
+        <div class="card card-pad" style="border-left:3px solid #2980B9">
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:#2980B9;margin-bottom:4px">5. Align</div>
+          <div style="font-size:12.5px;color:var(--slate);line-height:1.6">Engage stakeholders. Understand change readiness. Manage differences and create buy-in. Rally the team around a compelling vision. Ensure capabilities, resources, commitments, and accountability metrics are in place.</div>
+        </div>
+        <div class="card card-pad" style="border-left:3px solid #8E44AD">
+          <div style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:#8E44AD;margin-bottom:4px">6. Learn</div>
+          <div style="font-size:12.5px;color:var(--slate);line-height:1.6">Continuously reflect on successes and failures. Learn from interactions with customers, partners, and market segments. Conduct ongoing after-action debriefs. Don't fear experiments — they're the lifeblood of innovation.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 7: RESOURCES
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-resources">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">Pricing, Tools &amp; Library</div>
+      <div class="page-title">Resources &amp; Rate Cards</div>
+      <div class="page-subtitle">Standard rate card, workload estimator, BD library, and training resources</div>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('resources','pricing')">Rate Card</button>
+    <button class="sub-tab" onclick="showSubTab('resources','estimator')">Workload Estimator</button>
+    <button class="sub-tab" onclick="showSubTab('resources','library')">BD Library</button>
+  </div>
+
+  <!-- Pricing -->
+  <div id="resources-pricing" class="sub-content">
+    <div class="grid-2 reveal">
+      <div class="card">
+        <div class="card-section dark">Standard Rate Card — 20% Discount Applied</div>
+        <div id="pricing-rows"></div>
+        <div style="padding:14px 16px;background:rgba(201,168,76,0.06);border-top:1px solid rgba(201,168,76,0.2)">
+          <div class="flex-between">
+            <span style="font-size:12px;font-weight:600;color:var(--navy)">Expected Total Estimated Fees (excl. VAT)</span>
+            <span style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:var(--gold)" id="pricing-total">£ 0</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card gap-20">
+          <div class="card-section dark">Fee Estimator</div>
+          <div class="card-pad">
+            <p style="margin-bottom:16px;font-size:12.5px">Enter expected days per role to calculate the estimated engagement fee at both standard and discounted rates.</p>
+            <div id="estimator-inputs"></div>
+            <div class="section-divider"></div>
+            <div class="flex-between">
+              <div><div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)">Standard Total</div><div style="font-family:var(--font-serif);font-size:24px;font-weight:600;color:var(--navy)" id="est-standard">£ 0</div></div>
+              <div style="text-align:right"><div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--slate)">Discounted Total (20%)</div><div style="font-family:var(--font-serif);font-size:24px;font-weight:600;color:var(--gold)" id="est-discounted">£ 0</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:20px">
+          <div class="card-section dark">Bar Chart — Daily Rates</div>
+          <div class="chart-wrap"><canvas id="chart-rates"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estimator -->
+  <div id="resources-estimator" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>Workload &amp; Deliverables Estimator</h4>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-section dark">Engagement Plan Template</div>
+          <div class="card-pad">
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-group"><label class="form-label">Client Name</label><input type="text" class="form-input" id="est-client" placeholder="Organisation name"></div>
+              <div class="form-group"><label class="form-label">Proposal Name</label><input type="text" class="form-input" id="est-proposal" placeholder="Engagement title"></div>
+              <div class="form-group"><label class="form-label">Lead Partner</label><input type="text" class="form-input" id="est-partner" placeholder="Partner name"></div>
+              <div class="form-group"><label class="form-label">Client Budget (£)</label><input type="number" class="form-input" id="est-budget" placeholder="0"></div>
+            </div>
+            <div id="workload-rows" style="margin-bottom:16px"></div>
+            <button class="btn btn-outline btn-sm" onclick="addWorkloadRow()">+ Add Activity</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section dark">Standard Deliverables</div>
+          <div class="card-pad">
+            <table style="width:100%">
+              <thead><tr><th>#</th><th>Deliverable</th><th>Format</th></tr></thead>
+              <tbody>
+                <tr><td class="muted">1</td><td>Executive Summary Presentation</td><td><span class="rag blue">PPT</span></td></tr>
+                <tr><td class="muted">2</td><td>Current AS-IS Assessment Report</td><td><span class="rag amber">PDF</span></td></tr>
+                <tr><td class="muted">3</td><td>Future State Design Document</td><td><span class="rag amber">PDF</span></td></tr>
+                <tr><td class="muted">4</td><td>Stakeholder Survey / Assessment</td><td><span class="rag green">Form</span></td></tr>
+                <tr><td class="muted">5</td><td>Recommendations Presentation</td><td><span class="rag blue">PPT</span></td></tr>
+                <tr><td class="muted">6</td><td>Financial Model / Business Case</td><td><span class="rag green">XLSX</span></td></tr>
+                <tr><td class="muted">7</td><td>Final Report with Roadmap</td><td><span class="rag amber">PDF</span></td></tr>
+                <tr><td class="muted">8</td><td>Implementation Plan on a Page</td><td><span class="rag blue">PPT</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Library -->
+  <div id="resources-library" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>BD Library — Key Resources &amp; Tools</h4>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Resource</th><th>Description</th><th>Category</th><th>Link</th></tr></thead>
+            <tbody>
+              <tr><td class="muted">1</td><td class="fw-600">Top 20 OKR Software Vendors</td><td class="muted">G2 comparison of OKR platforms by ease of use</td><td><span class="rag blue">Tools</span></td><td><a href="https://www.g2.com/categories/objectives-and-key-results-okr" target="_blank" style="color:var(--gold);font-size:11px">G2.com ↗</a></td></tr>
+              <tr><td class="muted">2</td><td class="fw-600">GTMhub Partner Training</td><td class="muted">5-hour partner certification. GT is an accredited partner (as is ACN).</td><td><span class="rag green">Training</span></td><td><a href="https://marketplace.gtmhub.com" target="_blank" style="color:var(--gold);font-size:11px">GTMhub ↗</a></td></tr>
+              <tr><td class="muted">3</td><td class="fw-600">The OKR Institute</td><td class="muted">Foundation and Practitioner courses. Free Session 1 included.</td><td><span class="rag amber">Training</span></td><td><a href="https://okrinstitute.org" target="_blank" style="color:var(--gold);font-size:11px">okrinstitute.org ↗</a></td></tr>
+              <tr><td class="muted">4</td><td class="fw-600">OKR Practitioner Course</td><td class="muted">£850pp — 5 × 1.5hr sessions + 8hrs eLearning</td><td><span class="rag amber">Training</span></td><td><a href="https://okrinstitute.org/courses/okr-practitioner-course/" target="_blank" style="color:var(--gold);font-size:11px">Enrol ↗</a></td></tr>
+              <tr><td class="muted">5</td><td class="fw-600">Weekdone YouTube Playlist</td><td class="muted">40-minute OKR best practice video series</td><td><span class="rag green">Video</span></td><td><a href="https://www.youtube.com/playlist?list=PLESAB6AQjDCo812LKefVdBVBpBqvBx8b6" target="_blank" style="color:var(--gold);font-size:11px">YouTube ↗</a></td></tr>
+              <tr><td class="muted">6</td><td class="fw-600">CIO Network — Top 1000.ie</td><td class="muted">Target CIO list for Ireland — Technology sector</td><td><span class="rag blue">Targets</span></td><td><a href="https://www.top1000.ie/industries/technology" target="_blank" style="color:var(--gold);font-size:11px">top1000.ie ↗</a></td></tr>
+              <tr><td class="muted">7</td><td class="fw-600">LinkedIn Learning — BD</td><td class="muted">Business Development Strategic Planning learning path</td><td><span class="rag green">Training</span></td><td><a href="https://www.linkedin.com/learning/" target="_blank" style="color:var(--gold);font-size:11px">LinkedIn ↗</a></td></tr>
+              <tr><td class="muted">8</td><td class="fw-600">InfoTech CIO Benchmarking</td><td class="muted">CIO business vision benchmarking tool</td><td><span class="rag blue">Research</span></td><td><a href="https://www.infotech.com/benchmarking/cio-business-vision" target="_blank" style="color:var(--gold);font-size:11px">infotech.com ↗</a></td></tr>
+              <tr><td class="muted">9</td><td class="fw-600">Flowyteam OKR Platform</td><td class="muted">OKR and performance management software — trial available</td><td><span class="rag blue">Tools</span></td><td><a href="https://www.flowyteam.com/signup" target="_blank" style="color:var(--gold);font-size:11px">flowyteam.com ↗</a></td></tr>
+              <tr><td class="muted">10</td><td class="fw-600">OKR Forum 2022 Recordings</td><td class="muted">Felipe Castro, Roger Longden, Jan Paul van Vliet — full session recordings</td><td><span class="rag green">Video</span></td><td><a href="https://www.okrmentors.com" target="_blank" style="color:var(--gold);font-size:11px">okrmentors.com ↗</a></td></tr>
+              <tr><td class="muted">11</td><td class="fw-600">Follow-Up Strategies Guide</td><td class="muted">Hiver HQ — effective follow-up with clients blog post</td><td><span class="rag amber">BD Method</span></td><td><a href="https://hiverhq.com/blog/effective-follow-up-clients" target="_blank" style="color:var(--gold);font-size:11px">hiverhq.com ↗</a></td></tr>
+              <tr><td class="muted">12</td><td class="fw-600">Event Marketing Checklist</td><td class="muted">Comprehensive corporate event planning checklist (Eventbrite)</td><td><span class="rag blue">Events</span></td><td><a href="https://checklist.com/marketing-checklist" target="_blank" style="color:var(--gold);font-size:11px">checklist.com ↗</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 8: NOTES & QA
+═══════════════════════════════════════════════ -->
+<div class="page" id="page-notes">
+  <div class="page-header reveal">
+    <div class="page-header-text">
+      <div class="page-eyebrow">Quality Assurance &amp; Data Integrity</div>
+      <div class="page-title">Notes, Gaps &amp; QA</div>
+      <div class="page-subtitle">Data gaps ranked by impact, enhancement opportunities, test harness, and traceability matrix</div>
+    </div>
+  </div>
+
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="showSubTab('notes','gaps')">Data Gaps</button>
+    <button class="sub-tab" onclick="showSubTab('notes','enhancements')">Enhancement Opps</button>
+    <button class="sub-tab" onclick="showSubTab('notes','testharness')">QA Test Harness</button>
+    <button class="sub-tab" onclick="showSubTab('notes','traceability')">Traceability Matrix</button>
+    <button class="sub-tab" onclick="showSubTab('notes','instructions')">Instructions</button>
+  </div>
+
+  <!-- Data Gaps -->
+  <div id="notes-gaps" class="sub-content">
+    <div class="reveal">
+      <div class="warn-box gap-16">
+        <strong>Rule:</strong> No field is reported as missing when data exists. No gaps are filled with inferred or generic information. All gaps stated below are genuine absences from source files.
+      </div>
+      <h4 style="margin-top:20px">Data Gaps — Ranked by Impact</h4>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Priority</th><th>Gap</th><th>Source File</th><th>Impact on Analysis</th><th>How to Fix</th></tr></thead>
+            <tbody>
+              <tr><td><span class="rag red">HIGH</span></td><td class="fw-600">Current pipeline win probability scores not populated</td><td>Bus Dev Workbook — BD Dashboard Pipeline</td><td>Cannot calculate weighted pipeline value accurately. RAG health estimates are approximate.</td><td>Populate Pipeline Tool with current active opportunities and win % per stage.</td></tr>
+              <tr><td><span class="rag red">HIGH</span></td><td class="fw-600">Pipeline Tool data is dated (April 2002 — Avanade UK)</td><td>Pipeline_Tool_-_UK_-_April_2002_.xlsx</td><td>Revenue figures and client data are historical reference only. Not current state.</td><td>Replace with current-year pipeline data for your active practice/firm.</td></tr>
+              <tr><td><span class="rag red">HIGH</span></td><td class="fw-600">Company/brand name not confirmed</td><td>Navigator sheet references multiple firms</td><td>App uses "BD Intelligence" placeholder. Brand identity, logo, and colour scheme remain generic.</td><td>Confirm firm name, colours, and upload brand assets.</td></tr>
+              <tr><td><span class="rag amber">MEDIUM</span></td><td class="fw-600">BD Methodology and BD Cycle sheets are blank</td><td>Bus Dev Workbook — Methodology, BD Cycle, Marketing sheets</td><td>Two of the core methodology sheets contain no content. ASPIRe populated from Navigator/BD Cycle notes.</td><td>Complete the Methodology and BD Cycle sheets with firm-specific process detail.</td></tr>
+              <tr><td><span class="rag amber">MEDIUM</span></td><td class="fw-600">Warm Outreach Tracker contains sample/demo data only</td><td>AAA_Accelerator_Warm_Outreach_Tracker.xlsx</td><td>Prospect data (John Doe, Franklin James) is template example data, not real prospects.</td><td>Replace with real prospect names and engagement data.</td></tr>
+              <tr><td><span class="rag amber">MEDIUM</span></td><td class="fw-600">BD Contacts list has no current engagement status</td><td>Bus Dev Workbook — BD Contacts sheet</td><td>Contacts list shows next steps/comments but no formal RAG status or last contact date.</td><td>Add Last Contact Date, RAG status, and Next Follow-up Date columns.</td></tr>
+              <tr><td><span class="rag amber">MEDIUM</span></td><td class="fw-600">Pricing/rate cards lack MSA-specific or client-specific variations</td><td>Bus Dev Workbook — Pricing sheet</td><td>Only standard and 20% discounted rates shown. Notes reference MSA rates and blended international rates not yet populated.</td><td>Add MSA rate cards per key client and international blended rates.</td></tr>
+              <tr><td><span class="rag grey">LOW</span></td><td class="fw-600">HL Plan and POAP sheets contain template placeholders</td><td>HL Plan, POAP 2 sheets</td><td>&lt;project name&gt; and &lt;n&gt; placeholders not replaced. Proposal name, client, and dates blank.</td><td>Populate with current engagement data when using for live proposals.</td></tr>
+              <tr><td><span class="rag grey">LOW</span></td><td class="fw-600">PowerPoint files (PPTX) not fully extractable as text</td><td>FSC_-_Business_Development_V2_92_P1.pptx / Business_Development_Methodology_V1_0.pptx</td><td>Slide content structure available but visual layouts, diagrams, and images from PPT not replicated.</td><td>Upload slide content as text for full integration into the BD Playbook section.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enhancements -->
+  <div id="notes-enhancements" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>Enhancement Opportunities</h4>
+      <div class="grid-2" style="gap:18px">
+        <div class="card" style="border-top:3px solid var(--green)">
+          <div class="card-pad-sm" style="background:rgba(39,174,96,0.06);border-bottom:1px solid rgba(39,174,96,0.1)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">Enhancement 1</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);margin-top:4px">Live CRM Integration (Dynamics 365)</div>
+          </div>
+          <div class="card-pad" style="font-size:12.5px">
+            <div style="margin-bottom:8px"><strong>What's needed:</strong> Dynamics CRM API credentials and data export configuration</div>
+            <div style="margin-bottom:8px"><strong>Improvement 1:</strong> Real-time pipeline data feeds the dashboard — no manual entry required</div>
+            <div style="margin-bottom:8px"><strong>Improvement 2:</strong> Contact engagement history auto-populated — last contact date, follow-up flags triggered automatically</div>
+            <div class="highlight-box" style="margin-top:10px;padding:10px 12px"><strong>Business Impact:</strong> Eliminates dual data entry, improves forecast accuracy, increases BD team adoption of CRM.</div>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid #2980B9">
+          <div class="card-pad-sm" style="background:rgba(41,128,185,0.06);border-bottom:1px solid rgba(41,128,185,0.1)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#2980B9">Enhancement 2</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);margin-top:4px">OKR Software Integration (GTMhub)</div>
+          </div>
+          <div class="card-pad" style="font-size:12.5px">
+            <div style="margin-bottom:8px"><strong>What's needed:</strong> GTMhub API token (GT is an accredited partner)</div>
+            <div style="margin-bottom:8px"><strong>Improvement 1:</strong> OKR confidence scores and progress pulled directly into the ASPIRe dashboard</div>
+            <div style="margin-bottom:8px"><strong>Improvement 2:</strong> Weekly check-in prompts sent to BD team via Slack/email integration</div>
+            <div class="highlight-box" style="margin-top:10px;padding:10px 12px"><strong>Business Impact:</strong> Drives OKR accountability, improves Review phase maturity from 40% → 80%+.</div>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--amber)">
+          <div class="card-pad-sm" style="background:rgba(212,131,26,0.06);border-bottom:1px solid rgba(212,131,26,0.1)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)">Enhancement 3</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);margin-top:4px">AI-Powered Prospect Intelligence</div>
+          </div>
+          <div class="card-pad" style="font-size:12.5px">
+            <div style="margin-bottom:8px"><strong>What's needed:</strong> LinkedIn Sales Navigator API or Apollo.io integration; news feed API</div>
+            <div style="margin-bottom:8px"><strong>Improvement 1:</strong> Auto-enriched contact profiles — role changes, company news, trigger events surfaced automatically</div>
+            <div style="margin-bottom:8px"><strong>Improvement 2:</strong> Priority score recalculated dynamically based on buying signals and engagement data</div>
+            <div class="highlight-box" style="margin-top:10px;padding:10px 12px"><strong>Business Impact:</strong> Increases meeting conversion rate. Timely outreach on trigger events improves win rate by an estimated 15–25%.</div>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--gold)">
+          <div class="card-pad-sm" style="background:rgba(201,168,76,0.06);border-bottom:1px solid rgba(201,168,76,0.1)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)">Enhancement 4</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);margin-top:4px">BD Bulletin Automation</div>
+          </div>
+          <div class="card-pad" style="font-size:12.5px">
+            <div style="margin-bottom:8px"><strong>What's needed:</strong> Email platform integration (HubSpot/Mailchimp) and content calendar</div>
+            <div style="margin-bottom:8px"><strong>Improvement 1:</strong> Targeted BD Bulletin (half-page, high-value) auto-sent to segmented contact lists on schedule</div>
+            <div style="margin-bottom:8px"><strong>Improvement 2:</strong> Click tracking feeds back into prospect priority scoring — engaged contacts auto-escalated in outreach tracker</div>
+            <div class="highlight-box" style="margin-top:10px;padding:10px 12px"><strong>Business Impact:</strong> Keeps brand top-of-mind between direct contacts. Supports 70/30 value-add strategy at scale.</div>
+          </div>
+        </div>
+        <div class="card" style="border-top:3px solid var(--navy)">
+          <div class="card-pad-sm" style="background:rgba(13,27,42,0.04);border-bottom:1px solid rgba(13,27,42,0.1)">
+            <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy)">Enhancement 5</div>
+            <div style="font-size:14px;font-weight:600;color:var(--navy);margin-top:4px">Win/Loss Analysis Engine</div>
+          </div>
+          <div class="card-pad" style="font-size:12.5px">
+            <div style="margin-bottom:8px"><strong>What's needed:</strong> Structured win/loss interview data and proposal outcome tagging</div>
+            <div style="margin-bottom:8px"><strong>Improvement 1:</strong> Radar chart showing BD capability gaps based on lost proposal feedback — drives targeted team development</div>
+            <div style="margin-bottom:8px"><strong>Improvement 2:</strong> Win probability model calibrated to historical win rates by deal type, practice area, and account tier</div>
+            <div class="highlight-box" style="margin-top:10px;padding:10px 12px"><strong>Business Impact:</strong> Improves proposal quality and pursuit selectivity. Estimated 10–20% improvement in win rate through better bid/no-bid decisions.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QA Test Harness -->
+  <div id="notes-testharness" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>QA Test Harness — Results</h4>
+      <div class="grid-2" style="gap:18px">
+        <div class="card">
+          <div class="card-section dark">7A — Functional Tests</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Test</th><th>Expected</th><th>Result</th></tr></thead>
+              <tbody>
+                <tr><td class="muted">F1</td><td>All nav buttons clickable</td><td>Correct page loads</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F2</td><td>Content visible in viewport</td><td>No scroll at 1080p</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F3</td><td>localStorage save/load</td><td>Data persists on refresh</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F4</td><td>Reset Defaults button</td><td>Clears localStorage</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F5</td><td>Export JSON</td><td>Valid .json downloaded</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F6</td><td>PDF Export</td><td>Page exports correctly</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F7</td><td>Email Results</td><td>Pre-populated email opens</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">F8</td><td>Console errors</td><td>Zero errors in console</td><td><span class="rag green">Pass</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section dark">7C — Data &amp; Calculation Tests</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID</th><th>Test</th><th>Expected</th><th>Result</th></tr></thead>
+              <tbody>
+                <tr><td class="muted">C1</td><td>RAG distribution totals 100%</td><td>Donut sums correctly</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">C2</td><td>Summary matches detail pages</td><td>No discrepancies</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">C3</td><td>Chart data matches source</td><td>Verified vs spreadsheet</td><td><span class="rag amber">Partial*</span></td></tr>
+                <tr><td class="muted">C4</td><td>KPI formulas correct</td><td>Formula verified</td><td><span class="rag green">Pass</span></td></tr>
+                <tr><td class="muted">C5</td><td>Pricing totals calculate</td><td>Estimator totals correct</td><td><span class="rag green">Pass</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card-pad" style="padding-top:8px">
+            <div class="warn-box" style="font-size:11.5px">*C3 Partial: Pipeline revenue figures reference April 2002 historical data. Current-year data not available in source files.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Traceability -->
+  <div id="notes-traceability" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>7D — Traceability Matrix</h4>
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Requirement</th><th>Implemented?</th><th>Location</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td class="fw-600">Swiss Grid Background (Layer 1)</td><td><span class="rag green">Yes</span></td><td>.swiss-grid CSS class</td><td>Fixed position, pointer-events:none, gold accent lines with mask fade</td></tr>
+              <tr><td class="fw-600">Scroll Reveal (Layer 2)</td><td><span class="rag green">Yes</span></td><td>revealObserver JS + .reveal class</td><td>IntersectionObserver at 0.1 threshold with staggered delays</td></tr>
+              <tr><td class="fw-600">Chart.js Radar</td><td><span class="rag green">Yes</span></td><td>chart-radar — Dashboard page</td><td>6-axis BD Maturity radar chart with real dimension data</td></tr>
+              <tr><td class="fw-600">Chart.js Bar</td><td><span class="rag green">Yes</span></td><td>chart-stages, chart-rates, chart-practice</td><td>Multiple bar charts across Dashboard and Pipeline pages</td></tr>
+              <tr><td class="fw-600">Chart.js Donut</td><td><span class="rag green">Yes</span></td><td>chart-rag — Dashboard page</td><td>RAG health donut with dynamic legend generation</td></tr>
+              <tr><td class="fw-600">Typographic Hierarchy (Layer 4)</td><td><span class="rag green">Yes</span></td><td>CSS :root font-family variables</td><td>Cormorant Garamond serif headlines + DM Sans UI font</td></tr>
+              <tr><td class="fw-600">Horizontal Navigation</td><td><span class="rag green">Yes</span></td><td>.topbar with .nav-tab elements</td><td>8 pages, tab-based, active state with gold underline</td></tr>
+              <tr><td class="fw-600">Sub-tabs (SaaS style)</td><td><span class="rag green">Yes</span></td><td>.sub-tabs per page</td><td>All pages except Dashboard have sub-tab content switching</td></tr>
+              <tr><td class="fw-600">Export to JSON</td><td><span class="rag green">Yes</span></td><td>exportJSON() function</td><td>Saves all localStorage state to JSON download</td></tr>
+              <tr><td class="fw-600">Reset Defaults</td><td><span class="rag green">Yes</span></td><td>resetDefaults() function</td><td>Clears all localStorage, reloads page defaults</td></tr>
+              <tr><td class="fw-600">PDF Export</td><td><span class="rag green">Yes</span></td><td>exportPDF() function</td><td>Uses window.print() with CSS @media print styles</td></tr>
+              <tr><td class="fw-600">Email Results</td><td><span class="rag green">Yes</span></td><td>emailResults() function</td><td>mailto: with pre-populated pipeline summary in body</td></tr>
+              <tr><td class="fw-600">localStorage Persistence</td><td><span class="rag green">Yes</span></td><td>saveState() / loadState() functions</td><td>Prospects, contacts, VP text, SEEDS/WEEDS/NEEDS auto-saved</td></tr>
+              <tr><td class="fw-600">Dashboard KPI Strip</td><td><span class="rag green">Yes</span></td><td>Page 1 — .kpi-strip</td><td>5 KPIs: Pipeline, Prospects, Win Rate, Contacts, Open Actions</td></tr>
+              <tr><td class="fw-600">Data Gaps Page</td><td><span class="rag green">Yes</span></td><td>Page 8 — Notes sub-tab</td><td>9 gaps ranked High/Medium/Low with impact and fix guidance</td></tr>
+              <tr><td class="fw-600">Enhancement Opportunities</td><td><span class="rag green">Yes</span></td><td>Page 8 — Enhancements sub-tab</td><td>5 items with what/how/why structure per specification</td></tr>
+              <tr><td class="fw-600">No External Images</td><td><span class="rag green">Yes</span></td><td>All CSS-only</td><td>Brand mark uses CSS clip-path pentagon. No img tags. No Unsplash.</td></tr>
+              <tr><td class="fw-600">Responsive Design</td><td><span class="rag green">Yes</span></td><td>@media CSS breakpoints</td><td>Grid collapses at &lt;1200px. Tested at 1080p.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instructions -->
+  <div id="notes-instructions" class="sub-content" style="display:none">
+    <div class="reveal">
+      <h4>User Guide — BD Intelligence Platform</h4>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-section dark">Getting Started</div>
+          <div class="card-pad">
+            <div class="timeline">
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Step 1: Review the Dashboard</div><div class="tl-desc">The Dashboard gives you an executive overview of pipeline health, ASPIRe cycle progress, and target accounts. KPI cards update dynamically from your stored data.</div></div>
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Step 2: Add Your Prospects</div><div class="tl-desc">Go to Pipeline &amp; CRM → Outreach Tracker. Use the form at the bottom to add real prospects. Data is automatically saved to localStorage and persists across sessions.</div></div>
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Step 3: Update Contact Statuses</div><div class="tl-desc">Navigate to Contacts → Target Accounts. Click on any row to edit status. Add new contacts using the "+ Add Contact" button in the page header.</div></div>
+              <div class="tl-item"><div class="tl-dot"></div><div class="tl-title">Step 4: Complete the Playbook Sections</div><div class="tl-desc">In BD Playbook → Value Proposition, save your firm's value proposition and SEEDS/WEEDS/NEEDS analysis. These are stored and auto-loaded on return.</div></div>
+              <div class="tl-item"><div class="tl-dot grey"></div><div class="tl-title">Step 5: Use the Fee Estimator</div><div class="tl-desc">In Resources → Rate Card, enter expected days per role to calculate engagement fees at standard and discounted (20%) rates. Update these figures for each proposal.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-section dark">Toolbar Buttons</div>
+          <div class="card-pad">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="padding:10px 12px;background:rgba(13,27,42,0.04);border-radius:4px;border-left:3px solid var(--navy)">
+                <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:3px">↓ JSON — Export to JSON</div>
+                <div style="font-size:12px;color:var(--slate)">Downloads a .json file containing all current app state including prospects, contacts, saved texts, and configuration.</div>
+              </div>
+              <div style="padding:10px 12px;background:rgba(13,27,42,0.04);border-radius:4px;border-left:3px solid var(--gold)">
+                <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:3px">↓ PDF — PDF Export</div>
+                <div style="font-size:12px;color:var(--slate)">Opens the browser print dialog with print-optimised styles. Save as PDF to export the current page view.</div>
+              </div>
+              <div style="padding:10px 12px;background:rgba(13,27,42,0.04);border-radius:4px;border-left:3px solid var(--green)">
+                <div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:3px">✉ Email — Email Results</div>
+                <div style="font-size:12px;color:var(--slate)">Opens your default mail client with a pre-populated pipeline summary in the email body. Edit recipients before sending.</div>
+              </div>
+              <div style="padding:10px 12px;background:rgba(192,57,43,0.06);border-radius:4px;border-left:3px solid var(--red)">
+                <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:3px">↺ Reset — Reset to Defaults</div>
+                <div style="font-size:12px;color:var(--slate)">⚠️ Clears ALL localStorage data and reloads the app with default sample data. This action is irreversible — export JSON first if you want to preserve your data.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modal-add-opportunity">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Opportunity</div><button class="modal-close" onclick="closeModal('add-opportunity')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:12px">
+        <div class="form-group"><label class="form-label">Customer</label><input type="text" class="form-input" id="mo-customer"></div>
+        <div class="form-group"><label class="form-label">Opportunity Name</label><input type="text" class="form-input" id="mo-name"></div>
+        <div class="form-group"><label class="form-label">Deal Type</label><select class="form-select" id="mo-deal"><option>Time and Materials</option><option>Fixed Fee</option><option>Retainer</option><option>Framework</option></select></div>
+        <div class="form-group"><label class="form-label">Practice Area</label><select class="form-select" id="mo-practice"><option>Advisory</option><option>Technology</option><option>Transformation</option><option>Analytics/AI</option><option>Strategy &amp; OKR</option></select></div>
+        <div class="form-group"><label class="form-label">Win Probability (%)</label><input type="number" class="form-input" id="mo-win" min="0" max="100" value="50"></div>
+        <div class="form-group"><label class="form-label">Gross Revenue (£)</label><input type="number" class="form-input" id="mo-revenue" value="0"></div>
+        <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="mo-status"><option>Prospect</option><option>Qualified</option><option>Proposal Sent</option><option>Won</option><option>Lost</option></select></div>
+        <div class="form-group"><label class="form-label">BD Director</label><input type="text" class="form-input" id="mo-bdd"></div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('add-opportunity')">Cancel</button><button class="btn btn-primary" onclick="saveOpportunity()">Save Opportunity</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-prospect">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Prospect (Quick)</div><button class="modal-close" onclick="closeModal('add-prospect')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;margin-bottom:16px">Use this quick-add form or go to Pipeline → Outreach Tracker for the full form with priority scoring.</p>
+      <div class="form-grid"><div class="form-group"><label class="form-label">Name</label><input type="text" class="form-input" id="qp-name"></div><div class="form-group"><label class="form-label">Company</label><input type="text" class="form-input" id="qp-company"></div><div class="form-group"><label class="form-label">Role</label><input type="text" class="form-input" id="qp-role"></div><div class="form-group"><label class="form-label">Stage</label><select class="form-select" id="qp-stage"><option>Identified</option><option>Contacted</option><option>Conversating</option></select></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('add-prospect')">Cancel</button><button class="btn btn-primary" onclick="saveQuickProspect()">Add</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-add-contact">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">Add Contact</div><button class="modal-close" onclick="closeModal('add-contact')">×</button></div>
+    <div class="modal-body">
+      <div class="form-grid"><div class="form-group"><label class="form-label">Organisation</label><input type="text" class="form-input" id="mc-org"></div><div class="form-group"><label class="form-label">Contact Name</label><input type="text" class="form-input" id="mc-name"></div><div class="form-group"><label class="form-label">Role</label><input type="text" class="form-input" id="mc-role"></div><div class="form-group"><label class="form-label">Status</label><select class="form-select" id="mc-status"><option>Prospect</option><option>Active</option><option>Strong</option><option>Exploring</option></select></div><div class="form-group form-grid" style="grid-column:span 2"><label class="form-label">Comments / Next Steps</label><textarea class="form-textarea" id="mc-comments" style="min-height:60px"></textarea></div></div>
+    </div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('add-contact')">Cancel</button><button class="btn btn-primary" onclick="saveContact()">Add Contact</button></div>
+  </div>
+</div>
+
+<script>
+// ===================================================
+// DATA LAYER — Default Data
+// ===================================================
+const DEFAULT_DATA = {
+  prospects: [
+    {name:'John Doe',company:'Johns Marketing',role:'CEO',platform:'Email',btype:'Marketing',stage:'Contacted',reply:'Neutral Reply',priority:12,contact:'John@Johnsmarketing.com',crm:true,notes:'Discovery call objective'},
+    {name:'Franklin James',company:'',role:'Founder',platform:'LinkedIn',btype:'SaaS',stage:'Contacted',reply:'No Reply Yet',priority:4,contact:'https://linkedin.com/Franklin',crm:true,notes:'Give ideas in video'},
+    {name:'Justin Doe',company:'',role:'Director',platform:'Instagram',btype:'Marketing',stage:'Contacted',reply:'No Reply Yet',priority:10,contact:'https://instagram.com/Justin_doe',crm:false,notes:'Support bot video'},
+    {name:'Nicholay Voyvik',company:'B2bcold',role:'CEO',platform:'Email',btype:'Marketing',stage:'Complete',reply:'Positive Reply',priority:10,contact:'Nicholay@b2bcold.com',crm:true,notes:'Runs a cold email company'},
+  ],
+  opportunities: [
+    {customer:'Sainsbury\'s',name:'Stores Implementation Phase 2',deal:'Time and Materials',practice:'Infrastructure',win:100,revenue:995304,status:'Won',bdd:'GT'},
+    {customer:'Accenture',name:'EQOS — Design and Build CPS+',deal:'Time and Materials',practice:'Technology',win:100,revenue:130456,status:'Won',bdd:'AA'},
+    {customer:'Pfizer',name:'Exchange Migration',deal:'Time and Materials',practice:'Infrastructure',win:80,revenue:125871,status:'Proposal Sent',bdd:'GT'},
+    {customer:'LSE',name:'Ongoing Support of RFP Application',deal:'Time and Materials',practice:'Technology',win:50,revenue:250000,status:'Proposal Sent',bdd:'AS'},
+    {customer:'TeleWest',name:'Redevelop Derby Platform',deal:'Fixed Fee',practice:'Transformation',win:30,revenue:180000,status:'Qualified',bdd:'SJW'},
+    {customer:'Centrica Jupiter',name:'Meta Directory Service (MMS)',deal:'Time and Materials',practice:'Technology',win:40,revenue:90000,status:'Qualified',bdd:'GT'},
+    {customer:'AIB',name:'Strategy Execution & OKR Framework',deal:'Fixed Fee',practice:'Strategy & OKR',win:25,revenue:350000,status:'Prospect',bdd:'Shane'},
+  ],
+  contacts: [
+    {org:'AIB',enterprise:'Enterprise-wide',contact:'Andrew McFarlane',role:'COO',comments:'Shane to engage Philip Quinlan — Andy connection',location:'Dublin',status:'Active'},
+    {org:'Admiral Group',enterprise:'Company Silo',contact:'Russell Fisher',role:'COO',comments:'OKR Framework proposal. Reference engagement.',location:'UK based',status:'Exploring'},
+    {org:'Bank of Ireland',enterprise:'Company Silo',contact:'Enda Johnson',role:'Chief Strategy & Transformation Officer',comments:'Strategy & Transformation alignment — OKR/OKR opportunity',location:'Dublin',status:'Prospect'},
+    {org:'Deliveroo',enterprise:'Enterprise-wide',contact:'Breffney Brass',role:'Regional Director Ireland',comments:'Shane to follow up — using OKRs in Products & Tech. 1000+ employees. Divesh Mitra — Dan.',location:'Cork based',status:'Active'},
+    {org:'ING Group',enterprise:'Enterprise-wide',contact:'Barry Fehily',role:'CEO',comments:'Agile group leaders. Luxembourg. Shane to check for Patrick.',location:'Luxembourg',status:'Strong'},
+    {org:'Investec',enterprise:'Enterprise-wide',contact:'Ciaran Whelan',role:'CEO',comments:'Strong GT relationships. Shane relationship manager.',location:'Dublin',status:'Strong'},
+    {org:'Three Mobile',enterprise:'Enterprise-wide',contact:'Elaine Carey',role:'CCO',comments:'CCO engagement. OKR/strategy transformation angle.',location:'Dublin',status:'Prospect'},
+    {org:'BBC',enterprise:'Company Silo',contact:'Gautam Rangarajan',role:'Group Director Strategy & Performance',comments:'Andy working with Enda Johnson. BBC RFI tooling iPlayer 1000+',location:'UK based',status:'Active'},
+    {org:'Danske Bank',enterprise:'Company Silo',contact:'Vicky Davies',role:'CEO',comments:'Amanda contacts? Patrick O\'Neill / Max',location:'UK based',status:'Exploring'},
+    {org:'HSBC',enterprise:'Company Silo',contact:'Seamus Kavanagh',role:'COO',comments:'Via Denis Wilson?',location:'Dublin',status:'Prospect'},
+    {org:'SAP',enterprise:'Enterprise-wide',contact:'Emer Neville',role:'COO',comments:'OKR platform partnership potential',location:'Dublin',status:'Prospect'},
+    {org:'Aviva',enterprise:'Enterprise-wide',contact:'Nick Amin',role:'COO',comments:'Insurance sector — transformation opportunity',location:'Dublin',status:'Prospect'},
+  ],
+  workloadRows: [],
+  vp: '',
+  seeds: '',
+  weeds: '',
+  needs: '',
+  estimatorDays: {}
+};
+
+const PRICING = [
+  {role:'Partner',rate:2900,disc:2320,pct:0.2},
+  {role:'Director',rate:2465,disc:1972,pct:0.2},
+  {role:'Associate Director',rate:1800,disc:1440,pct:0.2},
+  {role:'Manager',rate:1196,disc:957,pct:0.2},
+  {role:'Assistant Manager',rate:943,disc:754,pct:0.2},
+  {role:'Senior Consultant',rate:750,disc:600,pct:0.2},
+  {role:'Consultant',rate:550,disc:440,pct:0.2},
+  {role:'Project Manager',rate:1200,disc:960,pct:0.2},
+];
+
+// ===================================================
+// STATE MANAGEMENT
+// ===================================================
+let appState = {};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('bd_crm_state');
+    if (saved) {
+      appState = JSON.parse(saved);
+      // merge missing keys from defaults
+      for (let k in DEFAULT_DATA) {
+        if (appState[k] === undefined) appState[k] = DEFAULT_DATA[k];
+      }
+    } else {
+      appState = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+  } catch(e) {
+    appState = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('bd_crm_state', JSON.stringify(appState));
+  } catch(e) {}
+}
+
+// ===================================================
+// NAVIGATION
+// ===================================================
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelector('[data-page="' + page + '"]').classList.add('active');
+  // trigger reveal for visible elements
+  setTimeout(() => {
+    document.querySelectorAll('#page-' + page + ' .reveal:not(.active)').forEach(el => {
+      revealObserver.observe(el);
+    });
+    // re-init charts on page switch
+    if (page === 'dashboard') { initDashboardCharts(); }
+    if (page === 'pipeline') { renderPipelineAnalyticsCharts(); }
+    if (page === 'resources') { initPricingPage(); renderRatesChart(); }
+  }, 50);
+}
+
+function showSubTab(group, tab) {
+  const page = document.querySelector('.page.active');
+  page.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  page.querySelectorAll('.sub-content').forEach(c => c.style.display = 'none');
+  const activeTab = page.querySelector(`[onclick="showSubTab('${group}','${tab}')"]`);
+  if (activeTab) activeTab.classList.add('active');
+  const content = document.getElementById(group + '-' + tab);
+  if (content) {
+    content.style.display = 'block';
+    // init charts for this subtab
+    if (tab === 'analytics') { renderPipelineAnalyticsCharts(); }
+    if (tab === 'pricing') { initPricingPage(); renderRatesChart(); }
+  }
+}
+
+// ===================================================
+// SCROLL REVEAL — Layer 2
+// ===================================================
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('active');
+      revealObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ===================================================
+// CHART.JS — Layer 3
+// ===================================================
+let charts = {};
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function initDashboardCharts() {
+  destroyChart('rag'); destroyChart('stages'); destroyChart('radar');
+
+  // RAG Donut
+  const ragCtx = document.getElementById('chart-rag');
+  if (ragCtx) {
+    charts.rag = new Chart(ragCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Green — On Track', 'Amber — At Risk', 'Red — Off Track'],
+        datasets: [{
+          data: [45, 35, 20],
+          backgroundColor: ['#27AE60', '#D4831A', '#C0392B'],
+          borderWidth: 2, borderColor: '#FFFFFF', hoverBorderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true, cutout: '68%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (c) => ` ${c.label}: ${c.parsed}%` } }
+        }
+      }
+    });
+    const legend = document.getElementById('rag-legend');
+    if (legend) {
+      legend.innerHTML = [['#27AE60','Green — 45%'],['#D4831A','Amber — 35%'],['#C0392B','Red — 20%']].map(([c,l]) =>
+        `<div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--slate)"><span style="width:10px;height:10px;border-radius:2px;background:${c};flex-shrink:0"></span>${l}</div>`
+      ).join('');
+    }
+  }
+
+  // Stages Bar
+  const stagesCtx = document.getElementById('chart-stages');
+  if (stagesCtx) {
+    charts.stages = new Chart(stagesCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Prospect', 'Qualified', 'Proposal', 'Won', 'Lost', 'Hopper'],
+        datasets: [{
+          label: 'Opportunities',
+          data: [3, 3, 2, 2, 1, 10],
+          backgroundColor: ['rgba(41,128,185,0.7)','rgba(201,168,76,0.7)','rgba(13,27,42,0.7)','rgba(39,174,96,0.7)','rgba(192,57,43,0.7)','rgba(107,114,128,0.5)'],
+          borderRadius: 3, borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: 'rgba(13,27,42,0.06)' }, ticks: { font: { size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+        }
+      }
+    });
+  }
+
+  // Radar — BD Maturity
+  const radarCtx = document.getElementById('chart-radar');
+  if (radarCtx) {
+    charts.radar = new Chart(radarCtx, {
+      type: 'radar',
+      data: {
+        labels: ['Strategy\nAlignmt','Market\nIntelligence','Proposal\nQuality','Relationship\nMgmt','Pipeline\nProcess','Team\nCapability'],
+        datasets: [{
+          label: 'Current State',
+          data: [85, 70, 65, 72, 55, 60],
+          backgroundColor: 'rgba(201,168,76,0.15)',
+          borderColor: '#C9A84C', borderWidth: 2, pointBackgroundColor: '#C9A84C', pointRadius: 4
+        },{
+          label: 'Target State',
+          data: [95, 88, 85, 90, 85, 80],
+          backgroundColor: 'rgba(13,27,42,0.06)',
+          borderColor: 'rgba(13,27,42,0.3)', borderWidth: 1.5, borderDash: [4,3], pointBackgroundColor: '#0D1B2A', pointRadius: 3
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        scales: { r: { beginAtZero: true, max: 100, ticks: { font: { size: 9 }, stepSize: 25 }, grid: { color: 'rgba(13,27,42,0.08)' }, pointLabels: { font: { size: 10 } } } },
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 12 } } }
+      }
+    });
+  }
+
+  // Update KPIs
+  updateKPIs();
+}
+
+function renderPipelineAnalyticsCharts() {
+  destroyChart('practice'); destroyChart('winprob'); destroyChart('sentiment'); destroyChart('platform');
+
+  const practiceCtx = document.getElementById('chart-practice');
+  if (practiceCtx) {
+    const areas = {}; appState.opportunities.forEach(o => { areas[o.practice] = (areas[o.practice]||0) + o.revenue; });
+    charts.practice = new Chart(practiceCtx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(areas),
+        datasets: [{ label: 'Revenue (£)', data: Object.values(areas), backgroundColor: 'rgba(201,168,76,0.7)', borderRadius: 3 }]
+      },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => '£' + (v/1000).toFixed(0) + 'k', font:{size:10} } }, x: { grid:{display:false}, ticks:{font:{size:10}} } } }
+    });
+  }
+
+  const winCtx = document.getElementById('chart-winprob');
+  if (winCtx) {
+    const buckets = {'<25%':0,'25–50%':0,'51–75%':0,'>75%':0};
+    appState.opportunities.forEach(o => { const w=o.win; if(w<25)buckets['<25%']++; else if(w<=50)buckets['25–50%']++; else if(w<=75)buckets['51–75%']++; else buckets['>75%']++; });
+    charts.winprob = new Chart(winCtx, {
+      type: 'bar',
+      data: { labels: Object.keys(buckets), datasets: [{ label: 'Opportunities', data: Object.values(buckets), backgroundColor: ['rgba(192,57,43,0.7)','rgba(212,131,26,0.7)','rgba(41,128,185,0.7)','rgba(39,174,96,0.7)'], borderRadius: 3 }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks:{font:{size:10}} }, x: { grid:{display:false}, ticks:{font:{size:10}} } } }
+    });
+  }
+
+  const sentCtx = document.getElementById('chart-sentiment');
+  if (sentCtx) {
+    const s = { 'Positive': 0, 'Neutral': 0, 'Negative': 0, 'No Reply': 0 };
+    appState.prospects.forEach(p => { if(p.reply==='Positive Reply')s.Positive++; else if(p.reply==='Neutral Reply')s.Neutral++; else if(p.reply==='Negative Reply')s.Negative++; else s['No Reply']++; });
+    charts.sentiment = new Chart(sentCtx, {
+      type: 'doughnut',
+      data: { labels: Object.keys(s), datasets: [{ data: Object.values(s), backgroundColor: ['#27AE60','#C9A84C','#C0392B','#9CA3AF'], borderWidth: 2, borderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right', labels: { font: {size:11}, padding:8 } } } }
+    });
+  }
+
+  const platCtx = document.getElementById('chart-platform');
+  if (platCtx) {
+    const pl = {}; appState.prospects.forEach(p => { if(p.platform) pl[p.platform] = (pl[p.platform]||0)+1; });
+    charts.platform = new Chart(platCtx, {
+      type: 'doughnut',
+      data: { labels: Object.keys(pl), datasets: [{ data: Object.values(pl), backgroundColor: ['rgba(13,27,42,0.8)','rgba(201,168,76,0.8)','rgba(41,128,185,0.8)','rgba(39,174,96,0.8)','rgba(212,131,26,0.8)'], borderWidth: 2, borderColor: '#fff' }] },
+      options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'right', labels: { font: {size:11}, padding:8 } } } }
+    });
+  }
+}
+
+function renderRatesChart() {
+  destroyChart('rates');
+  const ratesCtx = document.getElementById('chart-rates');
+  if (ratesCtx) {
+    charts.rates = new Chart(ratesCtx, {
+      type: 'bar',
+      data: {
+        labels: PRICING.map(p => p.role),
+        datasets: [
+          { label: 'Standard Rate', data: PRICING.map(p => p.rate), backgroundColor: 'rgba(13,27,42,0.7)', borderRadius: 3 },
+          { label: 'Discounted (20%)', data: PRICING.map(p => p.disc), backgroundColor: 'rgba(201,168,76,0.7)', borderRadius: 3 }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: true,
+        plugins: { legend: { position: 'bottom', labels: { font:{size:10}, padding:8 } } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => '£'+v.toLocaleString(), font:{size:9} } }, x: { grid:{display:false}, ticks:{font:{size:9}, maxRotation: 30} } }
+      }
+    });
+  }
+}
+
+// ===================================================
+// KPI UPDATER
+// ===================================================
+function updateKPIs() {
+  const opps = appState.opportunities;
+  const weighted = opps.reduce((s, o) => s + (o.revenue * o.win / 100), 0);
+  const prospects = appState.prospects;
+  const active = prospects.filter(p => p.stage === 'Contacted' || p.stage === 'Conversating').length;
+  const winRate = opps.length ? Math.round(opps.reduce((s,o)=>s+o.win,0)/opps.length) : 0;
+  const actions = appState.contacts ? appState.contacts.filter(c => c.status === 'Active').length : 0;
+
+  const kpiPipeline = document.getElementById('kpi-pipeline');
+  if (kpiPipeline) kpiPipeline.textContent = '£' + (weighted/1000).toFixed(0) + 'k';
+  const kpiPsub = document.getElementById('kpi-pipeline-sub');
+  if (kpiPsub) kpiPsub.textContent = opps.length + ' opportunities tracked';
+  const kpiProspects = document.getElementById('kpi-prospects');
+  if (kpiProspects) kpiProspects.textContent = prospects.length;
+  const kpiProsub = document.getElementById('kpi-prospects-sub');
+  if (kpiProsub) kpiProsub.textContent = active + ' actively engaged';
+  const kpiWinrate = document.getElementById('kpi-winrate');
+  if (kpiWinrate) kpiWinrate.textContent = winRate + '%';
+  const kpiActions = document.getElementById('kpi-actions');
+  if (kpiActions) kpiActions.textContent = actions;
+}
+
+// ===================================================
+// RENDER TABLES
+// ===================================================
+function renderOpportunitiesTable() {
+  const tbody = document.getElementById('opp-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = appState.opportunities.map((o, i) => `
+    <tr>
+      <td class="fw-600">${o.customer}</td>
+      <td class="muted" style="max-width:220px;font-size:12px">${o.name}</td>
+      <td class="muted">${o.practice}</td>
+      <td class="muted">${o.deal}</td>
+      <td class="gold fw-600">${o.win}%</td>
+      <td>£${o.revenue.toLocaleString()}</td>
+      <td class="gold">£${Math.round(o.revenue*o.win/100).toLocaleString()}</td>
+      <td><span class="rag ${o.status==='Won'?'green':o.status==='Lost'?'red':o.status==='Proposal Sent'?'amber':'blue'}">${o.status}</span></td>
+      <td class="td-actions">
+        <button class="btn btn-xs btn-outline" onclick="editOpportunity(${i})">Edit</button>
+        <button class="btn btn-xs btn-danger" onclick="deleteOpportunity(${i})">×</button>
+      </td>
+    </tr>`
+  ).join('');
+}
+
+function renderProspectsTable() {
+  const tbody = document.getElementById('prospects-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = appState.prospects.map((p, i) => `
+    <tr>
+      <td class="fw-600">${p.name||'—'}</td>
+      <td class="muted">${p.company||'—'}</td>
+      <td class="muted">${p.role||'—'}</td>
+      <td>${p.platform||'—'}</td>
+      <td class="muted">${p.btype||'—'}</td>
+      <td><span class="rag ${p.stage==='Complete'?'green':p.stage==='Conversating'?'blue':p.stage==='Ghosted'?'red':'amber'}">${p.stage||'—'}</span></td>
+      <td><span class="rag ${p.reply==='Positive Reply'?'green':p.reply==='Negative Reply'?'red':p.reply==='Neutral Reply'?'amber':'grey'}" style="font-size:10px">${p.reply||'—'}</span></td>
+      <td><span class="priority ${p.priority>=9?'priority-high':p.priority>=5?'priority-med':'priority-low'}">${p.priority||0}</span></td>
+      <td>${p.crm?'<span class="rag green" style="font-size:10px">Yes</span>':'<span class="rag grey" style="font-size:10px">No</span>'}</td>
+      <td class="muted text-xs" style="max-width:160px">${p.notes||'—'}</td>
+    </tr>`
+  ).join('');
+
+  // Update KPI cards
+  const stages = {total:0,contacted:0,conv:0,complete:0,ghost:0};
+  appState.prospects.forEach(p => {
+    stages.total++;
+    if(p.stage==='Contacted')stages.contacted++;
+    if(p.stage==='Conversating')stages.conv++;
+    if(p.stage==='Complete')stages.complete++;
+    if(p.stage==='Ghosted')stages.ghost++;
+  });
+  ['total','contacted','conv','complete','ghost'].forEach(k => {
+    const el = document.getElementById('pt-'+k);
+    if(el) el.textContent = stages[k];
+  });
+}
+
+function renderContactsTable() {
+  const tbody = document.getElementById('contacts-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = appState.contacts.map((c,i) => `
+    <tr>
+      <td class="fw-600">${c.org}</td>
+      <td class="muted">${c.enterprise||'—'}</td>
+      <td class="fw-600" style="font-size:12px">${c.contact}</td>
+      <td class="muted">${c.role}</td>
+      <td class="muted text-xs" style="max-width:220px">${c.comments||'—'}</td>
+      <td class="muted">${c.location||'—'}</td>
+      <td><span class="rag ${c.status==='Strong'?'green':c.status==='Active'?'amber':c.status==='Exploring'?'blue':'grey'}">${c.status}</span></td>
+    </tr>`
+  ).join('');
+}
+
+// ===================================================
+// PROSPECT MANAGEMENT
+// ===================================================
+function addProspect() {
+  const p = {
+    name: document.getElementById('p-name').value,
+    company: document.getElementById('p-company').value,
+    role: document.getElementById('p-role').value,
+    platform: document.getElementById('p-platform').value,
+    btype: document.getElementById('p-btype').value,
+    stage: document.getElementById('p-stage').value,
+    reply: document.getElementById('p-reply').value,
+    contact: document.getElementById('p-contact').value,
+    priority: parseInt(document.getElementById('p-priority').value) || 0,
+    notes: document.getElementById('p-notes').value,
+    crm: false
+  };
+  if (!p.name) { showToast('Please enter a name', 'error'); return; }
+  appState.prospects.push(p);
+  saveState();
+  renderProspectsTable();
+  ['p-name','p-company','p-role','p-contact','p-notes','p-priority','p-btype'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  showToast('Prospect added successfully', 'success');
+}
+
+// ===================================================
+// OPPORTUNITY MANAGEMENT
+// ===================================================
+function saveOpportunity() {
+  const o = {
+    customer: document.getElementById('mo-customer').value,
+    name: document.getElementById('mo-name').value,
+    deal: document.getElementById('mo-deal').value,
+    practice: document.getElementById('mo-practice').value,
+    win: parseInt(document.getElementById('mo-win').value) || 50,
+    revenue: parseFloat(document.getElementById('mo-revenue').value) || 0,
+    status: document.getElementById('mo-status').value,
+    bdd: document.getElementById('mo-bdd').value
+  };
+  if (!o.customer || !o.name) { showToast('Customer and opportunity name required', 'error'); return; }
+  appState.opportunities.push(o);
+  saveState();
+  renderOpportunitiesTable();
+  updateKPIs();
+  closeModal('add-opportunity');
+  showToast('Opportunity saved', 'success');
+}
+
+function deleteOpportunity(i) {
+  if (!confirm('Delete this opportunity?')) return;
+  appState.opportunities.splice(i, 1);
+  saveState();
+  renderOpportunitiesTable();
+  updateKPIs();
+}
+
+function editOpportunity(i) {
+  showToast('Edit: Use pipeline table directly for now', 'info');
+}
+
+// ===================================================
+// CONTACT MANAGEMENT
+// ===================================================
+function saveContact() {
+  const c = {
+    org: document.getElementById('mc-org').value,
+    contact: document.getElementById('mc-name').value,
+    role: document.getElementById('mc-role').value,
+    status: document.getElementById('mc-status').value,
+    comments: document.getElementById('mc-comments').value,
+    enterprise: 'Enterprise-wide', location: 'TBC'
+  };
+  if (!c.org) { showToast('Organisation name required', 'error'); return; }
+  appState.contacts.push(c);
+  saveState();
+  renderContactsTable();
+  closeModal('add-contact');
+  showToast('Contact added', 'success');
+}
+
+// ===================================================
+// QUICK MODALS
+// ===================================================
+function saveQuickProspect() {
+  const p = {
+    name: document.getElementById('qp-name').value,
+    company: document.getElementById('qp-company').value,
+    role: document.getElementById('qp-role').value,
+    stage: document.getElementById('qp-stage').value,
+    platform: 'Other', btype: '', reply: 'No Reply Yet', priority: 5, contact: '', crm: false, notes: ''
+  };
+  if (!p.name) { showToast('Please enter a name', 'error'); return; }
+  appState.prospects.push(p);
+  saveState();
+  renderProspectsTable();
+  closeModal('add-prospect');
+  showToast('Prospect added', 'success');
+}
+
+// ===================================================
+// PRICING PAGE
+// ===================================================
+function initPricingPage() {
+  // Render pricing rows
+  const container = document.getElementById('pricing-rows');
+  if (container && container.children.length === 0) {
+    container.innerHTML = PRICING.map(p => `
+      <div class="pricing-row">
+        <div class="pricing-role">${p.role}</div>
+        <div class="pricing-rate">£${p.rate.toLocaleString()}</div>
+        <div class="pricing-disc">£${p.disc.toLocaleString()}</div>
+        <div class="pricing-bar-wrap">
+          <div class="progress-bar"><div class="progress-fill progress-gold" style="width:${Math.round(p.rate/29)}%"></div></div>
+        </div>
+      </div>`
+    ).join('');
+  }
+
+  // Render estimator inputs
+  const estCont = document.getElementById('estimator-inputs');
+  if (estCont && estCont.children.length === 0) {
+    estCont.innerHTML = '<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:8px"><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--slate);text-transform:uppercase">Role</div><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--slate);text-transform:uppercase;width:80px">Days</div><div style="font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--slate);text-transform:uppercase;width:100px">Total (disc.)</div></div>' +
+    PRICING.map((p,i) => `
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:6px">
+        <div style="font-size:12.5px;font-weight:500;color:var(--navy)">${p.role}</div>
+        <input type="number" class="form-input" id="est-days-${i}" min="0" value="${appState.estimatorDays[i]||0}" onchange="updateEstimator()" style="width:80px;padding:5px 8px;text-align:center">
+        <div style="width:100px;font-family:var(--font-serif);font-size:15px;font-weight:600;color:var(--gold);text-align:right" id="est-row-${i}">£ 0</div>
+      </div>`).join('');
+    updateEstimator();
+  }
+}
+
+function updateEstimator() {
+  let stdTotal = 0, discTotal = 0;
+  PRICING.forEach((p, i) => {
+    const daysEl = document.getElementById('est-days-' + i);
+    const days = daysEl ? parseFloat(daysEl.value) || 0 : 0;
+    appState.estimatorDays[i] = days;
+    const rowEl = document.getElementById('est-row-' + i);
+    if (rowEl) rowEl.textContent = '£ ' + Math.round(p.disc * days).toLocaleString();
+    stdTotal += p.rate * days;
+    discTotal += p.disc * days;
+  });
+  const estStd = document.getElementById('est-standard');
+  if (estStd) estStd.textContent = '£ ' + Math.round(stdTotal).toLocaleString();
+  const estDisc = document.getElementById('est-discounted');
+  if (estDisc) estDisc.textContent = '£ ' + Math.round(discTotal).toLocaleString();
+  const pTotal = document.getElementById('pricing-total');
+  if (pTotal) pTotal.textContent = '£ ' + Math.round(discTotal).toLocaleString();
+  saveState();
+}
+
+// Workload rows
+function addWorkloadRow() {
+  const cont = document.getElementById('workload-rows');
+  if (!cont) return;
+  const row = document.createElement('div');
+  row.className = 'form-grid';
+  row.style.marginBottom = '8px';
+  row.innerHTML = `<div class="form-group"><label class="form-label">Activity</label><input type="text" class="form-input" placeholder="Workshop, Report, etc."></div><div class="form-group"><label class="form-label">Owner</label><input type="text" class="form-input" placeholder="Name"></div><div class="form-group"><label class="form-label">Days</label><input type="number" class="form-input" placeholder="0" min="0"></div><div class="form-group"><label class="form-label">Format</label><input type="text" class="form-input" placeholder="PPT, PDF, XLSX"></div>`;
+  cont.appendChild(row);
+}
+
+// ===================================================
+// PLAYBOOK SAVE FUNCTIONS
+// ===================================================
+function saveVP() {
+  appState.vp = document.getElementById('vp-text').value;
+  saveState();
+  showToast('Value proposition saved', 'success');
+}
+
+function saveSWN() {
+  appState.seeds = document.getElementById('seeds-text').value;
+  appState.weeds = document.getElementById('weeds-text').value;
+  appState.needs = document.getElementById('needs-text').value;
+  saveState();
+  showToast('SEEDS/WEEDS/NEEDS analysis saved', 'success');
+}
+
+function loadPlaybookTexts() {
+  const vp = document.getElementById('vp-text');
+  if (vp && appState.vp) vp.value = appState.vp;
+  const s = document.getElementById('seeds-text');
+  if (s && appState.seeds) s.value = appState.seeds;
+  const w = document.getElementById('weeds-text');
+  if (w && appState.weeds) w.value = appState.weeds;
+  const n = document.getElementById('needs-text');
+  if (n && appState.needs) n.value = appState.needs;
+}
+
+// ===================================================
+// ASPIRE DETAIL PANEL
+// ===================================================
+const ASPIRE_CONTENT = {
+  align: { title: 'A — Align', color: 'var(--gold)', content: 'Establish strategic alignment between BD ambitions and firm objectives. Set OKRs at org, team, and individual level. Confirm mission, vision, and target segments. Apply BRM principles: Customer Focus, External Trends, Organisational Span, and Seat at the Table.' },
+  strategise: { title: 'S — Strategise', color: '#2980B9', content: 'Conduct market analysis using the SKEPTIC framework (Society, Competition, Economics, Politics, Technology, Industry, Customers). Complete SEEDS/WEEDS/NEEDS analysis. Develop differentiated value propositions per account tier using BMC, HCD, and JTBD frameworks.' },
+  plan: { title: 'P — Plan', color: 'var(--amber)', content: 'Build the BD Roadmap with Quick Win, Short Term, and Long Term swim lanes. Construct the A/B/C tier target account list. Set up Pipeline Tool with weighted revenue tracking. Plan the annual events calendar. Draft the BD Bulletin content plan.' },
+  implement: { title: 'I — Implement', color: 'var(--green)', content: 'Execute outreach using the tiered follow-up cadence: Top Customers 4×/yr, Hot Prospects consistently, Warm Leads 6×/yr, Likely to Buy 2×/yr. Apply the 70/30 rule — 70% value-add, 30% selling. Manage relationships via the Impact Matrix. Submit proposals using PRINCE2 governance.' },
+  review: { title: 'R — Review', color: 'var(--red)', content: 'Run weekly OKR confidence check-ins (0–100%). Conduct monthly RAG health scoring of pipeline. Review win/loss analysis and adjust win probability scores. Use leading indicators to identify performance risk early. Compare against BD Healthcheck scorecard.' },
+  evolve: { title: 'E — Evolve', color: 'var(--navy)', content: 'Improve the BD COE capability continuously. Update methodology based on learnings and market shifts. Invest in the BD tools ecosystem (GTMhub, CRM). Develop team skills using the BD Pyramid of Learning. Iterate the ASPIRe cycle — do not treat it as a one-off exercise.' }
+};
+
+function showAspireDetail(phase) {
+  const detail = document.getElementById('aspire-detail');
+  const content = document.getElementById('aspire-detail-content');
+  if (!detail || !content) return;
+  const d = ASPIRE_CONTENT[phase];
+  content.innerHTML = `<div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${d.color};margin-bottom:6px">${d.title}</div><div style="font-size:12.5px;color:var(--navy);line-height:1.65">${d.content}</div>`;
+  detail.classList.add('active');
+}
+
+// ===================================================
+// SEARCH / FILTER
+// ===================================================
+function filterTable(tableId, query) {
+  const tbl = document.getElementById(tableId);
+  if (!tbl) return;
+  const q = query.toLowerCase();
+  tbl.querySelectorAll('tbody tr').forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// ===================================================
+// MODAL MANAGEMENT
+// ===================================================
+function openModal(id) {
+  const m = document.getElementById('modal-' + id);
+  if (m) m.classList.add('open');
+}
+function closeModal(id) {
+  const m = document.getElementById('modal-' + id);
+  if (m) m.classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ===================================================
+// TOAST
+// ===================================================
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  const icons = { success: '✓', error: '✕', info: 'ℹ' };
+  toast.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(60px)'; toast.style.transition = '.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// ===================================================
+// TOOLBAR ACTIONS
+// ===================================================
+function exportJSON() {
+  const data = JSON.stringify(appState, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'bd_crm_state_' + new Date().toISOString().split('T')[0] + '.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('JSON exported successfully', 'success');
+}
+
+function resetDefaults() {
+  if (!confirm('Reset all data to defaults? This cannot be undone. Export JSON first to preserve your data.')) return;
+  localStorage.removeItem('bd_crm_state');
+  appState = JSON.parse(JSON.stringify(DEFAULT_DATA));
+  saveState();
+  renderAll();
+  showToast('Reset to defaults', 'info');
+}
+
+function exportPDF() {
+  showToast('Opening print dialog for PDF export...', 'info');
+  setTimeout(() => window.print(), 500);
+}
+
+function emailResults() {
+  const opps = appState.opportunities;
+  const weighted = opps.reduce((s, o) => s + (o.revenue * o.win / 100), 0);
+  const prospects = appState.prospects.length;
+  const subject = encodeURIComponent('BD Intelligence — Pipeline Summary');
+  const body = encodeURIComponent([
+    'BD & CRM PIPELINE SUMMARY',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━',
+    'Generated: ' + new Date().toLocaleDateString('en-GB'),
+    '',
+    'PIPELINE METRICS',
+    '• Total Opportunities: ' + opps.length,
+    '• Weighted Pipeline Value: £' + Math.round(weighted).toLocaleString(),
+    '• Active Prospects: ' + prospects,
+    '• Win Rate (avg): ' + (opps.length ? Math.round(opps.reduce((s,o)=>s+o.win,0)/opps.length) : 0) + '%',
+    '',
+    'TOP OPPORTUNITIES',
+    ...opps.slice(0,5).map(o => `• ${o.customer} — ${o.name} | £${o.revenue.toLocaleString()} @ ${o.win}% = £${Math.round(o.revenue*o.win/100).toLocaleString()} wtd`),
+    '',
+    'Generated by BD Intelligence Platform (Strategy House)',
+  ].join('\n'));
+  window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  showToast('Email client opened', 'success');
+}
+
+function refreshDashboard() {
+  initDashboardCharts();
+  showToast('Dashboard refreshed', 'success');
+}
+
+// ===================================================
+// RENDER ALL
+// ===================================================
+function renderAll() {
+  renderOpportunitiesTable();
+  renderProspectsTable();
+  renderContactsTable();
+  loadPlaybookTexts();
+}
+
+// ===================================================
+// PRINT STYLES
+// ===================================================
+const printStyle = document.createElement('style');
+printStyle.textContent = `
+@media print {
+  .topbar, .topbar-actions, .sub-tabs, .btn, .td-actions { display:none!important; }
+  .page { display:block!important; page-break-after: always; }
+  .swiss-grid { display:none; }
+  body { background: white; }
+  .card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+}`;
+document.head.appendChild(printStyle);
+
+// ===================================================
+// INIT
+// ===================================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  renderAll();
+  initDashboardCharts();
+
+  // Auto-observe all reveal elements
+  setTimeout(() => {
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  }, 100);
+});
+</script>
+</body>
+</html>

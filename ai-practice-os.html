@@ -1,0 +1,2318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Practice OS — North Star</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,300&family=IBM+Plex+Sans:wght@300;400;500;600&family=Orbitron:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════
+   CORE VARIABLES & RESET
+═══════════════════════════════════════════════ */
+:root {
+  --bg:        #060810;
+  --bg1:       #0b0f1a;
+  --bg2:       #0f1424;
+  --bg3:       #141929;
+  --panel:     #111827;
+  --panel2:    #1a2035;
+  --border:    #1e2d4a;
+  --border2:   #253352;
+  --cyan:      #00d4ff;
+  --cyan2:     #00a8cc;
+  --cyan-dim:  rgba(0,212,255,.12);
+  --cyan-glow: rgba(0,212,255,.35);
+  --green:     #00ff9d;
+  --green-dim: rgba(0,255,157,.1);
+  --amber:     #ffb800;
+  --amber-dim: rgba(255,184,0,.1);
+  --red:       #ff4757;
+  --red-dim:   rgba(255,71,87,.1);
+  --purple:    #a855f7;
+  --text:      #c8d6f0;
+  --text2:     #7a92b8;
+  --text3:     #3d5078;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --display:   'Orbitron', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  font-size:13px;
+  line-height:1.6;
+  height:100%;
+  overflow:hidden;
+}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg1)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--cyan2)}
+
+/* ═══════════════════════════════════════════════
+   LAYOUT SHELL
+═══════════════════════════════════════════════ */
+.os-shell{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ── TITLEBAR ── */
+.titlebar{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 20px;
+  height:40px;
+  background:var(--bg1);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;
+}
+.tb-dots{display:flex;gap:6px}
+.tb-dot{width:12px;height:12px;border-radius:50%}
+.tb-dot.r{background:#ff5f57}
+.tb-dot.y{background:#febc2e}
+.tb-dot.g{background:#28c840}
+.tb-logo{
+  font-family:var(--display);
+  font-size:11px;
+  font-weight:600;
+  color:var(--cyan);
+  letter-spacing:.15em;
+  text-transform:uppercase;
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+}
+.tb-meta{
+  margin-left:auto;
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--text3);
+  letter-spacing:.1em;
+}
+.tb-live{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--green);
+  letter-spacing:.08em;
+}
+.tb-live::before{
+  content:'';
+  display:block;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 6px var(--green);
+  animation:pulse 1.8s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── TABBAR ── */
+.tabbar{
+  display:flex;
+  align-items:stretch;
+  background:var(--bg1);
+  border-bottom:1px solid var(--border);
+  padding:0 16px;
+  flex-shrink:0;
+  gap:2px;
+  overflow-x:auto;
+}
+.tab-btn{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:10px 16px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--text3);
+  background:transparent;
+  border:none;
+  border-bottom:2px solid transparent;
+  cursor:pointer;
+  transition:all .18s;
+  white-space:nowrap;
+  position:relative;
+}
+.tab-btn:hover{color:var(--text2);background:var(--bg2)}
+.tab-btn.active{
+  color:var(--cyan);
+  border-bottom-color:var(--cyan);
+  background:var(--bg2);
+}
+.tab-btn .tab-icon{font-size:12px;opacity:.7}
+.tab-btn.active .tab-icon{opacity:1}
+
+/* ── CONTENT AREA ── */
+.content-area{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  background:var(--bg);
+}
+.tab-panel{display:none;height:100%}
+.tab-panel.active{display:block}
+
+/* ═══════════════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════════════ */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:6px;
+}
+.panel-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+}
+.panel-title{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--text2);
+}
+.panel-body{padding:16px}
+
+.stat-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:16px 18px;
+  position:relative;
+  overflow:hidden;
+}
+.stat-card::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:var(--cyan);
+  opacity:.6;
+}
+.stat-card.green::before{background:var(--green)}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card.red::before{background:var(--red)}
+.stat-card.purple::before{background:var(--purple)}
+.stat-label{
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--text3);
+  margin-bottom:6px;
+}
+.stat-val{
+  font-family:var(--display);
+  font-size:24px;
+  font-weight:700;
+  color:#fff;
+  line-height:1;
+  margin-bottom:4px;
+}
+.stat-val.lg{font-size:30px}
+.stat-sub{
+  font-family:var(--mono);
+  font-size:9px;
+  color:var(--text3);
+}
+.stat-sub .up{color:var(--green)}
+.stat-sub .dn{color:var(--red)}
+
+.badge{
+  display:inline-block;
+  padding:2px 7px;
+  border-radius:3px;
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.05em;
+  font-weight:500;
+}
+.badge-cyan{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+.badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(0,255,157,.2)}
+.badge-amber{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
+.badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,71,87,.2)}
+.badge-purple{background:rgba(168,85,247,.1);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.badge-dim{background:rgba(120,145,184,.08);color:var(--text3);border:1px solid var(--border)}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  border-radius:4px;cursor:pointer;transition:all .15s;border:none;
+}
+.btn-cyan{background:var(--cyan);color:#000;font-weight:600}
+.btn-cyan:hover{background:var(--cyan2);box-shadow:0 0 14px var(--cyan-glow)}
+.btn-outline{background:transparent;color:var(--text2);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-sm{padding:4px 10px;font-size:9px}
+
+.divider{border:none;border-top:1px solid var(--border);margin:0}
+
+/* ═══════════════════════════════════════════════
+   TAB 1 — LETTER
+═══════════════════════════════════════════════ */
+#tab-letter{padding:28px 32px}
+.letter-wrap{max-width:820px;margin:0 auto;display:grid;grid-template-columns:1fr 300px;gap:24px}
+.letter-main{}
+.letter-stamp{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--cyan);border:1px solid rgba(0,212,255,.3);
+  padding:4px 12px;border-radius:3px;margin-bottom:20px;
+  background:var(--cyan-dim);
+}
+.letter-headline{
+  font-family:var(--display);
+  font-size:20px;font-weight:700;
+  color:#fff;line-height:1.3;
+  margin-bottom:8px;
+  letter-spacing:.02em;
+}
+.letter-byline{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  letter-spacing:.08em;margin-bottom:24px;
+}
+.letter-body{
+  font-size:14px;color:var(--text);line-height:1.85;
+}
+.letter-body p{margin-bottom:16px}
+.letter-body strong{color:#fff}
+.letter-callout{
+  background:var(--panel);border:1px solid var(--border);
+  border-left:3px solid var(--cyan);
+  padding:14px 18px;margin:20px 0;border-radius:0 6px 6px 0;
+  font-size:13px;line-height:1.7;
+}
+.letter-callout .num{
+  font-family:var(--display);font-size:22px;color:var(--cyan);
+  display:block;margin-bottom:4px;
+}
+.letter-sidebar{}
+.letter-kpi{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;
+  padding:18px;margin-bottom:14px;
+}
+.letter-kpi-val{
+  font-family:var(--display);font-size:28px;font-weight:700;
+  color:var(--cyan);display:block;line-height:1;margin-bottom:6px;
+}
+.letter-kpi-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text3);
+}
+.revenue-breakdown{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:16px;
+}
+.rev-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-family:var(--mono);font-size:11px;
+}
+.rev-row:last-child{border-bottom:none;color:var(--cyan);font-weight:600}
+.rev-row .lbl{color:var(--text2)}
+.rev-row .val{color:#fff}
+.action-plan{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:16px;margin-top:14px}
+.action-step{
+  display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);
+}
+.action-step:last-child{border-bottom:none}
+.action-step .step-num{
+  flex-shrink:0;
+  width:22px;height:22px;border-radius:50%;
+  background:var(--cyan-dim);border:1px solid rgba(0,212,255,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:9px;color:var(--cyan);
+}
+.action-step .step-text{font-size:12px;color:var(--text2);padding-top:2px}
+
+/* ═══════════════════════════════════════════════
+   TAB 2 — DASHBOARD
+═══════════════════════════════════════════════ */
+#tab-dashboard{padding:24px 28px}
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:14px;
+  margin-bottom:20px;
+}
+.section-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--cyan);
+  margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.section-label::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,var(--border2),transparent);
+}
+.dash-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+.dash-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+
+/* Pipeline health bars */
+.pipeline-bar-wrap{padding:4px 0}
+.pipeline-bar-row{
+  display:flex;align-items:center;gap:10px;margin-bottom:8px;
+}
+.pipeline-bar-label{
+  width:110px;flex-shrink:0;
+  font-family:var(--mono);font-size:10px;color:var(--text2);
+}
+.pipeline-bar-track{
+  flex:1;height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;
+}
+.pipeline-bar-fill{
+  height:100%;border-radius:3px;
+  transition:width 1s ease;
+}
+.pipeline-bar-count{
+  width:20px;text-align:right;
+  font-family:var(--mono);font-size:10px;color:var(--text2);
+}
+
+/* Activity feed */
+.activity-feed{padding:4px 0}
+.activity-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.activity-item:last-child{border-bottom:none}
+.activity-icon{
+  width:28px;height:28px;flex-shrink:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+}
+.ai-cyan{background:var(--cyan-dim);border:1px solid rgba(0,212,255,.2)}
+.ai-green{background:var(--green-dim);border:1px solid rgba(0,255,157,.2)}
+.ai-amber{background:var(--amber-dim);border:1px solid rgba(255,184,0,.2)}
+.activity-text{font-size:12px;color:var(--text2);line-height:1.5}
+.activity-text strong{color:var(--text);font-weight:500}
+.activity-time{
+  margin-left:auto;flex-shrink:0;
+  font-family:var(--mono);font-size:9px;color:var(--text3);
+}
+
+/* Prospect list */
+.prospect-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 12px;border-radius:4px;margin-bottom:4px;
+  background:var(--bg2);border:1px solid var(--border);
+  cursor:pointer;transition:border-color .15s;
+}
+.prospect-row:hover{border-color:var(--cyan2)}
+.prospect-name{font-size:12px;font-weight:500;color:#fff}
+.prospect-co{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px}
+.score-ring{
+  width:36px;height:36px;border-radius:50%;
+  background:conic-gradient(var(--cyan) calc(var(--pct)*1%),var(--bg3) 0);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.score-ring::before{
+  content:'';position:absolute;width:26px;height:26px;
+  border-radius:50%;background:var(--panel);
+}
+.score-ring-val{
+  position:relative;z-index:1;
+  font-family:var(--mono);font-size:9px;font-weight:600;color:var(--cyan);
+}
+
+/* Weekly schedule */
+.week-schedule{padding:4px 0}
+.week-day{
+  display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border);
+}
+.week-day:last-child{border-bottom:none}
+.week-day-label{
+  width:32px;flex-shrink:0;
+  font-family:var(--mono);font-size:9px;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.08em;
+  padding-top:2px;
+}
+.week-events{display:flex;flex-direction:column;gap:4px;flex:1}
+.week-event{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 9px;border-radius:4px;font-size:11px;
+}
+.we-li{background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.15)}
+.we-em{background:rgba(0,255,157,.06);color:var(--green);border:1px solid rgba(0,255,157,.15)}
+.we-dm{background:rgba(168,85,247,.08);color:var(--purple);border:1px solid rgba(168,85,247,.15)}
+.we-wb{background:rgba(255,184,0,.06);color:var(--amber);border:1px solid rgba(255,184,0,.15)}
+.week-event-icon{font-size:10px;opacity:.8}
+
+/* Revenue gauge */
+.gauge-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  padding:10px 0;
+}
+.gauge-svg{width:160px;height:90px}
+.gauge-val{
+  font-family:var(--display);font-size:22px;font-weight:700;
+  color:var(--cyan);text-align:center;margin-top:4px;
+}
+.gauge-sub{
+  font-family:var(--mono);font-size:9px;color:var(--text3);
+  text-align:center;letter-spacing:.08em;
+}
+
+/* ═══════════════════════════════════════════════
+   TAB 3 — NETWORK
+═══════════════════════════════════════════════ */
+#tab-network{padding:24px 28px}
+.network-toolbar{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;
+}
+.search-box{
+  display:flex;align-items:center;gap:8px;
+  background:var(--panel);border:1px solid var(--border2);
+  border-radius:4px;padding:7px 12px;flex:1;min-width:200px;
+}
+.search-box input{
+  background:none;border:none;outline:none;
+  font-family:var(--mono);font-size:11px;color:var(--text);width:100%;
+}
+.search-box input::placeholder{color:var(--text3)}
+.search-icon{color:var(--text3);font-size:12px}
+.filter-btn{
+  padding:7px 12px;background:var(--panel);border:1px solid var(--border2);
+  border-radius:4px;font-family:var(--mono);font-size:10px;
+  color:var(--text2);cursor:pointer;transition:all .15s;
+  white-space:nowrap;
+}
+.filter-btn:hover,.filter-btn.active{
+  border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim);
+}
+
+.network-table-wrap{overflow-x:auto}
+.network-table{
+  width:100%;border-collapse:collapse;
+}
+.network-table th{
+  padding:9px 12px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text3);
+  border-bottom:1px solid var(--border);
+  text-align:left;white-space:nowrap;cursor:pointer;
+  user-select:none;transition:color .15s;
+  background:var(--panel);
+  position:sticky;top:0;z-index:1;
+}
+.network-table th:hover{color:var(--cyan)}
+.network-table th.sorted{color:var(--cyan)}
+.network-table th .sort-icon{margin-left:4px;opacity:.5}
+.network-table td{
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  font-size:12px;vertical-align:middle;
+  transition:background .12s;
+}
+.network-table tr:hover td{background:var(--bg2);cursor:pointer}
+.network-table tr.selected td{background:rgba(0,212,255,.06)}
+.contact-name{font-weight:500;color:#fff;margin-bottom:1px}
+.contact-pos{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.score-num{
+  font-family:var(--display);font-size:13px;font-weight:600;
+  display:inline-block;min-width:28px;text-align:center;
+}
+.score-high{color:var(--cyan)}
+.score-mid{color:var(--amber)}
+.score-low{color:var(--text3)}
+.network-table tfoot td{
+  padding:10px 12px;
+  font-family:var(--mono);font-size:9px;color:var(--text3);
+  border-top:1px solid var(--border2);background:var(--panel);
+}
+
+/* Contact drawer */
+.contact-drawer{
+  position:fixed;right:0;top:0;bottom:0;width:340px;
+  background:var(--panel2);border-left:1px solid var(--border2);
+  transform:translateX(100%);transition:transform .25s ease;
+  z-index:100;overflow-y:auto;
+}
+.contact-drawer.open{transform:translateX(0)}
+.drawer-header{
+  padding:20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;
+}
+.drawer-close{
+  background:none;border:none;color:var(--text3);
+  font-size:18px;cursor:pointer;padding:2px;
+  transition:color .15s;line-height:1;
+}
+.drawer-close:hover{color:var(--cyan)}
+.drawer-body{padding:20px}
+.drawer-field{margin-bottom:14px}
+.drawer-field-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:5px;
+}
+.drawer-field-val{font-size:13px;color:var(--text)}
+.drawer-notes textarea{
+  width:100%;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:4px;padding:10px;color:var(--text);
+  font-family:var(--mono);font-size:11px;resize:vertical;
+  min-height:80px;outline:none;
+  transition:border-color .15s;
+}
+.drawer-notes textarea:focus{border-color:var(--cyan)}
+.activity-log{margin-top:4px}
+.log-item{
+  display:flex;gap:8px;padding:7px 0;
+  border-bottom:1px solid var(--border);font-size:11px;
+}
+.log-item:last-child{border-bottom:none}
+.log-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--cyan);flex-shrink:0;margin-top:4px;
+}
+.log-text{color:var(--text2)}
+.log-date{margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--text3);flex-shrink:0}
+
+/* ═══════════════════════════════════════════════
+   TAB 4 — PIPELINE KANBAN
+═══════════════════════════════════════════════ */
+#tab-pipeline{padding:24px 28px;height:100%;display:flex;flex-direction:column}
+.pipeline-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-shrink:0;
+}
+.pipeline-stats{display:flex;gap:20px}
+.pstat{text-align:center}
+.pstat-val{font-family:var(--display);font-size:18px;font-weight:700;color:#fff;display:block}
+.pstat-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+
+.kanban-board{
+  display:flex;gap:12px;flex:1;overflow-x:auto;
+  padding-bottom:8px;align-items:flex-start;
+}
+.kanban-col{
+  flex:0 0 200px;display:flex;flex-direction:column;
+}
+.kanban-col-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-bottom:2px solid var(--border);
+  border-radius:6px 6px 0 0;
+  margin-bottom:0;
+}
+.kanban-col-head.stage-0{border-bottom-color:#3d5078}
+.kanban-col-head.stage-1{border-bottom-color:var(--amber)}
+.kanban-col-head.stage-2{border-bottom-color:var(--cyan)}
+.kanban-col-head.stage-3{border-bottom-color:var(--purple)}
+.kanban-col-head.stage-4{border-bottom-color:var(--green)}
+.kanban-col-title{
+  font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text2);
+}
+.kanban-col-count{
+  font-family:var(--display);font-size:12px;color:var(--text3);
+}
+.kanban-cards{
+  background:var(--bg1);border:1px solid var(--border);
+  border-top:none;border-radius:0 0 6px 6px;
+  padding:8px;
+  min-height:120px;
+  flex:1;
+  transition:background .15s;
+}
+.kanban-cards.drag-over{
+  background:rgba(0,212,255,.05);border-color:var(--cyan2);
+}
+.kanban-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:5px;padding:12px;margin-bottom:6px;
+  cursor:grab;user-select:none;
+  transition:box-shadow .15s,border-color .15s,transform .12s;
+  position:relative;
+}
+.kanban-card:last-child{margin-bottom:0}
+.kanban-card:hover{
+  border-color:var(--border2);
+  box-shadow:0 4px 16px rgba(0,0,0,.4);
+  transform:translateY(-1px);
+}
+.kanban-card.dragging{
+  opacity:.5;transform:rotate(2deg) scale(.97);
+}
+.kc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.kc-name{font-size:12px;font-weight:500;color:#fff;line-height:1.3}
+.kc-co{font-family:var(--mono);font-size:9px;color:var(--text3);margin-top:1px}
+.kc-score{
+  flex-shrink:0;
+  font-family:var(--display);font-size:13px;font-weight:700;color:var(--cyan);
+}
+.kc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.kc-revenue{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:8px;padding-top:8px;border-top:1px solid var(--border);
+}
+.kc-rev-val{font-family:var(--mono);font-size:10px;color:var(--green)}
+.kc-prob{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.add-card-btn{
+  width:100%;padding:8px;margin-top:8px;
+  background:none;border:1px dashed var(--border);border-radius:4px;
+  font-family:var(--mono);font-size:9px;color:var(--text3);
+  cursor:pointer;transition:all .15s;letter-spacing:.08em;
+}
+.add-card-btn:hover{border-color:var(--cyan2);color:var(--cyan)}
+
+/* ═══════════════════════════════════════════════
+   TAB 5 — OUTREACH CALENDAR
+═══════════════════════════════════════════════ */
+#tab-outreach{padding:24px 28px}
+.cal-toolbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.cal-nav{display:flex;align-items:center;gap:12px}
+.cal-nav-btn{
+  background:var(--panel);border:1px solid var(--border2);
+  border-radius:4px;padding:5px 10px;font-family:var(--mono);
+  font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;
+}
+.cal-nav-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.cal-month-title{
+  font-family:var(--display);font-size:16px;font-weight:600;
+  color:#fff;min-width:180px;text-align:center;letter-spacing:.04em;
+}
+.cal-legend{display:flex;gap:12px;flex-wrap:wrap}
+.cal-legend-item{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;color:var(--text2);letter-spacing:.06em;
+}
+.cal-legend-dot{width:8px;height:8px;border-radius:50%}
+
+.cal-grid-wrap{background:var(--panel);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.cal-day-headers{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  background:var(--bg2);border-bottom:1px solid var(--border);
+}
+.cal-day-hdr{
+  padding:8px;text-align:center;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text3);
+}
+.cal-grid{
+  display:grid;grid-template-columns:repeat(7,1fr);
+}
+.cal-day{
+  min-height:80px;padding:6px;
+  border-right:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  position:relative;transition:background .12s;
+}
+.cal-day:nth-child(7n){border-right:none}
+.cal-day:hover{background:var(--bg2)}
+.cal-day.other-month{opacity:.35}
+.cal-day.today{background:rgba(0,212,255,.04)}
+.cal-day.today .cal-day-num{color:var(--cyan)}
+.cal-day.drag-over-day{background:rgba(0,212,255,.08);border-color:var(--cyan2)}
+.cal-day-num{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  margin-bottom:4px;display:block;
+}
+.cal-event{
+  display:block;border-radius:3px;padding:2px 6px;
+  font-family:var(--mono);font-size:9px;
+  margin-bottom:2px;cursor:pointer;
+  transition:opacity .12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  user-select:none;
+}
+.cal-event:hover{opacity:.85}
+.ev-li{background:rgba(0,212,255,.15);color:var(--cyan);border:1px solid rgba(0,212,255,.25)}
+.ev-em{background:rgba(0,255,157,.1);color:var(--green);border:1px solid rgba(0,255,157,.2)}
+.ev-dm{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.22)}
+.ev-wb{background:rgba(255,184,0,.1);color:var(--amber);border:1px solid rgba(255,184,0,.2)}
+.cal-add-btn{
+  position:absolute;bottom:4px;right:4px;
+  width:16px;height:16px;border-radius:50%;
+  background:none;border:1px solid var(--border);
+  font-size:10px;color:var(--text3);cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  transition:all .12s;line-height:1;
+}
+.cal-day:hover .cal-add-btn{display:flex}
+.cal-add-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* Add event modal */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.6);
+  z-index:200;display:none;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--panel2);border:1px solid var(--border2);
+  border-radius:8px;padding:24px;width:360px;
+  box-shadow:0 24px 60px rgba(0,0,0,.6);
+}
+.modal-title{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--cyan);margin-bottom:16px;
+}
+.form-group{margin-bottom:14px}
+.form-label{
+  display:block;font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text3);margin-bottom:5px;
+}
+.form-input,.form-select{
+  width:100%;background:var(--bg2);border:1px solid var(--border2);
+  border-radius:4px;padding:8px 10px;color:var(--text);
+  font-family:var(--mono);font-size:11px;outline:none;
+  transition:border-color .15s;
+}
+.form-input:focus,.form-select:focus{border-color:var(--cyan)}
+.form-select option{background:var(--panel2)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+/* ═══════════════════════════════════════════════
+   TAB 6 — SETTINGS
+═══════════════════════════════════════════════ */
+#tab-settings{padding:24px 28px}
+.settings-layout{
+  display:grid;grid-template-columns:220px 1fr;gap:20px;
+  max-width:860px;
+}
+.settings-nav{}
+.settings-nav-item{
+  padding:9px 14px;border-radius:4px;margin-bottom:4px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text2);cursor:pointer;
+  transition:all .15s;border:1px solid transparent;
+  display:flex;align-items:center;gap:8px;
+}
+.settings-nav-item:hover{background:var(--bg2)}
+.settings-nav-item.active{
+  background:var(--cyan-dim);border-color:rgba(0,212,255,.2);
+  color:var(--cyan);
+}
+.settings-content{}
+.settings-section{display:none}
+.settings-section.active{display:block}
+.settings-section-title{
+  font-family:var(--display);font-size:14px;font-weight:600;
+  color:#fff;margin-bottom:4px;letter-spacing:.04em;
+}
+.settings-section-desc{
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+  margin-bottom:20px;letter-spacing:.04em;
+}
+.settings-card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:6px;padding:20px;margin-bottom:14px;
+}
+.settings-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:1px solid var(--border);
+}
+.settings-row:last-child{border-bottom:none}
+.settings-row-info{}
+.settings-row-label{
+  font-size:13px;color:var(--text);margin-bottom:2px;font-weight:500;
+}
+.settings-row-desc{font-family:var(--mono);font-size:9px;color:var(--text3)}
+.settings-input{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:4px;padding:6px 10px;
+  font-family:var(--mono);font-size:12px;color:var(--text);
+  outline:none;text-align:right;width:100px;
+  transition:border-color .15s;
+}
+.settings-input:focus{border-color:var(--cyan)}
+.settings-select{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:4px;padding:6px 10px;
+  font-family:var(--mono);font-size:11px;color:var(--text);
+  outline:none;transition:border-color .15s;
+}
+.settings-select:focus{border-color:var(--cyan)}
+.toggle{
+  position:relative;width:38px;height:20px;flex-shrink:0;
+}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  cursor:pointer;transition:all .2s;
+}
+.toggle input:checked + .toggle-track{
+  background:var(--cyan-dim);border-color:var(--cyan);
+}
+.toggle-thumb{
+  position:absolute;top:2px;left:2px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--text3);transition:all .2s;pointer-events:none;
+}
+.toggle input:checked ~ .toggle-thumb{
+  left:20px;background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan-glow);
+}
+.save-btn-row{margin-top:16px;display:flex;justify-content:flex-end;gap:8px}
+
+/* ═══════════════════════════════════════════════
+   FOOTER STATUSBAR
+═══════════════════════════════════════════════ */
+.statusbar{
+  height:24px;background:var(--bg1);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:16px;
+  flex-shrink:0;
+}
+.status-item{
+  display:flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;color:var(--text3);
+  letter-spacing:.06em;
+}
+.status-item .s-dot{width:5px;height:5px;border-radius:50%}
+.status-item .s-cyan{background:var(--cyan);box-shadow:0 0 4px var(--cyan)}
+.status-item .s-green{background:var(--green)}
+
+/* ═══════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════ */
+.mt-12{margin-top:12px}
+.mt-16{margin-top:16px}
+.mt-20{margin-top:20px}
+.mb-16{margin-bottom:16px}
+.flex{display:flex}
+.items-center{align-items:center}
+.justify-between{justify-content:space-between}
+.gap-8{gap:8px}
+.gap-12{gap:12px}
+.text-mono{font-family:var(--mono)}
+.text-cyan{color:var(--cyan)}
+.text-green{color:var(--green)}
+.text-amber{color:var(--amber)}
+.text-muted{color:var(--text3)}
+.w-full{width:100%}
+
+/* Responsive */
+@media(max-width:900px){
+  .dashboard-grid{grid-template-columns:1fr 1fr}
+  .dash-row{grid-template-columns:1fr}
+  .letter-wrap{grid-template-columns:1fr}
+  .settings-layout{grid-template-columns:1fr}
+  .settings-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+}
+@media(max-width:600px){
+  .dashboard-grid{grid-template-columns:1fr 1fr}
+  #tab-dashboard,#tab-network,#tab-pipeline,#tab-outreach,#tab-settings,#tab-letter{padding:16px}
+}
+
+
+/* ═══════════════════════════════════════════════
+   NORTH STAR #10 THEME OVERRIDES
+═══════════════════════════════════════════════ */
+:root {
+  --bg:        #0A0F1E !important;
+  --bg1:       #0F1629 !important;
+  --bg2:       #141D35 !important;
+  --bg3:       #1A2545 !important;
+  --panel:     #0F1629 !important;
+  --panel2:    #141D35 !important;
+  --border:    rgba(99,102,241,0.2) !important;
+  --border2:   rgba(99,102,241,0.3) !important;
+  --cyan:      #6366F1 !important;
+  --cyan2:     #818CF8 !important;
+  --cyan-dim:  rgba(99,102,241,0.12) !important;
+  --cyan-glow: rgba(99,102,241,0.35) !important;
+  --green:     #10B981 !important;
+  --green-dim: rgba(16,185,129,0.1) !important;
+  --amber:     #F59E0B !important;
+  --amber-dim: rgba(245,158,11,0.1) !important;
+  --red:       #EF4444 !important;
+  --red-dim:   rgba(239,68,68,0.1) !important;
+  --purple:    #8B5CF6 !important;
+  --text:      #E2E8F0 !important;
+  --text2:     #94A3B8 !important;
+  --text3:     #64748B !important;
+  --mono:      'Space Grotesk', monospace !important;
+  --sans:      'Inter', sans-serif !important;
+  --display:   'Space Grotesk', sans-serif !important;
+}
+
+* { --mono: 'Space Grotesk' !important; --sans: 'Inter' !important; --display: 'Space Grotesk' !important; }
+
+/* Functional Enhancements */
+.search-wrap { position: relative; display: inline-flex; margin: 8px 12px; }
+#global-search { 
+  padding: 6px 12px 6px 28px; background: #141D35; border: 1px solid #6366F1;
+  color: #E2E8F0; border-radius: 4px; font-size: 12px; width: 200px;
+  font-family: 'Space Grotesk', monospace; transition: all 0.2s;
+}
+#global-search:focus { background: rgba(99,102,241,0.08); width: 260px; border-color: #818CF8; }
+.search-icon { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: #64748B; font-size: 11px; }
+.cmd-palette { position: fixed; bottom: 12px; right: 12px; padding: 6px 10px; background: #0F1629;
+  border: 1px solid #6366F1; border-radius: 4px; font-size: 11px; color: #94A3B8;
+  font-family: 'Space Grotesk', monospace; }
+
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="os-shell">
+
+  <!-- ── TITLEBAR ── -->
+  <div class="titlebar">
+    <img src="data:image/jpeg;base64,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" alt="AAP" style="height:20px;width:auto;margin-right:8px;flex-shrink:0;object-fit:contain;"><div class="tb-dots">
+      <div class="tb-dot r"></div>
+      <div class="tb-dot y"></div>
+      <div class="tb-dot g"></div>
+    </div>
+    <div class="tb-logo">AI Practice OS</div>
+    <div class="tb-meta" style="display:flex;align-items:center;gap:12px">
+      <span class="tb-live">SYSTEM ONLINE</span>
+      <span id="clock" style="font-family:var(--mono);font-size:9px;color:var(--text3)"></span>
+    </div>
+  </div>
+
+  <!-- ── TABBAR ── -->
+  <div class="tabbar">
+    <button class="tab-btn active" data-tab="letter">
+      <span class="tab-icon">✉</span> Letter
+    </button>
+    <button class="tab-btn" data-tab="dashboard">
+      <span class="tab-icon">◈</span> Dashboard
+    </button>
+    <button class="tab-btn" data-tab="network">
+      <span class="tab-icon">◉</span> Network
+    </button>
+    <button class="tab-btn" data-tab="pipeline">
+      <span class="tab-icon">⬡</span> Pipeline
+    </button>
+    <button class="tab-btn" data-tab="outreach">
+      <span class="tab-icon">◷</span> Outreach
+    </button>
+    <button class="tab-btn" data-tab="settings">
+      <span class="tab-icon">⚙</span> Settings
+    </button>
+  </div>
+
+  <!-- ── CONTENT ── -->
+  <div class="content-area">
+
+    <!-- ════════════════════════════════
+         TAB 1 — LETTER
+    ════════════════════════════════ -->
+    <div id="tab-letter" class="tab-panel active">
+      <div class="letter-wrap">
+
+        <div class="letter-main">
+          <div class="letter-stamp">⬡ AI ANALYSIS REPORT · CONFIDENTIAL</div>
+          <div class="letter-headline">$247,000 in Revenue Is Already Inside Your LinkedIn Network</div>
+          <div class="letter-byline">Generated by AI Practice OS · For: Yvonne Clarke · February 16, 2026</div>
+
+          <div class="letter-body">
+            <p>Yvonne, I ran your LinkedIn export through the scoring engine. Here is what the data says.</p>
+            <p>You have <strong>312 connections</strong>. Of those, <strong>47 are in your core market</strong>—accounting firm owners, tax practitioners, and financial solopreneurs who match your ideal client profile. The AI scored every contact for market fit using job title, company type, firm size, and decision-making authority.</p>
+
+            <div class="letter-callout">
+              <span class="num">12</span>
+              contacts are flagged as hot prospects right now. They score above 75, hold decision-making authority, and have no existing vendor relationship in your category. These are the first conversations to start.
+            </div>
+
+            <p>The revenue math is straightforward. Your core market divides into two segments: <strong>solopreneurs at $5,000 per deal</strong> and <strong>small firms at $12,500 per deal</strong>. With a 15% close rate on hot prospects, the system projects <strong>$247,000 in near-term addressable revenue</strong> from contacts who already know your name.</p>
+            <p>You don't need new leads. The pipeline was already in the CSV.</p>
+            <p>The AI has seeded your pipeline with the 12 hot prospects, scheduled the first wave of outreach for this week, and built a 90-day action plan below. Your only job is to start the conversations the system identified.</p>
+          </div>
+
+          <div style="margin-top:24px">
+            <div class="section-label">90-Day Action Plan</div>
+            <div class="panel">
+              <div class="action-step">
+                <div class="step-num">1</div>
+                <div class="step-text"><strong style="color:#fff">Days 1–7:</strong> Send LinkedIn DMs to your top 5 hot prospects. Use the AI-drafted opener in the Outreach tab. Goal: get 3 conversations started.</div>
+              </div>
+              <div class="action-step">
+                <div class="step-num">2</div>
+                <div class="step-text"><strong style="color:#fff">Days 8–21:</strong> Publish 2 authority posts on LinkedIn. The calendar has them scheduled. Warm your broader network before the email batch drops.</div>
+              </div>
+              <div class="action-step">
+                <div class="step-num">3</div>
+                <div class="step-text"><strong style="color:#fff">Days 22–45:</strong> Send the warm email sequence to your 47 core contacts. Three-touch campaign. The system has the schedule built.</div>
+              </div>
+              <div class="action-step">
+                <div class="step-num">4</div>
+                <div class="step-text"><strong style="color:#fff">Days 46–90:</strong> Move pipeline from Conversation to Proposal. Aim for 3 closed deals in the first 90 days. That's $15,000–$37,500 at your deal sizes.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="letter-sidebar">
+          <div class="letter-kpi">
+            <span class="letter-kpi-val">$247K</span>
+            <span class="letter-kpi-label">Addressable Revenue</span>
+          </div>
+          <div class="letter-kpi" style="border-color:rgba(0,255,157,.2)">
+            <span class="letter-kpi-val" style="color:var(--green)">312</span>
+            <span class="letter-kpi-label">Total Connections Analyzed</span>
+          </div>
+          <div class="letter-kpi" style="border-color:rgba(255,184,0,.2)">
+            <span class="letter-kpi-val" style="color:var(--amber)">47</span>
+            <span class="letter-kpi-label">Core Market Contacts</span>
+          </div>
+          <div class="letter-kpi" style="border-color:rgba(255,71,87,.2)">
+            <span class="letter-kpi-val" style="color:var(--red)">12</span>
+            <span class="letter-kpi-label">Hot Prospects</span>
+          </div>
+
+          <div class="revenue-breakdown">
+            <div class="panel-header" style="padding:10px 0;border:none;margin-bottom:6px">
+              <span class="panel-title">Revenue Breakdown</span>
+            </div>
+            <div class="rev-row"><span class="lbl">Solopreneurs (38)</span><span class="val">$190K</span></div>
+            <div class="rev-row"><span class="lbl">Small Firms (9)</span><span class="val">$112.5K</span></div>
+            <div class="rev-row"><span class="lbl">Pipeline (15%)</span><span class="val">$247K</span></div>
+          </div>
+
+          <div class="action-plan mt-16">
+            <div class="panel-title" style="margin-bottom:12px">This Week's Priorities</div>
+            <div class="week-schedule">
+              <div class="week-day">
+                <span class="week-day-label">MON</span>
+                <div class="week-events">
+                  <div class="week-event we-dm">🎯 DM: Sarah Chen · Score 92</div>
+                </div>
+              </div>
+              <div class="week-day">
+                <span class="week-day-label">WED</span>
+                <div class="week-events">
+                  <div class="week-event we-li">◈ LinkedIn: AI post #1</div>
+                </div>
+              </div>
+              <div class="week-day">
+                <span class="week-day-label">FRI</span>
+                <div class="week-events">
+                  <div class="week-event we-em">✉ Email: Top 3 prospects</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         TAB 2 — DASHBOARD
+    ════════════════════════════════ -->
+    <div id="tab-dashboard" class="tab-panel">
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <div class="stat-label">Revenue Target</div>
+          <div class="stat-val lg">$247K</div>
+          <div class="stat-sub"><span class="up">↑ 12%</span> vs. last quarter</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Network Size</div>
+          <div class="stat-val lg">312</div>
+          <div class="stat-sub">Connections scored</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Core Market</div>
+          <div class="stat-val lg">47</div>
+          <div class="stat-sub"><span class="up">12</span> hot prospects</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-label">In Pipeline</div>
+          <div class="stat-val lg">9</div>
+          <div class="stat-sub">Across 5 stages</div>
+        </div>
+      </div>
+
+      <div class="dash-row">
+        <!-- Pipeline health -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Pipeline Health</span>
+            <span class="badge badge-cyan">$247K POTENTIAL</span>
+          </div>
+          <div class="panel-body">
+            <div class="pipeline-bar-wrap">
+              <div class="pipeline-bar-row">
+                <span class="pipeline-bar-label">Identified</span>
+                <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:60%;background:var(--text3)"></div></div>
+                <span class="pipeline-bar-count">3</span>
+              </div>
+              <div class="pipeline-bar-row">
+                <span class="pipeline-bar-label">Reached Out</span>
+                <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:40%;background:var(--amber)"></div></div>
+                <span class="pipeline-bar-count">2</span>
+              </div>
+              <div class="pipeline-bar-row">
+                <span class="pipeline-bar-label">Conversation</span>
+                <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:40%;background:var(--cyan)"></div></div>
+                <span class="pipeline-bar-count">2</span>
+              </div>
+              <div class="pipeline-bar-row">
+                <span class="pipeline-bar-label">Proposal</span>
+                <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:20%;background:var(--purple)"></div></div>
+                <span class="pipeline-bar-count">1</span>
+              </div>
+              <div class="pipeline-bar-row">
+                <span class="pipeline-bar-label">Client</span>
+                <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:20%;background:var(--green)"></div></div>
+                <span class="pipeline-bar-count">1</span>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border)">
+              <div class="section-label">Top Hot Prospects</div>
+              <div id="dash-prospects"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly schedule -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">This Week's Outreach</span>
+            <span class="badge badge-green">6 ACTIONS</span>
+          </div>
+          <div class="panel-body" style="padding:8px 16px">
+            <div class="week-schedule">
+              <div class="week-day"><span class="week-day-label">MON</span><div class="week-events"><div class="week-event we-dm">🎯 DM: Sarah Chen</div><div class="week-event we-li">◈ LinkedIn intro post</div></div></div>
+              <div class="week-day"><span class="week-day-label">TUE</span><div class="week-events"><div class="week-event we-dm">🎯 DM: Mark Rivera</div></div></div>
+              <div class="week-day"><span class="week-day-label">WED</span><div class="week-events"><div class="week-event we-li">◈ LinkedIn: AI insight post</div></div></div>
+              <div class="week-day"><span class="week-day-label">THU</span><div class="week-events"><div class="week-event we-em">✉ Email: 3 hot prospects</div></div></div>
+              <div class="week-day"><span class="week-day-label">FRI</span><div class="week-events"><div class="week-event we-em">✉ Email: Warm batch (12)</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-row-3">
+        <!-- Velocity -->
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Stage Velocity</span></div>
+          <div class="panel-body">
+            <div id="velocity-chart" style="height:100px;display:flex;align-items:flex-end;gap:6px;padding-top:8px">
+            </div>
+            <div style="display:flex;justify-content:space-around;margin-top:6px">
+              <span class="text-mono" style="font-size:9px;color:var(--text3)">ID</span>
+              <span class="text-mono" style="font-size:9px;color:var(--text3)">RO</span>
+              <span class="text-mono" style="font-size:9px;color:var(--text3)">CV</span>
+              <span class="text-mono" style="font-size:9px;color:var(--text3)">PR</span>
+              <span class="text-mono" style="font-size:9px;color:var(--text3)">CL</span>
+            </div>
+          </div>
+        </div>
+        <!-- Activity -->
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Recent Activity</span></div>
+          <div class="panel-body" style="padding:0 16px">
+            <div class="activity-feed">
+              <div class="activity-item">
+                <div class="activity-icon ai-cyan">⬡</div>
+                <div style="flex:1"><div class="activity-text"><strong>AI scored 47 contacts</strong> as core market match</div></div>
+                <span class="activity-time">2h ago</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon ai-green">✉</div>
+                <div style="flex:1"><div class="activity-text"><strong>Linda Wu</strong> moved to Proposal stage</div></div>
+                <span class="activity-time">5h ago</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon ai-amber">◷</div>
+                <div style="flex:1"><div class="activity-text"><strong>Outreach calendar</strong> updated for Feb 16–28</div></div>
+                <span class="activity-time">1d ago</span>
+              </div>
+              <div class="activity-item">
+                <div class="activity-icon ai-cyan">◉</div>
+                <div style="flex:1"><div class="activity-text"><strong>Tom Hayes</strong> converted to Client</div></div>
+                <span class="activity-time">2d ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Conversion rate -->
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">Network Breakdown</span></div>
+          <div class="panel-body" style="padding:12px 16px">
+            <div id="donut-chart" style="text-align:center;margin-bottom:8px">
+              <svg viewBox="0 0 120 120" width="110" height="110" style="display:block;margin:0 auto">
+                <circle cx="60" cy="60" r="45" fill="none" stroke="var(--bg3)" stroke-width="18"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="var(--cyan)" stroke-width="18"
+                  stroke-dasharray="85 197" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="var(--amber)" stroke-width="18"
+                  stroke-dasharray="57 197" stroke-dashoffset="-85" transform="rotate(-90 60 60)"/>
+                <circle cx="60" cy="60" r="45" fill="none" stroke="var(--text3)" stroke-width="18"
+                  stroke-dasharray="55 197" stroke-dashoffset="-142" transform="rotate(-90 60 60)"/>
+                <text x="60" y="55" text-anchor="middle" font-family="'Orbitron'" font-size="16" fill="white" font-weight="700">312</text>
+                <text x="60" y="70" text-anchor="middle" font-family="'IBM Plex Mono'" font-size="8" fill="#3d5078">CONTACTS</text>
+              </svg>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px">
+                <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:var(--cyan);display:inline-block"></span><span style="color:var(--text2)">Core Market</span></span>
+                <span style="color:#fff">47 <span style="color:var(--text3)">(15%)</span></span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px">
+                <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:var(--amber);display:inline-block"></span><span style="color:var(--text2)">Warm Adjacent</span></span>
+                <span style="color:#fff">89 <span style="color:var(--text3)">(29%)</span></span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:10px">
+                <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:var(--text3);display:inline-block"></span><span style="color:var(--text2)">Non-Core</span></span>
+                <span style="color:#fff">176 <span style="color:var(--text3)">(56%)</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end dashboard -->
+
+    <!-- ════════════════════════════════
+         TAB 3 — NETWORK
+    ════════════════════════════════ -->
+    <div id="tab-network" class="tab-panel">
+      <div style="padding:24px 28px">
+        <div class="network-toolbar">
+          <div class="search-box">
+            <span class="search-icon">⌕</span>
+            <input type="text" id="contact-search" placeholder="Search contacts...">
+          </div>
+          <button class="filter-btn active" data-filter="all">All (312)</button>
+          <button class="filter-btn" data-filter="hot">Hot Prospects (12)</button>
+          <button class="filter-btn" data-filter="core">Core Market (47)</button>
+          <button class="filter-btn" data-filter="pipeline">In Pipeline (9)</button>
+          <button class="btn btn-cyan btn-sm" onclick="alert('Import new CSV to rescore')">⬆ Import CSV</button>
+        </div>
+
+        <div class="panel network-table-wrap">
+          <table class="network-table">
+            <thead>
+              <tr>
+                <th data-col="score" class="sorted">Score <span class="sort-icon">↓</span></th>
+                <th data-col="name">Name</th>
+                <th data-col="company">Company</th>
+                <th data-col="position">Position</th>
+                <th data-col="market">Market</th>
+                <th data-col="stage">Stage</th>
+                <th data-col="revenue">Rev. Potential</th>
+                <th data-col="tags">Tags</th>
+              </tr>
+            </thead>
+            <tbody id="network-tbody">
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="8" id="network-footer">Loading contacts...</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Contact Drawer -->
+      <div class="contact-drawer" id="contact-drawer">
+        <div class="drawer-header">
+          <div>
+            <div id="drawer-name" style="font-size:16px;font-weight:600;color:#fff;margin-bottom:2px"></div>
+            <div id="drawer-pos" class="text-mono" style="font-size:10px;color:var(--text3)"></div>
+          </div>
+          <button class="drawer-close" onclick="closeDrawer()">✕</button>
+        </div>
+        <div class="drawer-body">
+          <div class="grid-2" style="gap:10px;margin-bottom:16px">
+            <div class="stat-card" style="padding:12px">
+              <div class="stat-label">Score</div>
+              <div id="drawer-score" class="stat-val" style="font-size:22px;color:var(--cyan)"></div>
+            </div>
+            <div class="stat-card green" style="padding:12px">
+              <div class="stat-label">Revenue</div>
+              <div id="drawer-rev" class="stat-val" style="font-size:18px;color:var(--green)"></div>
+            </div>
+          </div>
+          <div class="drawer-field">
+            <div class="drawer-field-label">Company</div>
+            <div id="drawer-company" class="drawer-field-val"></div>
+          </div>
+          <div class="drawer-field">
+            <div class="drawer-field-label">Market Segment</div>
+            <div id="drawer-market" class="drawer-field-val"></div>
+          </div>
+          <div class="drawer-field">
+            <div class="drawer-field-label">Pipeline Stage</div>
+            <div id="drawer-stage" class="drawer-field-val"></div>
+          </div>
+          <div class="drawer-field">
+            <div class="drawer-field-label">Tags</div>
+            <div id="drawer-tags" class="drawer-field-val"></div>
+          </div>
+          <div class="drawer-notes" style="margin-top:16px">
+            <div class="drawer-field-label">Notes</div>
+            <textarea id="drawer-notes-input" placeholder="Add notes about this contact..."></textarea>
+          </div>
+          <div style="margin-top:16px">
+            <div class="drawer-field-label">Activity Log</div>
+            <div class="activity-log" id="drawer-activity"></div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button class="btn btn-cyan btn-sm w-full" onclick="saveDrawerNotes()">Save Notes</button>
+            <button class="btn btn-outline btn-sm w-full" onclick="moveToNextStage()">→ Next Stage</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end network -->
+
+    <!-- ════════════════════════════════
+         TAB 4 — PIPELINE
+    ════════════════════════════════ -->
+    <div id="tab-pipeline" class="tab-panel">
+      <div class="pipeline-toolbar">
+        <div>
+          <div class="section-label" style="margin-bottom:4px">Kanban Pipeline</div>
+          <div class="pipeline-stats">
+            <div class="pstat"><span class="pstat-val" id="pip-total">9</span><span class="pstat-lbl">In Pipeline</span></div>
+            <div class="pstat"><span class="pstat-val text-green" id="pip-rev">$247K</span><span class="pstat-lbl">Potential</span></div>
+            <div class="pstat"><span class="pstat-val text-cyan" id="pip-prob">$37K</span><span class="pstat-lbl">Weighted</span></div>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="openAddContactModal()">+ Add Contact</button>
+      </div>
+      <div class="kanban-board" id="kanban-board"></div>
+    </div>
+
+    <!-- ════════════════════════════════
+         TAB 5 — OUTREACH
+    ════════════════════════════════ -->
+    <div id="tab-outreach" class="tab-panel">
+      <div style="padding:24px 28px">
+        <div class="cal-toolbar">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" id="prev-month">‹</button>
+            <div class="cal-month-title" id="cal-month-title"></div>
+            <button class="cal-nav-btn" id="next-month">›</button>
+          </div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cyan)"></div>LinkedIn</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--green)"></div>Email</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--purple)"></div>DM</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--amber)"></div>Webinar</div>
+          </div>
+        </div>
+
+        <div class="cal-grid-wrap">
+          <div class="cal-day-headers">
+            <div class="cal-day-hdr">Mon</div>
+            <div class="cal-day-hdr">Tue</div>
+            <div class="cal-day-hdr">Wed</div>
+            <div class="cal-day-hdr">Thu</div>
+            <div class="cal-day-hdr">Fri</div>
+            <div class="cal-day-hdr">Sat</div>
+            <div class="cal-day-hdr">Sun</div>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════
+         TAB 6 — SETTINGS
+    ════════════════════════════════ -->
+    <div id="tab-settings" class="tab-panel">
+      <div style="padding:24px 28px">
+        <div class="settings-layout">
+          <div class="settings-nav" id="settings-nav">
+            <div class="settings-nav-item active" data-settings="revenue">💰 Revenue Config</div>
+            <div class="settings-nav-item" data-settings="scoring">◈ Scoring Rules</div>
+            <div class="settings-nav-item" data-settings="followup">◷ Follow-up Rules</div>
+            <div class="settings-nav-item" data-settings="pipeline">⬡ Pipeline Defaults</div>
+            <div class="settings-nav-item" data-settings="notifications">🔔 Notifications</div>
+            <div class="settings-nav-item" data-settings="export">⬇ Export & Data</div>
+          </div>
+          <div class="settings-content">
+
+            <div class="settings-section active" id="settings-revenue">
+              <div class="settings-section-title">Revenue Configuration</div>
+              <div class="settings-section-desc">Set revenue potential per contact segment. Changes recalculate all totals.</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Core — Solopreneur (AIROI)</div>
+                    <div class="settings-row-desc">Owner-operated practices, 1-3 staff</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span class="text-mono text-muted">$</span>
+                    <input class="settings-input" type="number" id="rev-solo" value="5000" onchange="recalcRevenue()">
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Core — Small Firm (H+A)</div>
+                    <div class="settings-row-desc">Firms with 4–20 staff</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span class="text-mono text-muted">$</span>
+                    <input class="settings-input" type="number" id="rev-firm" value="12500" onchange="recalcRevenue()">
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Non-Core Adjacent</div>
+                    <div class="settings-row-desc">Adjacent market, lower probability</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <span class="text-mono text-muted">$</span>
+                    <input class="settings-input" type="number" id="rev-ncore" value="2500" onchange="recalcRevenue()">
+                  </div>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Close Rate Assumption</div>
+                    <div class="settings-row-desc">Used in weighted revenue projections</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:6px">
+                    <input class="settings-input" type="number" id="rev-rate" value="15" onchange="recalcRevenue()">
+                    <span class="text-mono text-muted">%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="settings-card" style="background:var(--cyan-dim);border-color:rgba(0,212,255,.2)">
+                <div class="panel-title" style="margin-bottom:12px;color:var(--cyan)">Calculated Revenue Potential</div>
+                <div class="rev-row"><span class="lbl">Solopreneurs (38 × $5,000)</span><span class="val" id="calc-solo">$190,000</span></div>
+                <div class="rev-row"><span class="lbl">Small Firms (9 × $12,500)</span><span class="val" id="calc-firm">$112,500</span></div>
+                <div class="rev-row"><span class="lbl">Non-Core (89 × $2,500)</span><span class="val" id="calc-ncore">$222,500</span></div>
+                <div class="rev-row" style="border-bottom:none"><span class="lbl" style="color:var(--cyan)">Weighted (15% close rate)</span><span class="val" style="color:var(--cyan);font-size:16px" id="calc-total">$247,500</span></div>
+              </div>
+            </div>
+
+            <div class="settings-section" id="settings-scoring">
+              <div class="settings-section-title">Scoring Rules</div>
+              <div class="settings-section-desc">Configure how the AI scores contacts for market fit.</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Hot Prospect Threshold</div>
+                    <div class="settings-row-desc">Minimum score to flag as hot</div>
+                  </div>
+                  <input class="settings-input" type="number" value="75">
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Core Market Threshold</div>
+                    <div class="settings-row-desc">Minimum score for core market tag</div>
+                  </div>
+                  <input class="settings-input" type="number" value="50">
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Job Title Weight</div>
+                    <div class="settings-row-desc">Multiplier for title match (0–3)</div>
+                  </div>
+                  <input class="settings-input" type="number" step="0.1" value="2.0">
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Company Type Weight</div>
+                    <div class="settings-row-desc">Multiplier for company fit (0–3)</div>
+                  </div>
+                  <input class="settings-input" type="number" step="0.1" value="1.5">
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section" id="settings-followup">
+              <div class="settings-section-title">Follow-up Rules</div>
+              <div class="settings-section-desc">Configure automatic follow-up timing and escalation.</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Initial Follow-up (days)</div>
+                    <div class="settings-row-desc">Days after first contact before flag</div>
+                  </div>
+                  <input class="settings-input" type="number" value="7">
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Second Follow-up (days)</div>
+                    <div class="settings-row-desc">Days after first follow-up</div>
+                  </div>
+                  <input class="settings-input" type="number" value="14">
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Archive Stale Contacts (days)</div>
+                    <div class="settings-row-desc">Move to cold if no response</div>
+                  </div>
+                  <input class="settings-input" type="number" value="60">
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Auto-schedule follow-ups</div>
+                    <div class="settings-row-desc">Add to outreach calendar automatically</div>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" checked>
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section" id="settings-pipeline">
+              <div class="settings-section-title">Pipeline Defaults</div>
+              <div class="settings-section-desc">Configure default pipeline behavior and stage definitions.</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Default Starting Stage</div>
+                    <div class="settings-row-desc">Where new contacts enter</div>
+                  </div>
+                  <select class="settings-select">
+                    <option selected>Identified</option>
+                    <option>Reached Out</option>
+                    <option>Conversation</option>
+                  </select>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info">
+                    <div class="settings-row-label">Win Probability by Stage</div>
+                    <div class="settings-row-desc">Used in weighted revenue calc</div>
+                  </div>
+                  <span class="text-mono text-muted" style="font-size:10px">Configured below</span>
+                </div>
+              </div>
+              <div class="settings-card">
+                <div class="panel-title" style="margin-bottom:12px">Stage Probabilities</div>
+                <div class="settings-row">
+                  <span class="settings-row-label">Identified</span>
+                  <div style="display:flex;align-items:center;gap:6px"><input class="settings-input" type="number" value="5"><span class="text-mono text-muted">%</span></div>
+                </div>
+                <div class="settings-row">
+                  <span class="settings-row-label">Reached Out</span>
+                  <div style="display:flex;align-items:center;gap:6px"><input class="settings-input" type="number" value="15"><span class="text-mono text-muted">%</span></div>
+                </div>
+                <div class="settings-row">
+                  <span class="settings-row-label">Conversation</span>
+                  <div style="display:flex;align-items:center;gap:6px"><input class="settings-input" type="number" value="35"><span class="text-mono text-muted">%</span></div>
+                </div>
+                <div class="settings-row">
+                  <span class="settings-row-label">Proposal</span>
+                  <div style="display:flex;align-items:center;gap:6px"><input class="settings-input" type="number" value="65"><span class="text-mono text-muted">%</span></div>
+                </div>
+                <div class="settings-row">
+                  <span class="settings-row-label">Client</span>
+                  <div style="display:flex;align-items:center;gap:6px"><input class="settings-input" type="number" value="100"><span class="text-mono text-muted">%</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section" id="settings-notifications">
+              <div class="settings-section-title">Notifications</div>
+              <div class="settings-section-desc">Configure alerts and reminders.</div>
+              <div class="settings-card">
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-label">Daily digest email</div></div>
+                  <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-label">Follow-up reminders</div></div>
+                  <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-label">Pipeline stage changes</div></div>
+                  <label class="toggle"><input type="checkbox"><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                </div>
+                <div class="settings-row">
+                  <div class="settings-row-info"><div class="settings-row-label">Weekly report</div></div>
+                  <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section" id="settings-export">
+              <div class="settings-section-title">Export & Data</div>
+              <div class="settings-section-desc">Export your data or reset the system.</div>
+              <div class="settings-card">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <button class="btn btn-outline" onclick="exportContacts()">⬇ Export Contacts as CSV</button>
+                  <button class="btn btn-outline" onclick="exportPipeline()">⬇ Export Pipeline as JSON</button>
+                  <button class="btn btn-outline" onclick="exportReport()">⬇ Export Full Report</button>
+                </div>
+              </div>
+              <div class="settings-card" style="border-color:var(--red-dim)">
+                <div class="panel-title" style="color:var(--red);margin-bottom:8px">Danger Zone</div>
+                <button class="btn" style="background:var(--red-dim);color:var(--red);border:1px solid rgba(255,71,87,.3)" onclick="if(confirm('Reset all data?')) alert('Data reset (demo only)')">Reset All Data</button>
+              </div>
+            </div>
+
+            <div class="save-btn-row">
+              <button class="btn btn-outline" onclick="alert('Changes discarded')">Discard</button>
+              <button class="btn btn-cyan" onclick="saveSettings()">Save Settings</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content-area -->
+
+  <!-- ── STATUS BAR ── -->
+  <div class="statusbar">
+    <div class="status-item"><div class="s-dot s-cyan"></div>AI Engine Online</div>
+    <div class="status-item"><div class="s-dot s-green"></div>312 Contacts Loaded</div>
+    <div class="status-item">Last scored: <span style="margin-left:3px;color:var(--text2)">Feb 16, 2026 09:14</span></div>
+    <div style="margin-left:auto;display:flex;gap:12px">
+      <div class="status-item">Version 1.0.0</div>
+      <div class="status-item">ai-practice-os.html</div>
+    </div>
+  </div>
+
+</div><!-- end os-shell -->
+
+<!-- Add Event Modal -->
+<div class="modal-overlay" id="event-modal">
+  <div class="modal">
+    <div class="modal-title">◷ Schedule Outreach</div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" type="text" id="modal-date" readonly>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Channel</label>
+      <select class="form-select" id="modal-channel">
+        <option value="li">LinkedIn Post</option>
+        <option value="em">Email Campaign</option>
+        <option value="dm">Direct Message</option>
+        <option value="wb">Webinar</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input class="form-input" type="text" id="modal-desc" placeholder="e.g. Intro post to CPA network">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('event-modal')">Cancel</button>
+      <button class="btn btn-cyan" onclick="addCalEvent()">Add Event</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const CONTACTS = [
+  {id:1, score:92, name:'Sarah Chen', company:'Chen & Associates CPA', position:'Managing Partner', market:'Core', segment:'firm', stage:'Identified', revenue:12500, tags:['Hot','Decision Maker'], notes:'', activity:['Feb 15: Added to pipeline','Feb 14: Scored by AI']},
+  {id:2, score:88, name:'Mark Rivera', company:'Rivera Tax Group', position:'Owner', market:'Core', segment:'solo', stage:'Reached Out', revenue:5000, tags:['Hot','Owner'], notes:'', activity:['Feb 14: DM sent','Feb 13: Flagged as hot']},
+  {id:3, score:83, name:'Rachel Soto', company:'Soto Financial', position:'Principal', market:'Core', segment:'solo', stage:'Conversation', revenue:5000, tags:['Hot'], notes:'', activity:['Feb 12: First call booked']},
+  {id:4, score:84, name:'David Patel', company:'Patel CPA', position:'Founder', market:'Core', segment:'firm', stage:'Identified', revenue:12500, tags:['Hot','Decision Maker'], notes:'', activity:['Feb 15: Added to pipeline']},
+  {id:5, score:90, name:'Linda Wu', company:'Wu Accounting', position:'Owner', market:'Core', segment:'solo', stage:'Proposal', revenue:5000, tags:['Hot','Proposal Sent'], notes:'Sent proposal Feb 10', activity:['Feb 10: Proposal sent','Feb 8: Second call']},
+  {id:6, score:86, name:'Tom Hayes', company:'Hayes & Partners', position:'Managing Director', market:'Core', segment:'firm', stage:'Client', revenue:12500, tags:['Client'], notes:'Signed Feb 1', activity:['Feb 1: Contract signed','Jan 28: Final call']},
+  {id:7, score:79, name:'Kim Torres', company:'Torres Bookkeeping', position:'Owner', market:'Core', segment:'solo', stage:'Identified', revenue:5000, tags:['Hot'], notes:'', activity:['Feb 15: Added to pipeline']},
+  {id:8, score:77, name:'Amy Nguyen', company:'Nguyen & Co', position:'Partner', market:'Core', segment:'firm', stage:'Reached Out', revenue:12500, tags:['Email Sent'], notes:'', activity:['Feb 13: Email sent']},
+  {id:9, score:71, name:'James O\'Brien', company:'O\'Brien Advisory', position:'Founder', market:'Core', segment:'solo', stage:'Conversation', revenue:5000, tags:['Responsive'], notes:'', activity:['Feb 12: Reply received']},
+  {id:10, score:76, name:'Lisa Park', company:'Deloitte', position:'Senior Manager', market:'Non-Core', segment:'ncore', stage:'New', revenue:2500, tags:['Enterprise'], notes:'', activity:['Feb 14: Scored']},
+  {id:11, score:68, name:'Chris Yamamoto', company:'Yamamoto Tax Services', position:'Principal', market:'Core', segment:'solo', stage:'New', revenue:5000, tags:[], notes:'', activity:['Feb 14: Scored']},
+  {id:12, score:54, name:'Anna Kim', company:'TechCo Inc', position:'CFO', market:'Non-Core', segment:'ncore', stage:'New', revenue:2500, tags:[], notes:'', activity:['Feb 14: Scored']},
+  {id:13, score:62, name:'Robert Marsh', company:'Marsh Bookkeeping', position:'Owner', market:'Core', segment:'solo', stage:'New', revenue:5000, tags:[], notes:'', activity:['Feb 14: Scored']},
+  {id:14, score:45, name:'Priya Mehta', company:'Global Consulting', position:'Director', market:'Non-Core', segment:'ncore', stage:'New', revenue:2500, tags:[], notes:'', activity:['Feb 14: Scored']},
+  {id:15, score:81, name:'Marcus Webb', company:'Webb & Son CPA', position:'Partner', market:'Core', segment:'firm', stage:'New', revenue:12500, tags:['Hot'], notes:'', activity:['Feb 15: Flagged as hot']},
+];
+
+const STAGES = ['Identified','Reached Out','Conversation','Proposal','Client'];
+const STAGE_COLORS = ['#3d5078','#ffb800','#00d4ff','#a855f7','#00ff9d'];
+const STAGE_PROBS = [0.05,0.15,0.35,0.65,1.0];
+
+let contacts = JSON.parse(JSON.stringify(CONTACTS));
+let sortCol = 'score';
+let sortDir = -1;
+let activeFilter = 'all';
+let searchTerm = '';
+let activeContact = null;
+let currentYear = 2026;
+let currentMonth = 1; // 0-indexed, 1 = February
+
+const CALENDAR_EVENTS = {
+  '2026-02-09': [],
+  '2026-02-10': [{type:'li',desc:'LinkedIn: AI insight post'}],
+  '2026-02-12': [{type:'em',desc:'Email: Hot 3 prospects'}],
+  '2026-02-16': [{type:'dm',desc:'DM: Mark Rivera'}],
+  '2026-02-17': [{type:'li',desc:'LinkedIn: Case study drop'}],
+  '2026-02-18': [{type:'em',desc:'Email: Warm batch (12)'}],
+  '2026-02-19': [{type:'li',desc:'LinkedIn: AIROI authority post'}],
+  '2026-02-24': [{type:'wb',desc:'Webinar: AI for CPAs'}],
+  '2026-02-26': [{type:'em',desc:'Email: Final follow-up'}],
+  '2026-03-03': [{type:'li',desc:'LinkedIn: Case study #2'}],
+  '2026-03-10': [{type:'em',desc:'Email: Monthly batch'}],
+};
+
+let calModal_date = null;
+
+/* ═══════════════════════════════════════════════
+   TAB SWITCHING
+═══════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    closeDrawer();
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════════════ */
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════ */
+function buildDashboard(){
+  // Hot prospects
+  const hot = contacts.filter(c => c.score >= 75 && c.stage !== 'Client').slice(0,4);
+  const container = document.getElementById('dash-prospects');
+  if(!container) return;
+  container.innerHTML = '';
+  hot.forEach(c => {
+    const pct = c.score;
+    const el = document.createElement('div');
+    el.className = 'prospect-row';
+    el.innerHTML = `
+      <div>
+        <div class="prospect-name">${c.name}</div>
+        <div class="prospect-co">${c.company}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="badge badge-cyan" style="font-size:9px">${c.stage}</span>
+        <div class="score-ring" style="--pct:${pct}">
+          <span class="score-ring-val">${c.score}</span>
+        </div>
+      </div>`;
+    el.onclick = () => {
+      document.querySelector('[data-tab="network"]').click();
+      setTimeout(() => openDrawer(c), 200);
+    };
+    container.appendChild(el);
+  });
+
+  // Velocity bars
+  const vc = document.getElementById('velocity-chart');
+  if(!vc) return;
+  const counts = STAGES.map(s => contacts.filter(c => c.stage === s).length);
+  const max = Math.max(...counts, 1);
+  vc.innerHTML = '';
+  counts.forEach((n, i) => {
+    const bar = document.createElement('div');
+    bar.style.cssText = `flex:1;border-radius:3px 3px 0 0;transition:height 1s;background:${STAGE_COLORS[i]};opacity:.85;height:${Math.round((n/max)*90)}px;position:relative`;
+    const lbl = document.createElement('div');
+    lbl.style.cssText = `position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:#fff`;
+    lbl.textContent = n;
+    bar.appendChild(lbl);
+    vc.appendChild(bar);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   NETWORK TABLE
+═══════════════════════════════════════════════ */
+function getFilteredContacts(){
+  let list = [...contacts];
+  if(searchTerm) list = list.filter(c =>
+    c.name.toLowerCase().includes(searchTerm) ||
+    c.company.toLowerCase().includes(searchTerm) ||
+    c.position.toLowerCase().includes(searchTerm)
+  );
+  if(activeFilter === 'hot') list = list.filter(c => c.score >= 75 && c.stage !== 'Client');
+  else if(activeFilter === 'core') list = list.filter(c => c.market === 'Core');
+  else if(activeFilter === 'pipeline') list = list.filter(c => c.stage !== 'New');
+  list.sort((a,b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if(typeof av === 'string') av = av.toLowerCase(), bv = bv.toLowerCase();
+    return av < bv ? sortDir : av > bv ? -sortDir : 0;
+  });
+  return list;
+}
+
+function stageBadge(stage){
+  const map = {
+    'New':'badge-dim','Identified':'badge-dim',
+    'Reached Out':'badge-amber','Conversation':'badge-cyan',
+    'Proposal':'badge-purple','Client':'badge-green'
+  };
+  return `<span class="badge ${map[stage]||'badge-dim'}">${stage}</span>`;
+}
+function marketBadge(m){
+  return m === 'Core'
+    ? `<span class="badge badge-green">Core</span>`
+    : `<span class="badge badge-dim">Non-Core</span>`;
+}
+function scoreClass(s){ return s>=80?'score-high':s>=60?'score-mid':'score-low'; }
+function tagBadges(tags){ return tags.map(t=>`<span class="badge badge-dim">${t}</span>`).join(' '); }
+
+function renderNetworkTable(){
+  const list = getFilteredContacts();
+  const tbody = document.getElementById('network-tbody');
+  const footer = document.getElementById('network-footer');
+  tbody.innerHTML = '';
+  list.forEach(c => {
+    const tr = document.createElement('tr');
+    if(activeContact && activeContact.id === c.id) tr.classList.add('selected');
+    tr.innerHTML = `
+      <td><span class="score-num ${scoreClass(c.score)}">${c.score}</span></td>
+      <td><div class="contact-name">${c.name}</div><div class="contact-pos">${c.position}</div></td>
+      <td style="color:var(--text2)">${c.company}</td>
+      <td style="color:var(--text2);font-size:11px">${c.position}</td>
+      <td>${marketBadge(c.market)}</td>
+      <td>${stageBadge(c.stage)}</td>
+      <td><span class="text-mono text-green" style="font-size:11px">$${c.revenue.toLocaleString()}</span></td>
+      <td>${tagBadges(c.tags)}</td>`;
+    tr.onclick = () => openDrawer(c);
+    tbody.appendChild(tr);
+  });
+  footer.textContent = `${list.length} of ${contacts.length} contacts · Click a row to open contact card`;
+}
+
+function openDrawer(c){
+  activeContact = c;
+  document.getElementById('drawer-name').textContent = c.name;
+  document.getElementById('drawer-pos').textContent = `${c.position} · ${c.company}`;
+  document.getElementById('drawer-score').textContent = c.score;
+  document.getElementById('drawer-rev').textContent = `$${c.revenue.toLocaleString()}`;
+  document.getElementById('drawer-company').textContent = c.company;
+  document.getElementById('drawer-market').innerHTML = marketBadge(c.market) + ` (${c.segment === 'firm' ? 'Small Firm' : c.segment === 'solo' ? 'Solopreneur' : 'Non-Core'})`;
+  document.getElementById('drawer-stage').innerHTML = stageBadge(c.stage);
+  document.getElementById('drawer-tags').innerHTML = tagBadges(c.tags) || '<span class="text-muted" style="font-size:11px">None</span>';
+  document.getElementById('drawer-notes-input').value = c.notes || '';
+  const al = document.getElementById('drawer-activity');
+  al.innerHTML = (c.activity||[]).map(a => {
+    const [date, ...rest] = a.split(':');
+    return `<div class="log-item"><div class="log-dot"></div><div class="log-text">${rest.join(':').trim()}</div><span class="log-date">${date}</span></div>`;
+  }).join('');
+  document.getElementById('contact-drawer').classList.add('open');
+  renderNetworkTable();
+}
+
+function closeDrawer(){
+  document.getElementById('contact-drawer').classList.remove('open');
+  activeContact = null;
+  renderNetworkTable();
+}
+
+function saveDrawerNotes(){
+  if(!activeContact) return;
+  const note = document.getElementById('drawer-notes-input').value;
+  activeContact.notes = note;
+  const c = contacts.find(x => x.id === activeContact.id);
+  if(c) { c.notes = note; c.activity.unshift(`Feb 16: Note saved`); }
+  document.getElementById('drawer-activity').innerHTML = (activeContact.activity||[]).map(a => {
+    const [date, ...rest] = a.split(':');
+    return `<div class="log-item"><div class="log-dot"></div><div class="log-text">${rest.join(':').trim()}</div><span class="log-date">${date}</span></div>`;
+  }).join('');
+}
+
+function moveToNextStage(){
+  if(!activeContact) return;
+  const idx = STAGES.indexOf(activeContact.stage);
+  if(idx < STAGES.length - 1){
+    activeContact.stage = STAGES[idx+1];
+    const c = contacts.find(x => x.id === activeContact.id);
+    if(c){ c.stage = activeContact.stage; c.activity.unshift(`Feb 16: Moved to ${c.stage}`); }
+    openDrawer(activeContact);
+    buildKanban();
+    buildDashboard();
+  }
+}
+
+// Sorting
+document.querySelectorAll('.network-table th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if(sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = -1; }
+    document.querySelectorAll('.network-table th').forEach(h => {
+      h.classList.remove('sorted');
+      h.querySelector('.sort-icon') && (h.querySelector('.sort-icon').textContent = '↕');
+    });
+    th.classList.add('sorted');
+    th.querySelector('.sort-icon').textContent = sortDir < 0 ? '↓' : '↑';
+    renderNetworkTable();
+  });
+});
+
+// Search
+document.getElementById('contact-search').addEventListener('input', e => {
+  searchTerm = e.target.value.toLowerCase().trim();
+  renderNetworkTable();
+});
+
+// Filters
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderNetworkTable();
+  });
+});
+
+/* ═══════════════════════════════════════════════
+   KANBAN
+═══════════════════════════════════════════════ */
+let dragCard = null;
+let dragContact = null;
+
+function buildKanban(){
+  const board = document.getElementById('kanban-board');
+  board.innerHTML = '';
+
+  // Update stats
+  const inPipeline = contacts.filter(c => c.stage !== 'New').length;
+  const totalRev = contacts.filter(c => c.stage !== 'New')
+    .reduce((s,c) => s + c.revenue, 0);
+  const weighted = contacts.filter(c => c.stage !== 'New')
+    .reduce((s,c) => s + c.revenue * STAGE_PROBS[STAGES.indexOf(c.stage)], 0);
+  document.getElementById('pip-total').textContent = inPipeline;
+  document.getElementById('pip-rev').textContent = '$' + Math.round(totalRev/1000) + 'K';
+  document.getElementById('pip-prob').textContent = '$' + Math.round(weighted/1000) + 'K';
+
+  STAGES.forEach((stage, si) => {
+    const stageContacts = contacts.filter(c => c.stage === stage);
+    const col = document.createElement('div');
+    col.className = 'kanban-col';
+
+    const head = document.createElement('div');
+    head.className = `kanban-col-head stage-${si}`;
+    head.innerHTML = `<span class="kanban-col-title">${stage}</span><span class="kanban-col-count">${stageContacts.length}</span>`;
+    col.appendChild(head);
+
+    const cards = document.createElement('div');
+    cards.className = 'kanban-cards';
+    cards.dataset.stage = stage;
+
+    cards.addEventListener('dragover', e => {
+      e.preventDefault();
+      cards.classList.add('drag-over');
+    });
+    cards.addEventListener('dragleave', () => cards.classList.remove('drag-over'));
+    cards.addEventListener('drop', e => {
+      e.preventDefault();
+      cards.classList.remove('drag-over');
+      if(dragContact){
+        const c = contacts.find(x => x.id === dragContact);
+        if(c && c.stage !== stage){
+          c.stage = stage;
+          c.activity.unshift(`Feb 16: Moved to ${stage}`);
+          buildKanban();
+          renderNetworkTable();
+          buildDashboard();
+        }
+      }
+    });
+
+    stageContacts.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.draggable = true;
+      card.dataset.id = c.id;
+      card.innerHTML = `
+        <div class="kc-header">
+          <div><div class="kc-name">${c.name}</div><div class="kc-co">${c.company}</div></div>
+          <div class="kc-score">${c.score}</div>
+        </div>
+        <div class="kc-tags">${c.tags.slice(0,2).map(t=>`<span class="badge badge-dim">${t}</span>`).join('')}</div>
+        <div class="kc-revenue">
+          <span class="kc-rev-val">$${c.revenue.toLocaleString()}</span>
+          <span class="kc-prob">${Math.round(STAGE_PROBS[si]*100)}% prob</span>
+        </div>`;
+      card.addEventListener('dragstart', () => {
+        dragContact = c.id;
+        setTimeout(() => card.classList.add('dragging'), 0);
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        dragContact = null;
+      });
+      card.addEventListener('click', () => {
+        document.querySelector('[data-tab="network"]').click();
+        setTimeout(() => openDrawer(c), 200);
+      });
+      cards.appendChild(card);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-card-btn';
+    addBtn.textContent = '+ Add contact';
+    addBtn.addEventListener('click', () => openAddContactModal(stage));
+    cards.appendChild(addBtn);
+
+    col.appendChild(cards);
+    board.appendChild(col);
+  });
+}
+
+function openAddContactModal(stage){
+  alert('In the full version, this opens a form to add a contact to the ' + (stage||'Identified') + ' stage.');
+}
+
+/* ═══════════════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════════════ */
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function buildCalendar(){
+  const title = document.getElementById('cal-month-title');
+  title.textContent = `${MONTH_NAMES[currentMonth]} ${currentYear}`;
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  let startDow = firstDay.getDay(); // 0=Sun
+  // Convert to Mon-first: Mon=0..Sun=6
+  startDow = (startDow + 6) % 7;
+
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+  const today = new Date();
+
+  const totalCells = Math.ceil((startDow + daysInMonth) / 7) * 7;
+
+  for(let i = 0; i < totalCells; i++){
+    const cell = document.createElement('div');
+    cell.className = 'cal-day';
+
+    let dayNum, month = currentMonth, year = currentYear;
+    if(i < startDow){
+      dayNum = prevMonthDays - startDow + i + 1;
+      month = currentMonth - 1;
+      if(month < 0){ month = 11; year--; }
+      cell.classList.add('other-month');
+    } else if(i >= startDow + daysInMonth){
+      dayNum = i - startDow - daysInMonth + 1;
+      month = currentMonth + 1;
+      if(month > 11){ month = 0; year++; }
+      cell.classList.add('other-month');
+    } else {
+      dayNum = i - startDow + 1;
+      if(today.getFullYear()===year && today.getMonth()===month && today.getDate()===dayNum)
+        cell.classList.add('today');
+    }
+
+    const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(dayNum).padStart(2,'0')}`;
+    cell.dataset.date = dateKey;
+    cell.dataset.daynum = dayNum;
+
+    const numSpan = document.createElement('span');
+    numSpan.className = 'cal-day-num';
+    numSpan.textContent = dayNum;
+    cell.appendChild(numSpan);
+
+    const events = CALENDAR_EVENTS[dateKey] || [];
+    events.forEach(ev => {
+      const evEl = document.createElement('span');
+      evEl.className = `cal-event ev-${ev.type}`;
+      evEl.textContent = ev.desc;
+      evEl.draggable = true;
+      evEl.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', JSON.stringify({date:dateKey, ev}));
+      });
+      cell.appendChild(evEl);
+    });
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'cal-add-btn';
+    addBtn.textContent = '+';
+    addBtn.addEventListener('click', () => {
+      calModal_date = dateKey;
+      document.getElementById('modal-date').value = dateKey;
+      document.getElementById('modal-desc').value = '';
+      document.getElementById('event-modal').classList.add('open');
+    });
+    cell.appendChild(addBtn);
+
+    // Drop for dragging events between days
+    cell.addEventListener('dragover', e => {
+      e.preventDefault();
+      cell.classList.add('drag-over-day');
+    });
+    cell.addEventListener('dragleave', () => cell.classList.remove('drag-over-day'));
+    cell.addEventListener('drop', e => {
+      e.preventDefault();
+      cell.classList.remove('drag-over-day');
+      try{
+        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+        if(data.date && data.ev && data.date !== dateKey){
+          // Remove from old date
+          if(CALENDAR_EVENTS[data.date]){
+            CALENDAR_EVENTS[data.date] = CALENDAR_EVENTS[data.date].filter(x => x.desc !== data.ev.desc || x.type !== data.ev.type);
+          }
+          // Add to new date
+          if(!CALENDAR_EVENTS[dateKey]) CALENDAR_EVENTS[dateKey] = [];
+          CALENDAR_EVENTS[dateKey].push(data.ev);
+          buildCalendar();
+        }
+      }catch(err){}
+    });
+
+    grid.appendChild(cell);
+  }
+}
+
+function addCalEvent(){
+  const date = calModal_date;
+  const type = document.getElementById('modal-channel').value;
+  const desc = document.getElementById('modal-desc').value.trim();
+  if(!desc) return;
+  if(!CALENDAR_EVENTS[date]) CALENDAR_EVENTS[date] = [];
+  const channelPrefix = {li:'LinkedIn',em:'Email',dm:'DM',wb:'Webinar'}[type];
+  CALENDAR_EVENTS[date].push({type, desc: `${channelPrefix}: ${desc}`});
+  closeModal('event-modal');
+  buildCalendar();
+}
+
+document.getElementById('prev-month').addEventListener('click', () => {
+  currentMonth--;
+  if(currentMonth < 0){ currentMonth = 11; currentYear--; }
+  buildCalendar();
+});
+document.getElementById('next-month').addEventListener('click', () => {
+  currentMonth++;
+  if(currentMonth > 11){ currentMonth = 0; currentYear++; }
+  buildCalendar();
+});
+
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+document.getElementById('event-modal').addEventListener('click', e => {
+  if(e.target.id === 'event-modal') closeModal('event-modal');
+});
+
+/* ═══════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════ */
+document.querySelectorAll('.settings-nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(`settings-${item.dataset.settings}`).classList.add('active');
+  });
+});
+
+function recalcRevenue(){
+  const solo = parseFloat(document.getElementById('rev-solo').value)||0;
+  const firm = parseFloat(document.getElementById('rev-firm').value)||0;
+  const ncore = parseFloat(document.getElementById('rev-ncore').value)||0;
+  const rate = (parseFloat(document.getElementById('rev-rate').value)||0)/100;
+  const soloTotal = 38 * solo;
+  const firmTotal = 9 * firm;
+  const ncoreTotal = 89 * ncore;
+  const weighted = (soloTotal + firmTotal + ncoreTotal) * rate;
+  document.getElementById('calc-solo').textContent = '$' + soloTotal.toLocaleString();
+  document.getElementById('calc-firm').textContent = '$' + firmTotal.toLocaleString();
+  document.getElementById('calc-ncore').textContent = '$' + ncoreTotal.toLocaleString();
+  document.getElementById('calc-total').textContent = '$' + Math.round(weighted).toLocaleString();
+}
+
+function saveSettings(){
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:40px;right:24px;background:var(--cyan);color:#000;font-family:var(--mono);font-size:11px;font-weight:600;padding:10px 18px;border-radius:4px;z-index:999;letter-spacing:.06em;box-shadow:0 4px 16px var(--cyan-glow)';
+  toast.textContent = '✓ Settings saved';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2200);
+}
+
+function exportContacts(){
+  const headers = ['Score','Name','Company','Position','Market','Stage','Revenue','Tags'];
+  const rows = contacts.map(c => [c.score,c.name,c.company,c.position,c.market,c.stage,c.revenue,c.tags.join(';')]);
+  const csv = [headers,...rows].map(r => r.join(',')).join('\n');
+  download('contacts.csv', csv, 'text/csv');
+}
+function exportPipeline(){
+  const data = contacts.filter(c => c.stage !== 'New');
+  download('pipeline.json', JSON.stringify(data, null, 2), 'application/json');
+}
+function exportReport(){
+  const data = {contacts, calendarEvents: CALENDAR_EVENTS, exportDate: new Date().toISOString()};
+  download('ai-practice-os-report.json', JSON.stringify(data, null, 2), 'application/json');
+}
+function download(filename, content, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type}));
+  a.download = filename;
+  a.click();
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+buildDashboard();
+renderNetworkTable();
+buildKanban();
+buildCalendar();
+
+
+// === GLOBAL SEARCH ===
+function globalSearch(query) {
+  if (!query || query.length < 1) return;
+  const q = query.toLowerCase();
+  document.querySelectorAll('[data-searchable]').forEach(el => {
+    el.style.display = (el.textContent || '').toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+// === KEYBOARD SHORTCUTS ===
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    const search = document.getElementById('global-search');
+    if (search) search.focus();
+  }
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    e.preventDefault();
+    const palette = document.getElementById('cmd-palette');
+    if (palette) palette.style.display = palette.style.display === 'none' ? 'block' : 'none';
+  }
+});
+
+// === COMMAND PALETTE (Ctrl+P) ===
+function initCommandPalette() {
+  const palette = document.getElementById('cmd-palette');
+  if (!palette) {
+    const p = document.createElement('div');
+    p.id = 'cmd-palette';
+    p.textContent = '⌘ P: Command Palette | ⌘ K: Search';
+    document.body.appendChild(p);
+  }
+}
+setTimeout(initCommandPalette, 500);
+
+</script>
+</body>
+</html>

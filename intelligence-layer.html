@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTELLIGENCE LAYER — Signal OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #111827;
+            color: #F9FAFB;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background-color: #1F2937;
+            border-bottom: 1px solid #374151;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .wordmark {
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            color: #F9FAFB;
+        }
+
+        .wordmark-sub {
+            font-size: 11px;
+            color: #9CA3AF;
+            font-weight: 400;
+            letter-spacing: 0.3px;
+        }
+
+        .search-bar {
+            width: 240px;
+            padding: 8px 12px;
+            background-color: #111827;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            color: #F9FAFB;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .search-bar:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-bar::placeholder {
+            color: #6B7280;
+        }
+
+        .top-bar-center {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .live-clock {
+            font-family: 'DM Mono', monospace;
+            font-size: 13px;
+            color: #3B82F6;
+            font-weight: 500;
+        }
+
+        .live-date {
+            font-size: 12px;
+            color: #9CA3AF;
+            font-weight: 400;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #10B981;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .keyboard-hint {
+            font-size: 11px;
+            color: #6B7280;
+            font-family: 'DM Mono', monospace;
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            height: calc(100vh - 56px);
+            margin-top: 56px;
+        }
+
+        /* Left Sidebar */
+        .sidebar {
+            width: 220px;
+            background-color: #111827;
+            border-right: 1px solid #374151;
+            overflow-y: auto;
+            padding: 16px 0;
+        }
+
+        .sidebar-section {
+            padding: 0 12px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #9CA3AF;
+            transition: all 0.2s ease;
+            user-select: none;
+            position: relative;
+        }
+
+        .sidebar-item:hover {
+            background-color: #1F2937;
+            color: #F9FAFB;
+        }
+
+        .sidebar-item.active {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3B82F6;
+            font-weight: 500;
+        }
+
+        .sidebar-item.urgent {
+            color: #EF4444;
+        }
+
+        .sidebar-item.urgent:hover {
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .sidebar-badge {
+            margin-left: auto;
+            background-color: #374151;
+            color: #9CA3AF;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .sidebar-item.active .sidebar-badge {
+            background-color: rgba(59, 130, 246, 0.3);
+            color: #3B82F6;
+        }
+
+        /* Main Content Area */
+        .content-area {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Signal Feed */
+        .feed-panel {
+            flex: 1;
+            background-color: #111827;
+            border-right: 1px solid #374151;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feed-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #374151;
+        }
+
+        .feed-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #F9FAFB;
+        }
+
+        .feed-count {
+            font-size: 12px;
+            color: #9CA3AF;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .signals-container {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .signal-card {
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .signal-card:hover {
+            border-color: #3B82F6;
+            background-color: #374151;
+            transform: translateX(2px);
+        }
+
+        .signal-card.expanded {
+            background-color: #374151;
+            border-color: #3B82F6;
+        }
+
+        .signal-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .signal-priority {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .signal-priority.urgent {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #FCA5A5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .signal-priority.watch {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #FCD34D;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .signal-priority.info {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #93C5FD;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .signal-category {
+            font-size: 18px;
+        }
+
+        .signal-title {
+            flex: 1;
+        }
+
+        .signal-title-text {
+            font-weight: 600;
+            font-size: 14px;
+            color: #F9FAFB;
+            line-height: 1.4;
+        }
+
+        .signal-body {
+            font-size: 13px;
+            color: #D1D5DB;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            max-height: 3em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .signal-card.expanded .signal-body {
+            -webkit-line-clamp: unset;
+            max-height: none;
+        }
+
+        .signal-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #374151;
+        }
+
+        .signal-source {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #9CA3AF;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .signal-source-tag {
+            background-color: #374151;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .signal-timestamp {
+            font-size: 11px;
+            color: #6B7280;
+            font-family: 'DM Mono', monospace;
+        }
+
+        .signal-actions {
+            display: none;
+            gap: 8px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #374151;
+        }
+
+        .signal-card.expanded .signal-actions {
+            display: flex;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #374151;
+            background-color: #111827;
+            color: #9CA3AF;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .action-btn:hover {
+            border-color: #3B82F6;
+            color: #3B82F6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .action-btn.primary {
+            background-color: #3B82F6;
+            color: #FFFFFF;
+            border-color: #3B82F6;
+        }
+
+        .action-btn.primary:hover {
+            background-color: #2563EB;
+            border-color: #2563EB;
+        }
+
+        /* Right Panel - Synthesis Engine */
+        .synthesis-panel {
+            width: 280px;
+            background-color: #0F172A;
+            border-left: 1px solid #374151;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .synthesis-title {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: #9CA3AF;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+        }
+
+        .brief-type-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .brief-type-option {
+            padding: 10px 12px;
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-radius: 4px;
+            color: #9CA3AF;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .brief-type-option:hover {
+            border-color: #3B82F6;
+            color: #3B82F6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .brief-type-option.selected {
+            background-color: rgba(59, 130, 246, 0.15);
+            border-color: #3B82F6;
+            color: #3B82F6;
+            font-weight: 500;
+        }
+
+        .brief-display {
+            flex: 1;
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            overflow-y: auto;
+            font-size: 12px;
+            line-height: 1.6;
+            color: #D1D5DB;
+            font-family: 'DM Mono', monospace;
+            white-space: pre-wrap;
+            word-break: break-word;
+            min-height: 200px;
+        }
+
+        .brief-display.empty {
+            color: #6B7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .brief-display.empty::before {
+            content: 'Select a signal or brief type to generate synthesis';
+            pointer-events: none;
+        }
+
+        .synthesis-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .generate-btn {
+            padding: 10px 12px;
+            background-color: #3B82F6;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .generate-btn:hover {
+            background-color: #2563EB;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .export-btn {
+            padding: 10px 12px;
+            background-color: transparent;
+            color: #9CA3AF;
+            border: 1px solid #374151;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .export-btn:hover {
+            border-color: #10B981;
+            color: #10B981;
+        }
+
+        /* Bottom Status Bar */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background-color: #1F2937;
+            border-top: 1px solid #374151;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 11px;
+            color: #9CA3AF;
+            font-family: 'DM Mono', monospace;
+            z-index: 999;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 24px;
+        }
+
+        .status-indicator-dot {
+            width: 6px;
+            height: 6px;
+            background-color: #10B981;
+            border-radius: 50%;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background-color: #1F2937;
+            border: 1px solid #374151;
+            border-left: 3px solid #3B82F6;
+            color: #F9FAFB;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left-color: #10B981;
+        }
+
+        .toast.warning {
+            border-left-color: #F59E0B;
+        }
+
+        .toast.error {
+            border-left-color: #EF4444;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4B5563;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 1600px) {
+            .synthesis-panel {
+                width: 240px;
+            }
+            .sidebar {
+                width: 180px;
+            }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6B7280;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 13px;
+            max-width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div class="top-bar-left">
+            <div>
+                <div class="wordmark">INTELLIGENCE LAYER</div>
+                <div class="wordmark-sub">Signal OS</div>
+            </div>
+            <input type="text" class="search-bar" id="searchBar" placeholder="Search signals... (Ctrl+K)">
+        </div>
+        <div class="top-bar-center">
+            <div class="live-clock" id="liveClock">00:00:00</div>
+            <div class="live-date" id="liveDate">19 Mar 2026</div>
+        </div>
+        <div class="top-bar-right">
+            <div class="keyboard-hint">⌘K • ⌘E</div>
+            <div class="status-indicator">
+                <span class="pulse-dot"></span>
+                <span>ACTIVE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-item active" data-category="all">
+                    <span>📡</span>
+                    <span>All Signals</span>
+                    <span class="sidebar-badge" data-count="all">0</span>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item" data-category="market">
+                    <span>🌐</span>
+                    <span>Market Intelligence</span>
+                    <span class="sidebar-badge" data-count="market">0</span>
+                </div>
+                <div class="sidebar-item" data-category="regulatory">
+                    <span>⚖️</span>
+                    <span>Regulatory Watch</span>
+                    <span class="sidebar-badge" data-count="regulatory">0</span>
+                </div>
+                <div class="sidebar-item" data-category="delivery">
+                    <span>🚚</span>
+                    <span>Delivery Risk</span>
+                    <span class="sidebar-badge" data-count="delivery">0</span>
+                </div>
+                <div class="sidebar-item" data-category="internal">
+                    <span>📊</span>
+                    <span>Internal Performance</span>
+                    <span class="sidebar-badge" data-count="internal">0</span>
+                </div>
+                <div class="sidebar-item" data-category="competitive">
+                    <span>🏆</span>
+                    <span>Competitive</span>
+                    <span class="sidebar-badge" data-count="competitive">0</span>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-item urgent" data-category="urgent">
+                    <span>⚡</span>
+                    <span>Urgent</span>
+                    <span class="sidebar-badge" data-count="urgent">0</span>
+                </div>
+                <div class="sidebar-item" data-category="actioned">
+                    <span>✅</span>
+                    <span>Actioned</span>
+                    <span class="sidebar-badge" data-count="actioned">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Signal Feed Panel -->
+            <div class="feed-panel">
+                <div class="feed-header">
+                    <div class="feed-title" id="feedTitle">All Signals</div>
+                    <div class="feed-count"><span id="visibleCount">0</span> signals</div>
+                </div>
+                <div class="signals-container" id="signalsContainer"></div>
+            </div>
+
+            <!-- Synthesis Engine Panel -->
+            <div class="synthesis-panel">
+                <div class="synthesis-title">Synthesis Engine</div>
+                
+                <div class="brief-type-selector">
+                    <div class="brief-type-option selected" data-type="strategy">Strategy Brief</div>
+                    <div class="brief-type-option" data-type="risk">Risk Assessment</div>
+                    <div class="brief-type-option" data-type="regulatory">Regulatory Analysis</div>
+                    <div class="brief-type-option" data-type="opportunity">Opportunity Brief</div>
+                </div>
+
+                <div class="brief-display empty" id="briefDisplay"></div>
+
+                <div class="synthesis-actions">
+                    <button class="generate-btn" id="generateBtn">Generate Brief</button>
+                    <button class="export-btn" id="exportBtn">Export (⌘E)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-indicator-dot"></span>
+            <span>Context Distribution:</span>
+        </div>
+        <div class="status-item">→ Strategy OS ✓</div>
+        <div class="status-item">→ PMO OS ✓</div>
+        <div class="status-item">→ Agent Layer ✓</div>
+        <div class="status-item">→ BOOM ✓</div>
+    </div>
+
+    <script>
+        // ============ DATA & STATE ============
+        const signalsData = [
+            {
+                id: 1,
+                title: "UK AI Act consultation closes Q2 2026 — firms must register high-risk models",
+                body: "The UK's revised AI Act framework enters final public consultation. Organisations deploying high-risk AI systems must register with regulatory body by Q3 2026. Estimated compliance cost: £2-5M for major enterprises.",
+                category: "regulatory",
+                priority: "URGENT",
+                source: "FCA Bulletin",
+                timestamp: "2 hours ago"
+            },
+            {
+                id: 2,
+                title: "Client NPS scores down 8 points vs Q4 2025 — root cause analysis required",
+                body: "Quarterly NPS benchmark shows decline from 72 to 64. Primary driver: delivery timelines slipping on digital transformation engagements. Competitive threat from boutique AI firms cited in exit interviews.",
+                category: "internal",
+                priority: "WATCH",
+                source: "Internal Survey",
+                timestamp: "4 hours ago"
+            },
+            {
+                id: 3,
+                title: "McKinsey launches AI-native consulting capability — 400 AI advisors by end 2026",
+                body: "McKinsey announces dedicated AI Ops unit with 400+ prompt engineers and AI strategists. Pricing model undercuts traditional consulting by 30%. Direct threat to mid-market strategy engagement margins.",
+                category: "competitive",
+                priority: "WATCH",
+                source: "McKinsey Press Release",
+                timestamp: "6 hours ago"
+            },
+            {
+                id: 4,
+                title: "Gen AI adoption in financial services hits 67% — Deloitte survey March 2026",
+                body: "Deloitte's latest survey reveals two-thirds of financial institutions now have deployed Gen AI tools. Risk management and compliance automation drive adoption. Market opportunity: £14B EU, £8.2B UK by 2027.",
+                category: "market",
+                priority: "INFO",
+                source: "Deloitte Insights",
+                timestamp: "1 day ago"
+            },
+            {
+                id: 5,
+                title: "PMO delivery velocity down 12% — 3 projects in amber, 1 at risk",
+                body: "March delivery review: 12% velocity reduction due to resource constraints and scope creep on three engagements. Musgrave programme slipping 6 weeks. Recommend immediate resource reallocation and stakeholder communication.",
+                category: "delivery",
+                priority: "URGENT",
+                source: "PMO Dashboard",
+                timestamp: "3 hours ago"
+            },
+            {
+                id: 6,
+                title: "Gartner: 40% of enterprises will have AI governance framework by Q4 2026",
+                body: "Gartner forecast shows rapid adoption of formalised AI governance structures. Compliance-as-a-service market growing 45% YoY. Regulatory uncertainty pushing enterprises toward third-party governance solutions.",
+                category: "regulatory",
+                priority: "INFO",
+                source: "Gartner Report",
+                timestamp: "1 day ago"
+            },
+            {
+                id: 7,
+                title: "Competitor pricing dropped 15% on AI strategy engagements — Q1 2026",
+                body: "Accenture, Deloitte, and Capgemini all dropped AI strategy pricing 15-20% in Q1. Market saturation in commoditised Gen AI training. Value differentiation required to maintain margin integrity.",
+                category: "competitive",
+                priority: "WATCH",
+                source: "Market Intelligence",
+                timestamp: "5 hours ago"
+            },
+            {
+                id: 8,
+                title: "Board mandate: all major decisions require AI impact assessment from June 2026",
+                body: "Client board mandates AI impact assessment for all strategic decisions from June 2026 onwards. Creates new engagement opportunity for AI risk & ethics framework consulting. Estimated scope: £480K–£720K per client.",
+                category: "regulatory",
+                priority: "URGENT",
+                source: "Client Communication",
+                timestamp: "3 hours ago"
+            },
+            {
+                id: 9,
+                title: "Internal AI skill gap identified: 60% of consultants lack prompt engineering training",
+                body: "Skills audit reveals 60% of consultant base lack prompt engineering proficiency. Immediate upskilling required. Recommend partnership with AI Academy for accelerated training programme. Cost: £180K, Timeline: 12 weeks.",
+                category: "internal",
+                priority: "WATCH",
+                source: "HR Analytics",
+                timestamp: "2 days ago"
+            },
+            {
+                id: 10,
+                title: "EU AI Liability Directive draft published — new liability rules for AI outputs",
+                body: "EU's proposed AI Liability Directive introduces strict liability for AI systems. High-risk applications (healthcare, finance) face new compliance burden. Affects all EU-based operations and EU-bound advice. Full analysis required by Q2.",
+                category: "regulatory",
+                priority: "WATCH",
+                source: "EU Legislative Tracker",
+                timestamp: "1 day ago"
+            },
+            {
+                id: 11,
+                title: "Digital transformation market growing at 24% CAGR — addressable market £4.2B UK",
+                body: "UK digital transformation market valued at £4.2B in 2026, growing 24% CAGR through 2030. AI-powered automation and cloud migration drive growth. Significant opportunity expansion for strategy and architecture practices.",
+                category: "market",
+                priority: "INFO",
+                source: "IDC Research",
+                timestamp: "2 days ago"
+            },
+            {
+                id: 12,
+                title: "Musgrave engagement: stakeholder satisfaction at 91% — renewal opportunity",
+                body: "Musgrave Q1 engagement review: 91% stakeholder satisfaction, delivered £2.4M cost savings. Strong NPS (68). Renewal conversation recommended for Q2. Growth opportunity: expand to supply chain optimisation.",
+                category: "internal",
+                priority: "INFO",
+                source: "Engagement Tracker",
+                timestamp: "5 hours ago"
+            }
+        ];
+
+        let allSignals = JSON.parse(JSON.stringify(signalsData));
+        let archivedSignals = [];
+        let currentCategory = "all";
+        let currentSelectedSignal = null;
+        let selectedBriefType = "strategy";
+
+        // ============ UI INITIALIZATION ============
+        function initializeUI() {
+            updateClock();
+            updateSignalCounts();
+            renderSignals();
+            attachEventListeners();
+        }
+
+        // ============ CLOCK & TIME ============
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-GB', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit' 
+            });
+            const dateStr = now.toLocaleDateString('en-GB', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            document.getElementById('liveClock').textContent = timeStr;
+            document.getElementById('liveDate').textContent = dateStr;
+        }
+
+        setInterval(updateClock, 1000);
+
+        // ============ SIGNAL COUNT MANAGEMENT ============
+        function updateSignalCounts() {
+            const counts = {
+                all: 0,
+                market: 0,
+                regulatory: 0,
+                delivery: 0,
+                internal: 0,
+                competitive: 0,
+                urgent: 0,
+                actioned: 0
+            };
+
+            allSignals.forEach(signal => {
+                counts.all++;
+                if (signal.category) counts[signal.category]++;
+                if (signal.priority === 'URGENT') counts.urgent++;
+            });
+
+            archivedSignals.forEach(signal => {
+                counts.actioned++;
+            });
+
+            Object.keys(counts).forEach(key => {
+                const badge = document.querySelector(`[data-count="${key}"]`);
+                if (badge) {
+                    badge.textContent = counts[key];
+                }
+            });
+        }
+
+        // ============ SIGNAL RENDERING ============
+        function renderSignals() {
+            const container = document.getElementById('signalsContainer');
+            container.innerHTML = '';
+
+            let filteredSignals = allSignals;
+
+            if (currentCategory !== 'all') {
+                if (currentCategory === 'urgent') {
+                    filteredSignals = allSignals.filter(s => s.priority === 'URGENT');
+                } else {
+                    filteredSignals = allSignals.filter(s => s.category === currentCategory);
+                }
+            }
+
+            const searchTerm = document.getElementById('searchBar').value.toLowerCase();
+            if (searchTerm) {
+                filteredSignals = filteredSignals.filter(s => 
+                    s.title.toLowerCase().includes(searchTerm) || 
+                    s.body.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            document.getElementById('visibleCount').textContent = filteredSignals.length;
+
+            if (filteredSignals.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">No signals match your criteria</div>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredSignals.forEach(signal => {
+                const card = document.createElement('div');
+                card.className = `signal-card ${currentSelectedSignal === signal.id ? 'expanded' : ''}`;
+                card.dataset.signalId = signal.id;
+
+                const categoryEmoji = {
+                    market: '🌐',
+                    regulatory: '⚖️',
+                    delivery: '🚚',
+                    internal: '📊',
+                    competitive: '🏆'
+                }[signal.category] || '📡';
+
+                card.innerHTML = `
+                    <div class="signal-header">
+                        <div class="signal-priority ${signal.priority.toLowerCase()}">${signal.priority}</div>
+                        <div class="signal-category">${categoryEmoji}</div>
+                        <div class="signal-title">
+                            <div class="signal-title-text">${signal.title}</div>
+                        </div>
+                    </div>
+                    <div class="signal-body">${signal.body}</div>
+                    <div class="signal-meta">
+                        <div class="signal-source">
+                            <span class="signal-source-tag">${signal.source}</span>
+                        </div>
+                        <div class="signal-timestamp">${signal.timestamp}</div>
+                    </div>
+                    <div class="signal-actions">
+                        <button class="action-btn primary synthesise-btn">Synthesise</button>
+                        <button class="action-btn action-btn-action">Action</button>
+                        <button class="action-btn archive-btn">Archive</button>
+                    </div>
+                `;
+
+                card.addEventListener('click', (e) => {
+                    if (!e.target.closest('button')) {
+                        toggleCardExpansion(card, signal.id);
+                    }
+                });
+
+                card.querySelector('.synthesise-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    synthesiseSignal(signal);
+                    showToast(`Synthesising: ${signal.title.substring(0, 40)}...`, 'info');
+                });
+
+                card.querySelector('.action-btn-action').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    actionSignal(signal);
+                });
+
+                card.querySelector('.archive-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    archiveSignal(signal);
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function toggleCardExpansion(card, signalId) {
+            document.querySelectorAll('.signal-card').forEach(c => {
+                c.classList.remove('expanded');
+            });
+
+            if (currentSelectedSignal === signalId) {
+                currentSelectedSignal = null;
+            } else {
+                card.classList.add('expanded');
+                currentSelectedSignal = signalId;
+            }
+        }
+
+        // ============ SIGNAL ACTIONS ============
+        function synthesiseSignal(signal) {
+            const briefTypes = {
+                strategy: `STRATEGY BRIEF: ${signal.title}\n\n[EXECUTIVE SUMMARY]\n${signal.body}\n\n[STRATEGIC IMPLICATIONS]\n• Market positioning impact\n• Competitive differentiation required\n• Client value proposition alignment\n\n[RECOMMENDED ACTIONS]\n1. Conduct full market analysis\n2. Develop client advisory playbook\n3. Launch go-to-market initiative\n\n[NEXT STEPS]\nSchedule steering committee review within 2 weeks.`,
+                
+                risk: `RISK ASSESSMENT: ${signal.title}\n\n[RISK ANALYSIS]\n${signal.body}\n\n[RISK FACTORS]\n• Probability: Medium-High\n• Impact: Material\n• Timeline: Q2 2026\n\n[MITIGATION STRATEGIES]\n1. Stakeholder engagement plan\n2. Contingency protocol development\n3. Compliance framework update\n\n[RISK RATING]\nAmber - Requires immediate attention`,
+                
+                regulatory: `REGULATORY ANALYSIS: ${signal.title}\n\n[REGULATORY IMPACT]\n${signal.body}\n\n[COMPLIANCE REQUIREMENTS]\n• Stakeholder registration: Q3 2026\n• System audit requirements\n• Governance framework implementation\n\n[COST & TIMELINE]\nEstimated spend: £2.4M-£5.2M\nImplementation: 18-24 weeks\n\n[ADVISORY RECOMMENDATION]\nEngage specialist advisors immediately for framework design.`,
+                
+                opportunity: `OPPORTUNITY BRIEF: ${signal.title}\n\n[MARKET OPPORTUNITY]\n${signal.body}\n\n[ADDRESSABLE MARKET]\n• Total opportunity size: £2B+ annually\n• Growth rate: 24% CAGR\n• Client demand: High and accelerating\n\n[CAPABILITY REQUIREMENTS]\n• Strategic advisory expertise\n• Technology integration skills\n• Industry-specific knowledge\n\n[GO-TO-MARKET PLAN]\n1. Develop thought leadership\n2. Build case study portfolio\n3. Launch targeted campaigns\n\n[TIMELINE]\nLaunch engagement pipeline: 6 weeks`
+            };
+
+            const briefContent = briefTypes[selectedBriefType] || briefTypes.strategy;
+            const briefDisplay = document.getElementById('briefDisplay');
+            briefDisplay.textContent = briefContent;
+            briefDisplay.classList.remove('empty');
+        }
+
+        function actionSignal(signal) {
+            allSignals = allSignals.filter(s => s.id !== signal.id);
+            archivedSignals.push(signal);
+            updateSignalCounts();
+            renderSignals();
+            showToast('Signal moved to Actioned', 'success');
+        }
+
+        function archiveSignal(signal) {
+            allSignals = allSignals.filter(s => s.id !== signal.id);
+            updateSignalCounts();
+            renderSignals();
+            showToast('Signal archived', 'success');
+        }
+
+        // ============ SYNTHESIS GENERATION ============
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.addEventListener('click', () => {
+                if (currentSelectedSignal) {
+                    const signal = allSignals.find(s => s.id === currentSelectedSignal);
+                    if (signal) {
+                        synthesiseSignal(signal);
+                        showToast('Brief generated', 'success');
+                    }
+                } else {
+                    showToast('Select a signal first', 'warning');
+                }
+            });
+        });
+
+        // ============ EXPORT FUNCTIONALITY ============
+        document.addEventListener('DOMContentLoaded', () => {
+            const exportBtn = document.getElementById('exportBtn');
+            exportBtn.addEventListener('click', () => {
+                const briefContent = document.getElementById('briefDisplay').textContent;
+                if (briefContent && !briefContent.includes('Select a signal')) {
+                    const element = document.createElement('a');
+                    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(briefContent));
+                    element.setAttribute('download', `synthesis-brief-${new Date().getTime()}.txt`);
+                    element.style.display = 'none';
+                    document.body.appendChild(element);
+                    element.click();
+                    document.body.removeChild(element);
+                    showToast('Brief exported', 'success');
+                } else {
+                    showToast('Generate a brief first', 'warning');
+                }
+            });
+        });
+
+        // ============ EVENT LISTENERS ============
+        function attachEventListeners() {
+            // Category Navigation
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+                    currentCategory = item.dataset.category;
+                    updateFeedTitle();
+                    renderSignals();
+                });
+            });
+
+            // Brief Type Selection
+            document.querySelectorAll('.brief-type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.brief-type-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedBriefType = option.dataset.type;
+                });
+            });
+
+            // Search Functionality
+            document.getElementById('searchBar').addEventListener('input', () => {
+                renderSignals();
+            });
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'k') {
+                        e.preventDefault();
+                        document.getElementById('searchBar').focus();
+                    }
+                    if (e.key === 'e') {
+                        e.preventDefault();
+                        document.getElementById('exportBtn').click();
+                    }
+                }
+            });
+
+            // Number key navigation
+            document.addEventListener('keydown', (e) => {
+                const num = parseInt(e.key);
+                if (num >= 1 && num <= 6 && !e.ctrlKey && !e.metaKey) {
+                    const categories = ['all', 'market', 'regulatory', 'delivery', 'internal', 'competitive'];
+                    if (categories[num - 1]) {
+                        const item = document.querySelector(`[data-category="${categories[num - 1]}"]`);
+                        if (item) item.click();
+                    }
+                }
+            });
+        }
+
+        function updateFeedTitle() {
+            const titles = {
+                all: 'All Signals',
+                market: 'Market Intelligence',
+                regulatory: 'Regulatory Watch',
+                delivery: 'Delivery Risk',
+                internal: 'Internal Performance',
+                competitive: 'Competitive',
+                urgent: 'Urgent Signals',
+                actioned: 'Actioned'
+            };
+            document.getElementById('feedTitle').textContent = titles[currentCategory] || 'Signals';
+        }
+
+        // ============ TOAST NOTIFICATIONS ============
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+
+        // ============ INITIALIZATION ============
+        initializeUI();
+    </script>
+</body>
+</html>

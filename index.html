@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CEO AI OS — Second Brain | AAP</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0F1E;
+    --surface: #0F172A;
+    --surface2: #1E293B;
+    --accent: #6366F1;
+    --accent2: #8B5CF6;
+    --gold: #C9A84C;
+    --emerald: #10B981;
+    --blue: #3B82F6;
+    --red: #EF4444;
+    --amber: #F59E0B;
+    --text: #F1F5F9;
+    --text2: #94A3B8;
+    --border: rgba(99,102,241,0.18);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: rgba(10,15,30,0.96);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 58px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 200;
+    backdrop-filter: blur(16px);
+  }
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-mark {
+    width: 34px; height: 34px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; color: white;
+  }
+  .logo-text { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); }
+  .logo-text span { color: var(--text2); font-weight: 400; }
+  .topbar-right { display: flex; align-items: center; gap: 20px; }
+  .pulse-wrap { display: flex; align-items: center; gap: 7px; }
+  .pulse-dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--emerald);
+    animation: glow 2s infinite;
+  }
+  @keyframes glow {
+    0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+    50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+  }
+  .pulse-label { font-size: 12px; color: var(--emerald); font-family: 'DM Mono', monospace; }
+  .clock { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--text2); }
+  .iphone-btn {
+    background: var(--accent); color: white; text-decoration: none;
+    padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .iphone-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 32px 64px;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% -20%, rgba(99,102,241,0.18) 0%, transparent 65%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+    padding: 6px 16px; border-radius: 100px;
+    font-size: 11px; font-family: 'DM Mono', monospace; color: var(--accent);
+    letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(32px, 5vw, 56px); font-weight: 700;
+    line-height: 1.1; margin-bottom: 20px;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(135deg, #6366F1, #8B5CF6, #C9A84C);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .hero p { color: var(--text2); font-size: 18px; max-width: 560px; margin: 0 auto 40px; line-height: 1.7; }
+
+  /* KPI STRIP */
+  .kpi-strip {
+    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .kpi-pill {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 10px 22px; border-radius: 100px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .kpi-num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); }
+  .kpi-label { font-size: 12px; color: var(--text2); }
+  .kpi-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+  /* ── GRID ── */
+  .grid-section { max-width: 1200px; margin: 0 auto; padding: 56px 32px; }
+  .section-header { margin-bottom: 28px; }
+  .section-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--accent); font-family: 'DM Mono', monospace; margin-bottom: 8px;
+  }
+  .section-title { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .grid.featured { grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); }
+
+  /* MODULE CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none; color: inherit;
+    display: block; position: relative; overflow: hidden;
+    transition: all 0.25s; cursor: pointer;
+  }
+  .card::before {
+    content: ''; position: absolute; inset: 0; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.06), transparent);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(99,102,241,0.15); }
+  .card:hover::before { opacity: 1; }
+
+  /* Featured card variants */
+  .card.signal { --card-accent: #3B82F6; }
+  .card.signal:hover { border-color: #3B82F6; box-shadow: 0 12px 40px rgba(59,130,246,0.15); }
+  .card.boom { --card-accent: #C9A84C; }
+  .card.boom:hover { border-color: #C9A84C; box-shadow: 0 12px 40px rgba(201,168,76,0.15); }
+  .card.dashboard-card { --card-accent: #6366F1; border-color: rgba(99,102,241,0.35); background: linear-gradient(135deg, #0F172A, #1a1040); }
+  .card.dashboard-card:hover { border-color: var(--accent); }
+
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+    background: rgba(99,102,241,0.12); flex-shrink: 0;
+  }
+  .card.signal .card-icon { background: rgba(59,130,246,0.12); }
+  .card.boom .card-icon { background: rgba(201,168,76,0.12); }
+  .card.dashboard-card .card-icon { background: rgba(99,102,241,0.2); }
+
+  .status-badge {
+    font-size: 10px; font-family: 'DM Mono', monospace; font-weight: 500;
+    padding: 3px 10px; border-radius: 100px; letter-spacing: 0.5px;
+  }
+  .badge-live { background: rgba(16,185,129,0.12); color: var(--emerald); border: 1px solid rgba(16,185,129,0.2); }
+  .badge-active { background: rgba(99,102,241,0.12); color: var(--accent); border: 1px solid rgba(99,102,241,0.2); }
+  .badge-new { background: rgba(201,168,76,0.12); color: var(--gold); border: 1px solid rgba(201,168,76,0.2); }
+
+  .card h3 { font-family: 'Space Grotesk', sans-serif; font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .card p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 16px; }
+  .card-meta { display: flex; align-items: center; gap: 8px; }
+  .card-tag {
+    font-size: 11px; color: var(--text2); background: var(--surface2);
+    padding: 3px 8px; border-radius: 4px; font-family: 'DM Mono', monospace;
+  }
+  .card-arrow { margin-left: auto; color: var(--text2); font-size: 18px; transition: transform 0.2s; }
+  .card:hover .card-arrow { transform: translateX(4px); color: var(--accent); }
+
+  /* VERSION BADGE */
+  .v-badge {
+    font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text2);
+    background: var(--surface2); padding: 2px 7px; border-radius: 4px;
+  }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0 32px; }
+
+  /* IPHONE STRIP */
+  .iphone-strip {
+    max-width: 1200px; margin: 0 auto 0;
+    padding: 32px 32px;
+    background: linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(139,92,246,0.06) 100%);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 32px;
+    flex-wrap: wrap;
+  }
+  .iphone-icon { font-size: 48px; flex-shrink: 0; }
+  .iphone-text h3 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .iphone-text p { font-size: 14px; color: var(--text2); max-width: 480px; }
+  .iphone-strip .iphone-btn { padding: 12px 24px; font-size: 14px; margin-left: auto; white-space: nowrap; }
+
+  /* FOOTER */
+  footer {
+    text-align: center; padding: 28px 32px;
+    border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text2);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* MOBILE */
+  @media (max-width: 640px) {
+    .topbar { padding: 0 16px; }
+    .topbar .clock { display: none; }
+    .hero { padding: 48px 16px 40px; }
+    .grid-section { padding: 40px 16px; }
+    .grid { grid-template-columns: 1fr; }
+    .iphone-strip { padding: 24px 16px; }
+    .iphone-strip .iphone-btn { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a class="logo" href="index.html">
+    <div class="logo-mark">AJ</div>
+    <div>
+      <div class="logo-text">CEO AI OS <span>/ Second Brain</span></div>
+    </div>
+  </a>
+  <div class="topbar-right">
+    <div class="pulse-wrap">
+      <div class="pulse-dot"></div>
+      <span class="pulse-label">LIVE</span>
+    </div>
+    <div class="clock" id="clock">--:--</div>
+    <a class="iphone-btn" href="iphone-setup.html">📱 iPhone Setup</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span>●</span> AAP — Advanced Analytics Partners
+  </div>
+  <h1>The <span class="grad">Second Brain</span><br>Command Portal</h1>
+  <p>Your modular, agent-orchestrated CEO AI OS — intelligence, deliverables, strategy, and operations, unified.</p>
+  <div class="kpi-strip">
+    <div class="kpi-pill"><div class="kpi-num">11</div><div class="dot"></div><div class="kpi-label">Live Modules</div></div>
+    <div class="kpi-pill"><div class="kpi-num">7</div><div class="dot"></div><div class="kpi-label">Design Systems</div></div>
+    <div class="kpi-pill"><div class="kpi-num">30+</div><div class="dot"></div><div class="kpi-label">Skills</div></div>
+    <div class="kpi-pill"><div class="kpi-num">v2.0</div><div class="dot"></div><div class="kpi-label">March 2026</div></div>
+  </div>
+</section>
+
+<!-- CORE OS MODULES -->
+<section class="grid-section">
+  <div class="section-header">
+    <div class="section-label">Core Operating System</div>
+    <div class="section-title">Mission-Critical Modules</div>
+  </div>
+  <div class="grid featured">
+
+    <a class="card dashboard-card" href="dashboard.html">
+      <div class="card-top">
+        <div class="card-icon">🧠</div>
+        <span class="status-badge badge-live">LIVE</span>
+      </div>
+      <h3>CEO AI OS Dashboard</h3>
+      <p>Master command centre — all 9 OS modules, Brain Health radar, KPI strip, live intelligence flow, and quick actions in one view.</p>
+      <div class="card-meta">
+        <span class="card-tag">North Star #10</span>
+        <span class="v-badge">v0.1</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card signal" href="intelligence-layer.html">
+      <div class="card-top">
+        <div class="card-icon">📡</div>
+        <span class="status-badge badge-live">LIVE</span>
+      </div>
+      <h3>Intelligence Layer</h3>
+      <p>Always-on signal sensing — market, regulatory, competitive, delivery risk. Synthesis engine feeds every OS module with validated intelligence.</p>
+      <div class="card-meta">
+        <span class="card-tag">Signal #3</span>
+        <span class="v-badge">v0.1</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card boom" href="boom.html">
+      <div class="card-top">
+        <div class="card-icon">💥</div>
+        <span class="status-badge badge-new">NEW</span>
+      </div>
+      <h3>BOOM — Deliverable OS</h3>
+      <p>Versioned, client-ready deliverable repository and factory. Every output from agents, workflows, and humans converges here.</p>
+      <div class="card-meta">
+        <span class="card-tag">Atelier #1</span>
+        <span class="v-badge">v0.1</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- OPERATIONS MODULES -->
+<section class="grid-section">
+  <div class="section-header">
+    <div class="section-label">Operations Layer</div>
+    <div class="section-title">Platform Modules</div>
+  </div>
+  <div class="grid">
+
+    <a class="card" href="hris.html">
+      <div class="card-top">
+        <div class="card-icon">👥</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>HRIS OS</h3>
+      <p>Team management, health tracking, performance analytics, and HR intelligence with global search and live health pulse.</p>
+      <div class="card-meta">
+        <span class="card-tag">North Star #10</span>
+        <span class="v-badge">v0.2</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="bd-crm.html">
+      <div class="card-top">
+        <div class="card-icon">💼</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>BD & CRM Platform</h3>
+      <p>Business development lifecycle, pipeline management, contacts, frameworks, and BD playbook — 8 integrated tabs.</p>
+      <div class="card-meta">
+        <span class="card-tag">Command Center #2</span>
+        <span class="v-badge">v0.2</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="ai-practice-os.html">
+      <div class="card-top">
+        <div class="card-icon">🤖</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>AI Practice OS</h3>
+      <p>AI consulting offering management, capability frameworks, case studies, and delivery playbooks with command palette.</p>
+      <div class="card-meta">
+        <span class="card-tag">North Star #10</span>
+        <span class="v-badge">v0.2</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="ai-practice-crm.html">
+      <div class="card-top">
+        <div class="card-icon">🎯</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>AI Practice CRM</h3>
+      <p>Client relationship management scoped to the AI practice — engagement tracking, pipeline by service line, contacts.</p>
+      <div class="card-meta">
+        <span class="card-tag">Command Center #2</span>
+        <span class="v-badge">v0.2</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="ai-transformation-os.html">
+      <div class="card-top">
+        <div class="card-icon">⚡</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>AI Transformation OS</h3>
+      <p>Client-facing AI transformation methodology, implementation playbooks, and reference architectures. Atelier premium format.</p>
+      <div class="card-meta">
+        <span class="card-tag">Atelier #1</span>
+        <span class="v-badge">v0.9</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="musgrave-roadmap.html">
+      <div class="card-top">
+        <div class="card-icon">🗺️</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>Musgrave AI Roadmap</h3>
+      <p>AI automation roadmap for Musgrave engagement — phased implementation, capability priorities, and governance framework.</p>
+      <div class="card-meta">
+        <span class="card-tag">Modern Executive #4</span>
+        <span class="v-badge">v0.2</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="flipbook.html">
+      <div class="card-top">
+        <div class="card-icon">📖</div>
+        <span class="status-badge badge-active">ACTIVE</span>
+      </div>
+      <h3>AAP Flipbook</h3>
+      <p>Premium interactive flipbook — AAP capability showcase and thought leadership asset for client engagements.</p>
+      <div class="card-meta">
+        <span class="card-tag">Atelier #1</span>
+        <span class="v-badge">v0.95</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="card" href="iphone-setup.html">
+      <div class="card-top">
+        <div class="card-icon">📱</div>
+        <span class="status-badge badge-new">SETUP</span>
+      </div>
+      <h3>iPhone Remote Control</h3>
+      <p>Configure your iPhone Claude app as a remote control for the Second Brain — Project system prompt and quick command reference.</p>
+      <div class="card-meta">
+        <span class="card-tag">North Star #10</span>
+        <span class="v-badge">v0.1</span>
+        <span class="card-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- IPHONE STRIP -->
+<div class="iphone-strip">
+  <div class="iphone-icon">📱</div>
+  <div class="iphone-text">
+    <h3>Control this from your iPhone</h3>
+    <p>Set up Claude on your iPhone as a voice-activated remote control for your entire Second Brain. Strategy briefs, deliverable drafts, SteerCo updates — from anywhere.</p>
+  </div>
+  <a class="iphone-btn" href="iphone-setup.html">View Setup Guide →</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  CEO AI OS v2.0 &nbsp;·&nbsp; AAP — Advanced Analytics Partners &nbsp;·&nbsp; March 2026 &nbsp;·&nbsp; Confidential
+</footer>
+
+<script>
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+</body>
+</html>

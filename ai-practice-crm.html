@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yesterday I built an AI practice OS from a LinkedIn export. — The Daily AI Executive</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --off-white: #f5f2ec;
+    --warm-gray: #8a8278;
+    --accent: #c8a96e;
+    --accent-dark: #a8893e;
+    --border: #d8d2c8;
+    --rule: #e2ddd6;
+    --text: #1e1c18;
+    --muted: #6b6560;
+    --tag-bg: #ede9e2;
+    --green: #2a7a5a;
+    --tab-active: #0a0a0a;
+    --tab-inactive: #f0ece4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--off-white);
+    color: var(--text);
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header banner ── */
+  .masthead {
+    background: var(--black);
+    color: #fff;
+    text-align: center;
+    padding: 18px 20px 14px;
+    letter-spacing: .04em;
+  }
+  .masthead-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    margin-bottom: 6px;
+  }
+  .masthead-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: .02em;
+    color: #fff;
+  }
+  .masthead-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #888;
+    margin-top: 6px;
+    letter-spacing: .08em;
+  }
+
+  /* ── Countdown ── */
+  .countdown-bar {
+    background: var(--tag-bg);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    padding: 10px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: .04em;
+  }
+  .countdown-bar span.timer {
+    color: var(--black);
+    font-weight: 500;
+    font-size: 15px;
+    margin-left: 6px;
+  }
+
+  /* ── Rule divider ── */
+  .rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 36px 0;
+  }
+
+  /* ── Main layout ── */
+  .page-wrapper {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+  }
+
+  /* ── Article headline ── */
+  .article-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 4.5vw, 42px);
+    font-weight: 700;
+    line-height: 1.22;
+    color: var(--black);
+    margin-bottom: 32px;
+    letter-spacing: -.01em;
+  }
+
+  p { margin-bottom: 20px; }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── Section heading ── */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: var(--black);
+  }
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--black);
+  }
+
+  /* ── OS mock screenshot ── */
+  .os-mock {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,.1);
+    margin: 36px 0;
+    background: #fff;
+  }
+  .os-mock-bar {
+    background: var(--black);
+    padding: 12px 18px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .os-mock-dot { width: 11px; height: 11px; border-radius: 50%; }
+  .os-mock-dot.r { background: #ff5f57; }
+  .os-mock-dot.y { background: #febc2e; }
+  .os-mock-dot.g { background: #28c840; }
+  .os-mock-filename {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #666;
+    letter-spacing: .04em;
+  }
+  .os-mock-header {
+    background: var(--black);
+    padding: 10px 18px 14px;
+    color: #fff;
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    letter-spacing: .02em;
+  }
+  .os-mock-tabs {
+    display: flex;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    overflow-x: auto;
+  }
+  .os-tab {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .04em;
+    padding: 9px 14px;
+    white-space: nowrap;
+    cursor: pointer;
+    color: #888;
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+  }
+  .os-tab.active { color: #fff; border-bottom-color: var(--accent); }
+  .os-mock-body { padding: 22px 22px 18px; }
+
+  /* stat row */
+  .stat-row { display: flex; gap: 20px; margin-bottom: 18px; flex-wrap: wrap; }
+  .stat-box {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 18px;
+    min-width: 90px;
+  }
+  .stat-box .val {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--black);
+    display: block;
+  }
+  .stat-box .lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .12em;
+  }
+
+  .mock-letter-body {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.6;
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+    margin-top: 8px;
+  }
+
+  /* network table */
+  .mock-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .mock-table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .mock-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--rule);
+    color: #333;
+  }
+  .mock-table tr:hover td { background: var(--tag-bg); cursor: pointer; }
+  .score-badge {
+    display: inline-block;
+    background: var(--black);
+    color: #fff;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .market-core { color: var(--green); font-weight: 600; font-size: 11px; }
+  .market-non { color: var(--muted); font-size: 11px; }
+  .stage-pill {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 1px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: .04em;
+  }
+  .stage-id { background: #e8f0fe; color: #1a56db; }
+  .stage-ro { background: #fef3c7; color: #92400e; }
+  .stage-con { background: #d1fae5; color: #065f46; }
+  .stage-new { background: var(--tag-bg); color: var(--muted); }
+
+  /* pipeline kanban */
+  .kanban { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+  .kanban-col { flex: 0 0 130px; }
+  .kanban-col-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    margin-bottom: 6px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--border);
+  }
+  .kanban-col-header span {
+    display: inline-block;
+    background: var(--tag-bg);
+    border-radius: 10px;
+    padding: 0 5px;
+    font-size: 9px;
+    margin-left: 3px;
+  }
+  .kanban-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    cursor: grab;
+    transition: box-shadow .15s;
+  }
+  .kanban-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.12); }
+  .kanban-card .k-name { font-weight: 600; font-size: 11px; }
+  .kanban-card .k-co { font-size: 10px; color: var(--muted); }
+  .kanban-card .k-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--accent-dark);
+    margin-top: 3px;
+  }
+
+  /* Calendar */
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-day-header {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    text-align: center;
+    padding: 4px 0;
+  }
+  .cal-day {
+    background: #faf9f6;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    min-height: 56px;
+    padding: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .cal-day .day-num { font-weight: 500; color: var(--black); }
+  .cal-event {
+    display: block;
+    border-radius: 3px;
+    padding: 1px 4px;
+    font-size: 9px;
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+  .cal-ev-li { background: #dbeafe; color: #1e40af; }
+  .cal-ev-em { background: #dcfce7; color: #166534; }
+  .cal-ev-dm { background: #fce7f3; color: #9d174d; }
+
+  /* Settings form */
+  .settings-section { margin-bottom: 24px; }
+  .settings-section h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 13px;
+  }
+  .settings-row input {
+    width: 80px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+    background: #faf9f6;
+  }
+  .settings-row select {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: #faf9f6;
+  }
+
+  /* ── Dashboard pills ── */
+  .pipeline-health {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+  }
+  .ph-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 70px;
+  }
+  .ph-pill .ph-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--black);
+  }
+  .ph-pill .ph-lbl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  /* ── Tab section header ── */
+  .tab-section {
+    margin-bottom: 52px;
+  }
+  .tab-section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: .18em;
+    margin-bottom: 6px;
+  }
+  .tab-section h3 { font-size: 21px; margin-bottom: 10px; }
+
+  /* ── Why it matters block ── */
+  .impact-block {
+    background: var(--black);
+    color: #fff;
+    border-radius: 10px;
+    padding: 36px 40px;
+    margin: 40px 0;
+  }
+  .impact-block h2 {
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Equation / P-blocks ── */
+  .equation-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 28px 0;
+  }
+  @media (max-width: 560px) { .equation-grid { grid-template-columns: 1fr; } }
+
+  .p-block {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 24px;
+    background: #fff;
+  }
+  .p-tag {
+    display: inline-block;
+    background: var(--black);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-bottom: 10px;
+  }
+  .p-block h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--black);
+  }
+  .p-block p { font-size: 14px; color: #444; margin: 0; line-height: 1.65; }
+
+  /* ── 12 principles list ── */
+  .principles-section { margin-top: 48px; }
+  .principle-item {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 16px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .principle-item:last-child { border-bottom: none; }
+  .p-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    padding-top: 2px;
+  }
+  .p-content h4 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--black);
+  }
+  .p-content p { font-size: 14px; color: #444; line-height: 1.7; margin: 0; }
+
+  /* ── CTA ── */
+  .cta-block {
+    text-align: center;
+    padding: 48px 24px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 48px 0;
+  }
+  .cta-block h3 { font-size: 22px; margin-bottom: 10px; }
+  .cta-block p { font-size: 15px; color: var(--muted); margin-bottom: 24px; }
+  .cta-btn {
+    display: inline-block;
+    background: var(--black);
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 32px;
+    border-radius: 6px;
+    transition: background .2s;
+  }
+  .cta-btn:hover { background: #333; }
+
+  /* ── Signature ── */
+  .sig {
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+  }
+  .sig-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-style: italic;
+    color: var(--black);
+  }
+  .sig-title {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── Closing note ── */
+  .closing-note {
+    background: var(--tag-bg);
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    border-radius: 0 6px 6px 0;
+    margin-top: 32px;
+    font-size: 15px;
+  }
+
+  a { color: var(--accent-dark); }
+  a:hover { color: var(--black); }
+
+  /* footer */
+  .footer {
+    text-align: center;
+    padding: 32px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .1em;
+    border-top: 1px solid var(--rule);
+  }
+
+        <style>
+        :root { --bg: #0D1117 !important; --accent: #00D9FF !important; }
+        body, html { background: #0D1117 !important; color: #F5F0E8 !important; }
+        h1, h2, h3, h4, h5, h6 { color: #F5F0E8 !important; }
+        a { color: #00D9FF !important; }
+        button, .btn { background: #00D9FF !important; }
+        </style>
+        </style>
+
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono,Inter&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- Masthead -->
+<div class="masthead">
+  <div class="masthead-label">Newsletter</div>
+  <div class="masthead-title">The Daily AI Executive</div>
+  <div class="masthead-date">February 16, 2026</div>
+</div>
+
+<!-- Countdown -->
+<div class="countdown-bar">
+  This page expires in <span class="timer" id="countdown">--:--:--</span>
+</div>
+
+<div class="page-wrapper">
+
+  <!-- Headline -->
+  <h1 class="article-headline">Yesterday I built an AI practice OS from a LinkedIn export.</h1>
+
+  <p>The input was a LinkedIn connections file. One CSV. The output was a fully functioning AI Practice OS: six tabs, a personalized sales letter with revenue math, a scored network table, a five-stage pipeline with drag-and-drop, a multi-channel outreach calendar, and configurable settings. One HTML file. The AI scored every contact for market fit, assigned products, calculated total addressable revenue, built the pipeline, and scheduled outreach. The only thing I told it was who the client was and what she sells.</p>
+
+  <hr class="rule">
+
+  <!-- What I Built -->
+  <div class="section-label">What I Built</div>
+  <h2>The AI Practice OS has six views.</h2>
+  <p>Each one does a specific job. Here is what every tab looks like and what it does.</p>
+
+  <!-- Tab 1: Letter from Steve -->
+  <div class="tab-section">
+    <div class="tab-section-label">Tab 1</div>
+    <h3>A Letter from Steve</h3>
+    <p>A personalized editorial that explains the client's network, revenue potential, and a 90-day action plan. Written by the AI based on the LinkedIn data. This is what the client sees first.</p>
+
+    <div class="os-mock">
+      <div class="os-mock-bar">
+        <div class="os-mock-dot r"></div>
+        <div class="os-mock-dot y"></div>
+        <div class="os-mock-dot g"></div>
+        <div class="os-mock-filename">ai-practice-os.html</div>
+      </div>
+      <div class="os-mock-header">AI Practice OS</div>
+      <div class="os-mock-tabs">
+        <div class="os-tab active">A Letter from Steve</div>
+        <div class="os-tab">Dashboard</div>
+        <div class="os-tab">Your Network</div>
+        <div class="os-tab">Pipeline</div>
+        <div class="os-tab">Outreach Plan</div>
+        <div class="os-tab">Settings</div>
+      </div>
+      <div class="os-mock-body">
+        <p style="font-family:'Playfair Display',serif;font-size:15px;font-weight:700;margin-bottom:14px;color:#0a0a0a;">$72,180,000 Is the Revenue Potential in Your LinkedIn Network</p>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#888;letter-spacing:.06em;margin-bottom:16px;">A Letter from Steve Cunningham</p>
+        <div class="stat-row">
+          <div class="stat-box"><span class="val">312</span><span class="lbl">Connections</span></div>
+          <div class="stat-box"><span class="val">47</span><span class="lbl">Core Market</span></div>
+          <div class="stat-box"><span class="val">12</span><span class="lbl">Hot Prospects</span></div>
+        </div>
+        <div class="mock-letter-body">
+          <p style="font-size:13px;margin-bottom:8px;">Yvonne, I analyzed your entire LinkedIn network. Here is what I found. You already know 47 people in your core market. Twelve of them are ready to buy.</p>
+          <p style="font-size:13px;margin:0;">The revenue math: 47 core contacts at $5,000 average deal size gives you $235,000 in addressable revenue from people who already know your name.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 2: Dashboard -->
+  <div class="tab-section">
+    <div class="tab-section-label">Tab 2</div>
+    <h3>Dashboard</h3>
+    <p>Revenue target, network overview, pipeline health, hot prospects, and this week's outreach. All calculated from the LinkedIn data.</p>
+
+    <div class="os-mock">
+      <div class="os-mock-bar">
+        <div class="os-mock-dot r"></div><div class="os-mock-dot y"></div><div class="os-mock-dot g"></div>
+        <div class="os-mock-filename">ai-practice-os.html</div>
+      </div>
+      <div class="os-mock-header">AI Practice OS</div>
+      <div class="os-mock-tabs">
+        <div class="os-tab">A Letter from Steve</div>
+        <div class="os-tab active">Dashboard</div>
+        <div class="os-tab">Your Network</div>
+        <div class="os-tab">Pipeline</div>
+        <div class="os-tab">Outreach Plan</div>
+        <div class="os-tab">Settings</div>
+      </div>
+      <div class="os-mock-body">
+        <div class="stat-row">
+          <div class="stat-box"><span class="val">$247K</span><span class="lbl">Revenue Target</span></div>
+          <div class="stat-box"><span class="val">312</span><span class="lbl">Total Contacts</span></div>
+          <div class="stat-box"><span class="val">47</span><span class="lbl">Core Market</span></div>
+          <div class="stat-box"><span class="val">9</span><span class="lbl">In Pipeline</span></div>
+        </div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Pipeline Health</p>
+        <div class="pipeline-health">
+          <div class="ph-pill"><div class="ph-num">3</div><div class="ph-lbl">Identified</div></div>
+          <div class="ph-pill"><div class="ph-num">2</div><div class="ph-lbl">Reached Out</div></div>
+          <div class="ph-pill"><div class="ph-num">2</div><div class="ph-lbl">Conversation</div></div>
+          <div class="ph-pill"><div class="ph-num">1</div><div class="ph-lbl">Proposal</div></div>
+          <div class="ph-pill"><div class="ph-num">1</div><div class="ph-lbl">Client</div></div>
+        </div>
+        <p style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.1em;margin:14px 0 8px;">This Week</p>
+        <div style="font-size:12px;color:#333;line-height:1.8;">
+          <div><strong style="color:#888;font-family:'JetBrains Mono',monospace;font-size:9px;">Mon</strong> &nbsp; LinkedIn: Intro post to CPA network</div>
+          <div><strong style="color:#888;font-family:'JetBrains Mono',monospace;font-size:9px;">Wed</strong> &nbsp; Email: Follow up with 3 hot prospects</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Your Network -->
+  <div class="tab-section">
+    <div class="tab-section-label">Tab 3</div>
+    <h3>Your Network</h3>
+    <p>Every LinkedIn connection scored for market fit, with filters for hot prospects, core market, pipeline status, and email availability. Sortable by any column. Click a row to open the full contact card.</p>
+
+    <div class="os-mock">
+      <div class="os-mock-bar">
+        <div class="os-mock-dot r"></div><div class="os-mock-dot y"></div><div class="os-mock-dot g"></div>
+        <div class="os-mock-filename">ai-practice-os.html</div>
+      </div>
+      <div class="os-mock-header">AI Practice OS</div>
+      <div class="os-mock-tabs">
+        <div class="os-tab">A Letter from Steve</div>
+        <div class="os-tab">Dashboard</div>
+        <div class="os-tab active">Your Network</div>
+        <div class="os-tab">Pipeline</div>
+        <div class="os-tab">Outreach Plan</div>
+        <div class="os-tab">Settings</div>
+      </div>
+      <div class="os-mock-body" style="padding:0;">
+        <table class="mock-table">
+          <thead>
+            <tr>
+              <th>Score</th><th>Name</th><th>Company</th><th>Position</th><th>Market</th><th>Stage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="score-badge">92</span></td>
+              <td style="font-weight:600;font-size:12px;">Sarah Chen</td>
+              <td style="font-size:11px;color:#555;">Chen &amp; Associates CPA</td>
+              <td style="font-size:11px;">Managing Partner</td>
+              <td><span class="market-core">Core</span></td>
+              <td><span class="stage-pill stage-id">Identified</span></td>
+            </tr>
+            <tr>
+              <td><span class="score-badge">88</span></td>
+              <td style="font-weight:600;font-size:12px;">Mark Rivera</td>
+              <td style="font-size:11px;color:#555;">Rivera Tax Group</td>
+              <td style="font-size:11px;">Owner</td>
+              <td><span class="market-core">Core</span></td>
+              <td><span class="stage-pill stage-ro">Reached Out</span></td>
+            </tr>
+            <tr>
+              <td><span class="score-badge" style="background:#666;">76</span></td>
+              <td style="font-weight:600;font-size:12px;">Lisa Park</td>
+              <td style="font-size:11px;color:#555;">Deloitte</td>
+              <td style="font-size:11px;">Senior Manager</td>
+              <td><span class="market-non">Non-Core</span></td>
+              <td><span class="stage-pill stage-new">New</span></td>
+            </tr>
+            <tr>
+              <td><span class="score-badge" style="background:#666;">71</span></td>
+              <td style="font-weight:600;font-size:12px;">James O'Brien</td>
+              <td style="font-size:11px;color:#555;">O'Brien Advisory</td>
+              <td style="font-size:11px;">Founder</td>
+              <td><span class="market-core">Core</span></td>
+              <td><span class="stage-pill stage-con">Conversation</span></td>
+            </tr>
+            <tr>
+              <td><span class="score-badge" style="background:#aaa;">54</span></td>
+              <td style="font-weight:600;font-size:12px;">Anna Kim</td>
+              <td style="font-size:11px;color:#555;">TechCo Inc</td>
+              <td style="font-size:11px;">CFO</td>
+              <td><span class="market-non">Non-Core</span></td>
+              <td><span class="stage-pill stage-new">New</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#888;border-top:1px solid var(--rule);">
+          312 contacts · Sortable · Filterable · Click to open contact card with notes, tags, activity log
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 4: Pipeline -->
+  <div class="tab-section">
+    <div class="tab-section-label">Tab 4</div>
+    <h3>Pipeline</h3>
+    <p>Five-stage kanban. Drag contacts between columns. Each card shows name, company, and fit score. Revenue and probability tracked per deal.</p>
+
+    <div class="os-mock">
+      <div class="os-mock-bar">
+        <div class="os-mock-dot r"></div><div class="os-mock-dot y"></div><div class="os-mock-dot g"></div>
+        <div class="os-mock-filename">ai-practice-os.html</div>
+      </div>
+      <div class="os-mock-header">AI Practice OS</div>
+      <div class="os-mock-tabs">
+        <div class="os-tab">A Letter from Steve</div>
+        <div class="os-tab">Dashboard</div>
+        <div class="os-tab">Your Network</div>
+        <div class="os-tab active">Pipeline</div>
+        <div class="os-tab">Outreach Plan</div>
+        <div class="os-tab">Settings</div>
+      </div>
+      <div class="os-mock-body">
+        <div class="kanban">
+          <div class="kanban-col">
+            <div class="kanban-col-header">Identified <span>3</span></div>
+            <div class="kanban-card"><div class="k-name">Sarah Chen</div><div class="k-co">Chen &amp; Associates</div><div class="k-score">Score: 92</div></div>
+            <div class="kanban-card"><div class="k-name">David Patel</div><div class="k-co">Patel CPA</div><div class="k-score">Score: 84</div></div>
+            <div class="kanban-card"><div class="k-name">Kim Torres</div><div class="k-co">Torres Bookkeeping</div><div class="k-score">Score: 79</div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">Reached Out <span>2</span></div>
+            <div class="kanban-card"><div class="k-name">Mark Rivera</div><div class="k-co">Rivera Tax Group</div><div class="k-score">Score: 88</div></div>
+            <div class="kanban-card"><div class="k-name">Amy Nguyen</div><div class="k-co">Nguyen &amp; Co</div><div class="k-score">Score: 77</div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">Conversation <span>2</span></div>
+            <div class="kanban-card"><div class="k-name">James O'Brien</div><div class="k-co">O'Brien Advisory</div><div class="k-score">Score: 71</div></div>
+            <div class="kanban-card"><div class="k-name">Rachel Soto</div><div class="k-co">Soto Financial</div><div class="k-score">Score: 83</div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">Proposal <span>1</span></div>
+            <div class="kanban-card"><div class="k-name">Linda Wu</div><div class="k-co">Wu Accounting</div><div class="k-score">Score: 90</div></div>
+          </div>
+          <div class="kanban-col">
+            <div class="kanban-col-header">Client <span>1</span></div>
+            <div class="kanban-card"><div class="k-name">Tom Hayes</div><div class="k-co">Hayes &amp; Partners</div><div class="k-score">Score: 86</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 5: Outreach Plan -->
+  <div class="tab-section">
+    <div class="tab-section-label">Tab 5</div>
+    <h3>Outreach Plan</h3>
+    <p>A monthly calendar with scheduled campaigns across channels: LinkedIn, email, DM, webinar. Drag campaigns between days. Add new campaigns from any date.</p>
+
+    <div class="os-mock">
+      <div class="os-mock-bar">
+        <div class="os-mock-dot r"></div><div class="os-mock-dot y"></div><div class="os-mock-dot g"></div>
+        <div class="os-mock-filename">ai-practice-os.html</div>
+      </div>
+      <div class="os-mock-header">AI Practice OS</div>
+      <div class="os-mock-tabs">
+        <div class="os-tab">A Letter from Steve</div>
+        <div class="os-tab">Dashboard</div>
+        <div class="os-tab">Your Network</div>
+        <div class="os-tab">Pipeline</div>
+        <div class="os-tab active">Outreach Plan</div>
+        <div class="os-tab">Settings</div>
+      </div>
+      <div class="os-mock-body">
+        <p style="font-family:'Playfair Display',serif;font-size:13px;font-weight:600;margin-bottom:12px;">February 2026</p>
+        <div class="cal-grid">
+          <div class="cal-day-header">Mon</div>
+          <div class="cal-day-header">Tue</div>
+          <div class="cal-day-header">Wed</div>
+          <div class="cal-day-header">Thu</div>
+          <div class="cal-day-header">Fri</div>
+          <div class="cal-day-header">Sat</div>
+          <div class="cal-day-header">Sun</div>
+
+          <div class="cal-day"><span class="day-num">9</span></div>
+          <div class="cal-day"><span class="day-num">10</span><span class="cal-event cal-ev-li">LinkedIn: AI post</span></div>
+          <div class="cal-day"><span class="day-num">11</span></div>
+          <div class="cal-day"><span class="day-num">12</span><span class="cal-event cal-ev-em">Email: Hot 3</span></div>
+          <div class="cal-day"><span class="day-num">13</span></div>
+          <div class="cal-day"><span class="day-num">14</span></div>
+          <div class="cal-day"><span class="day-num">15</span></div>
+
+          <div class="cal-day"><span class="day-num">16</span><span class="cal-event cal-ev-dm">DM: Rivera</span></div>
+          <div class="cal-day"><span class="day-num">17</span></div>
+          <div class="cal-day"><span class="day-num">18</span><span class="cal-event cal-ev-li">LinkedIn: Case study</span></div>
+          <div class="cal-day"><span class="day-num">19</span><span class="cal-event cal-ev-em">Email: Warm batch</span></div>
+          <div class="cal-day"><span class="day-num">20</span></div>
+          <div class="cal-day"><span class="day-num">21</span></div>
+          <div class="cal-day"><span class="day-num">22</span></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:10px;">
+          <span style="display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#888;"><span class="cal-event cal-ev-li" style="display:inline-block;padding:1px 6px;">LinkedIn</span></span>
+          <span style="display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#888;"><span class="cal-event cal-ev-em" style="display:inline-block;padding:1px 6px;">Email</span></span>
+          <span style="display:flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#888;"><span class="cal-event cal-ev-dm" style="display:inline-block;padding:1px 6px;">DM</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 6: Settings -->
+  <div class="tab-section">
+    <div class="tab-section-label">Tab 6</div>
+    <h3>Settings</h3>
+    <p>Revenue per contact category, follow-up thresholds, pipeline defaults, and calendar defaults. Change the numbers and the whole system recalculates.</p>
+
+    <div class="os-mock">
+      <div class="os-mock-bar">
+        <div class="os-mock-dot r"></div><div class="os-mock-dot y"></div><div class="os-mock-dot g"></div>
+        <div class="os-mock-filename">ai-practice-os.html</div>
+      </div>
+      <div class="os-mock-header">AI Practice OS</div>
+      <div class="os-mock-tabs">
+        <div class="os-tab">A Letter from Steve</div>
+        <div class="os-tab">Dashboard</div>
+        <div class="os-tab">Your Network</div>
+        <div class="os-tab">Pipeline</div>
+        <div class="os-tab">Outreach Plan</div>
+        <div class="os-tab active">Settings</div>
+      </div>
+      <div class="os-mock-body">
+        <div class="settings-section">
+          <h4>Revenue Potential per Contact</h4>
+          <p style="font-size:12px;color:#888;margin-bottom:12px;">Default revenue potential for each contact category.</p>
+          <div class="settings-row">
+            <span style="font-size:13px;">Core AIROI (Solopreneurs)</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;">$</span><input type="number" value="5000"></span>
+          </div>
+          <div class="settings-row">
+            <span style="font-size:13px;">Core H+A (Small firms)</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;">$</span><input type="number" value="12500"></span>
+          </div>
+          <div class="settings-row">
+            <span style="font-size:13px;">Non-Core AIROI</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#888;">$</span><input type="number" value="2500"></span>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>Follow-up Rules</h4>
+          <div class="settings-row">
+            <span style="font-size:13px;">Follow-up threshold</span>
+            <span style="display:flex;align-items:center;gap:6px;"><input type="number" value="7" style="width:60px;"> <span style="font-size:12px;color:#888;">days</span></span>
+          </div>
+        </div>
+        <div class="settings-section">
+          <h4>Pipeline Defaults</h4>
+          <div class="settings-row">
+            <span style="font-size:13px;">Default starting stage</span>
+            <select><option>Identified</option><option>Reached Out</option><option>Conversation</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p>That is the entire application. Six views, all driven by one CSV file. The AI did the scoring, the categorization, the revenue math, the pipeline seeding, and the outreach scheduling. The client opens the file and has a working practice OS with her entire network already loaded, scored, and organized.</p>
+
+  <hr class="rule">
+
+  <!-- Why it matters -->
+  <div class="impact-block">
+    <h2>Why It Matters</h2>
+    <p style="color:#ccc;font-size:15px;line-height:1.75;">The AI already analyzed the network, already scored the contacts, already calculated the revenue potential, already wrote the sales letter, already built the pipeline, already scheduled the outreach. The client opens the file and starts conversations with the people the system identified as ready to buy.</p>
+  </div>
+
+  <!-- The Equation -->
+  <div class="section-label" style="margin-top:40px;">The Equation</div>
+  <h2>P3 · Workflow Maturity</h2>
+  <p style="margin-bottom:24px;"><strong>Level 3: AI Workflows</strong> — The AI Practice OS moved a client's entire business development workflow from Level 1 (contacts in their head, no system, no pipeline) to Level 3 (scored contacts, structured pipeline, scheduled outreach, revenue math). One session. One file.</p>
+
+  <div class="equation-grid">
+    <div class="p-block">
+      <span class="p-tag">P1</span>
+      <h4>Profit Drivers · 0–12 Months</h4>
+      <p>Which of the five profit drivers does this move this year?</p>
+    </div>
+    <div class="p-block" style="background:var(--tag-bg);">
+      <span class="p-tag" style="background:var(--accent-dark);">Revenue Activation</span>
+      <h4>$247K identified</h4>
+      <p>$247K in addressable revenue identified from existing contacts. Zero new leads required. The pipeline was already in the LinkedIn file.</p>
+    </div>
+    <div class="p-block" style="background:var(--tag-bg);">
+      <span class="p-tag" style="background:var(--accent-dark);">Time-to-Value</span>
+      <h4>One session</h4>
+      <p>From LinkedIn CSV to working practice OS in one session. A traditional CRM setup takes weeks of manual data entry.</p>
+    </div>
+    <div class="p-block" style="background:var(--tag-bg);">
+      <span class="p-tag" style="background:var(--accent-dark);">Unit Economics</span>
+      <h4>Zero operating cost</h4>
+      <p>No subscription, no per-seat pricing. The file runs forever.</p>
+    </div>
+  </div>
+
+  <div class="equation-grid">
+    <div class="p-block">
+      <span class="p-tag">P2</span>
+      <h4>Enterprise Value Drivers · 1–10 Years</h4>
+      <p>Which of the five enterprise value drivers does this compound over time?</p>
+    </div>
+    <div class="p-block" style="background:var(--tag-bg);">
+      <span class="p-tag" style="background:var(--accent-dark);">Productized Service</span>
+      <h4>Repeatable pattern</h4>
+      <p>The AI Practice OS is a deliverable I can produce for any client with a LinkedIn export. The pattern is repeatable. The personalization is automatic.</p>
+    </div>
+    <div class="p-block" style="background:var(--tag-bg);">
+      <span class="p-tag" style="background:var(--accent-dark);">Learning-Rate Compounding</span>
+      <h4>Gets better with every build</h4>
+      <p>Every client build teaches me something about scoring, categorization, and outreach scheduling that makes the next build better.</p>
+    </div>
+    <div class="p-block"></div>
+  </div>
+
+  <p style="margin-top:16px;">The input was a CSV. The output was a fully functioning business development system with $247K in identified revenue. The AI did the thinking. The client does the conversations.</p>
+
+  <!-- CTA -->
+  <div class="cta-block">
+    <h3>Want your own AI Practice OS?</h3>
+    <p>No pitch. Just a working session on your highest-value workflow.</p>
+    <a class="cta-btn" href="https://calendly.com/steve-simpleacademy/pratice-os" target="_blank">Book a 15-Minute Call</a>
+  </div>
+
+  <hr class="rule">
+
+  <!-- 12 Principles -->
+  <div class="section-label">Through the 12 Principles</div>
+  <h2>Every issue of The Daily AI Executive explains the day's insight through the same 12 first principles.</h2>
+  <p style="margin-bottom:10px;"><a href="https://stevecunningham.ai/12-principles">Read the full framework here.</a></p>
+
+  <div class="principles-section">
+    <div class="principle-item">
+      <div class="p-num">P1</div>
+      <div class="p-content">
+        <h4>The 5 Profit Drivers</h4>
+        <p>Revenue activation is the primary driver. The AI Practice OS found $247,000 in addressable revenue from contacts the client already knew. No advertising, no lead generation, no cold outreach. The pipeline was sitting inside a LinkedIn CSV the whole time. Unit economics are zero because the file costs nothing to operate. Time-to-value compressed from weeks of CRM setup to one session.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P2</div>
+      <div class="p-content">
+        <h4>The 5 Enterprise Value Drivers</h4>
+        <p>The AI Practice OS is a productized service. I can build one for any client who gives me a LinkedIn export. The scoring logic, the categorization rules, the outreach calendar structure, the letter format. All of it is a repeatable pattern that gets better with every build. The personalization is what changes. The system is what stays.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P3</div>
+      <div class="p-content">
+        <h4>The 5 Levels of Workflow Maturity</h4>
+        <p>Most professional services firms operate at Level 1 for business development. Contacts live in someone's head or scattered across a phone, an email inbox, and a LinkedIn account. The AI Practice OS moves them to Level 3 in one step: scored contacts, defined pipeline stages, scheduled outreach, configurable settings. The maturity jump happens instantly because the AI does the structuring that would normally take months of manual work.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P4</div>
+      <div class="p-content">
+        <h4>The 5 Stages of AI Development</h4>
+        <p>Stage 3 agents made this possible. The AI did not just store the contacts. It analyzed them. It scored each one for market fit based on job title, company type, and decision-making authority. It categorized them into core and non-core markets. It calculated revenue potential per contact. It wrote a personalized sales letter with specific numbers. None of this was manual. The agent understood the client's business and applied that understanding to every contact in the network.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P5</div>
+      <div class="p-content">
+        <h4>The 5 Levels of Knowledge Work</h4>
+        <p>The knowledge work compression here is significant. A traditional business development consultant would spend days analyzing a client's network, scoring contacts, building a pipeline, and creating an outreach plan. The AI did all of that from a single input file. The consultant's job shifts from doing the analysis to directing the AI and reviewing its output. The judgment stays human. The labor becomes automated.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P6</div>
+      <div class="p-content">
+        <h4>The 5 Orders of Time Magnitude</h4>
+        <p>One session produced a six-view application with 312 scored contacts, a seeded pipeline, a scheduled outreach calendar, and a personalized sales letter. Traditional CRM setup takes weeks. Manual network analysis takes days. Outreach planning takes a full afternoon. The AI Practice OS compressed all of it into a single conversation with an agent.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P7</div>
+      <div class="p-content">
+        <h4>The Information Factory Stack</h4>
+        <p>The factory stack is visible in the file. The human layer is me directing the AI and the client using the output. The LLM layer is the agent that analyzed, scored, and built. The workflow layer is the six-tab structure. The data layer is the LinkedIn CSV transformed into scored contacts with revenue potential. The tool layer is the HTML file itself. Every layer is present. Every layer is owned.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P8</div>
+      <div class="p-content">
+        <h4>The 5 Stages of Technology Diffusion</h4>
+        <p>Professional services firms are not thinking about this yet. They are paying for CRM subscriptions and manually entering contacts. The idea that an AI can analyze a LinkedIn export and produce a working practice OS with revenue math and scheduled outreach is not on their radar. Every client I build this for becomes a case study. The diffusion will happen through demonstration.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P9</div>
+      <div class="p-content">
+        <h4>The 5 Stages of AI Acceptance</h4>
+        <p>The acceptance moment for the client is opening the Letter tab and seeing their own network analyzed with specific revenue numbers. That is when the AI stops being abstract and starts being useful. The scoring might not be perfect. Some contacts will be miscategorized. But the starting point is so much further ahead than blank that the client's only job is to refine, not to build from scratch.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P10</div>
+      <div class="p-content">
+        <h4>The 5 Levels of AI Insourcing</h4>
+        <p>The client insourced their entire business development system in one step. No CRM subscription. No consultant retainer for network analysis. No marketing agency for outreach planning. One file does all of it. The ongoing cost is zero. The switching cost is zero because the data exports to JSON. The insourcing math is as clear as it gets.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P11</div>
+      <div class="p-content">
+        <h4>The 5 AI Insourcing Powers</h4>
+        <p>All five powers are present. Cost is zero operating expense. Velocity is one session from input to working system. Quality is higher than manual because the AI scores consistently across every contact. Control stays with the client because the file is theirs. Compounding is built into the system because every interaction the client logs makes the pipeline more accurate and the outreach more targeted.</p>
+      </div>
+    </div>
+    <div class="principle-item">
+      <div class="p-num">P12</div>
+      <div class="p-content">
+        <h4>The 5 AI Agency Pillars</h4>
+        <p>The client needs systems thinking to see their LinkedIn network as a scored pipeline instead of a list of names. They need initiative to open the file and start the conversations the AI identified. They need governance to review the AI's scoring and adjust contacts that are miscategorized. They need learning orientation to update the pipeline as conversations progress. And they need self-awareness to know which prospects are worth pursuing and which scored high on paper but are not the right fit.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Closing -->
+  <div class="closing-note">
+    <p>Here is what to do with this. Export your LinkedIn connections. It takes thirty seconds. Give the CSV to an AI agent and describe your business: who you serve, what you sell, how much it costs. Let the agent build you a Practice OS. Open the file. Look at the Letter tab. That is your revenue sitting in your existing network, scored and organized, waiting for you to start conversations.</p>
+    <p style="margin-top:14px;">The AI Practice OS is a product I build for clients. But the pattern is the point. A single input file, processed by an AI agent, produces a fully functioning business system. That is the future of professional services technology. I am glad you are here.</p>
+  </div>
+
+  <div class="sig">
+    <div class="sig-name">Steve Cunningham</div>
+    <div class="sig-title">Author, <em>The Full Stack AI Consultant</em> and <em>The CEO AI Operating System</em></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  © 2026 The Daily AI Executive · Steve Cunningham · stevecunningham.ai
+</div>
+
+<script>
+  // Countdown timer — expires 24h from page load (mimics "this page expires in")
+  const expiry = new Date();
+  expiry.setHours(expiry.getHours() + 18); // ~18 hours remaining as a demo
+
+  function updateCountdown() {
+    const now = new Date();
+    const diff = expiry - now;
+    if (diff <= 0) {
+      document.getElementById('countdown').textContent = '00:00:00';
+      return;
+    }
+    const h = Math.floor(diff / 3600000).toString().padStart(2,'0');
+    const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2,'0');
+    const s = Math.floor((diff % 60000) / 1000).toString().padStart(2,'0');
+    document.getElementById('countdown').textContent = `${h}:${m}:${s}`;
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+
+</body>
+</html>
